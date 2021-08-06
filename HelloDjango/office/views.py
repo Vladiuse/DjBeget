@@ -1,19 +1,23 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
-from .models import Stream, Site
 # import os, sys
 # sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
 import requests
 from bs4 import BeautifulSoup
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
+
+from .models import Stream, Site
+
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION_INFP = 'Не удалось подключиться'
+
 
 def get_url_link(domain_name):
     protokol = 'https'
     if 'beget' in domain_name:
         protokol = 'http'
     return protokol + '://' + domain_name + '/'
+
 
 def get_domains_api():
     get_list_domains_url = 'https://api.beget.com/api/site/getList?login=vladiuse&passwd=20302030Ab%&output_format=json'
@@ -54,25 +58,26 @@ def get_free_doms():
 
     return free_doms
 
+
 def index(request):
     sites = Site.objects.all()
     site_count = len(sites)
     free_doms = get_free_doms()
     content = {'sites': sites,
-                'site_count': site_count,
-                'free_doms': free_doms,
-    }
+               'site_count': site_count,
+               'free_doms': free_doms,
+               }
     return render(request, 'office/index.html', content)
-    
+
 
 def add_spend(request, summ):
     stream = Stream.objects.get(pk=1)
     stream.description = str(summ)
     stream.save()
     result_answer = 'Add Spend ' + str(summ)
-    return HttpResponse('<h1>'+ result_answer + '</h1>')
-    
-    
+    return HttpResponse('<h1>' + result_answer + '</h1>')
+
+
 def update_domains(request):
     domains = set(get_domains_api())
     sites = set([site.site_name for site in Site.objects.all()])
@@ -106,6 +111,7 @@ def get_h1_title(url):
         result = result[:50] + '...'
     return result
 
+
 def get_title(request):
     sites = Site.objects.all()
     for site in sites:
@@ -114,10 +120,17 @@ def get_title(request):
         site.save()
     return HttpResponseRedirect(reverse('office:index'))
 
-        
-    
-    
-    
-    
-    
-    
+
+def old_lands(request):
+    DOMAIN = 'http://vladiuse.beget.tech/'
+    url = 'http://vladiuse.beget.tech/get_lands_list.php'
+    res = requests.get(url)
+    lands = res.text.split(';')
+    if not lands[-1]:
+        lands = lands[:-1]
+    content = {'lands': lands, 'domain':DOMAIN}
+    return render(request, 'office/old_lands.html', content)
+
+
+def requisites(request):
+    return render(request, 'office/requisites.html')

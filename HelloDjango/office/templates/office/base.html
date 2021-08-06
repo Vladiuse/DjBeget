@@ -1,0 +1,68 @@
+{% load static %}
+<h1 style="display: none">Django</h1>
+
+<link rel="stylesheet" href="{% static 'office/styles.css' %}">
+<script src="{% static 'office/jq.js' %}"></script>
+<script type="text/javascript" src="{% static 'office/main.js' %}"></script>
+
+<!-- НАчало сайта -->
+<head>
+<title>Page Name</title>
+</head>
+<body>
+    <section class="navigation" style="margin:-100px;">
+        <div class="nav-container">
+          <div class="brand">
+            <a href="#!">Django</a>
+          </div>
+          <nav>
+            <div class="nav-mobile"><a id="nav-toggle" href="#!"><span></span></a></div>
+            <ul class="nav-list">
+              <li>
+                <a href="{% url 'office:index' %}">Home</a>
+              </li>
+              <li>
+                <a href="{% url 'office:requisites' %}">Реквизиты</a>
+              </li>
+              <li>
+                <a href="#!">Обновить</a>
+                <ul class="nav-dropdown">
+                  <li>
+                    <a href="{% url 'office:update_domains' %}">Список сайтов</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'office:get_title' %}">Заголовки прокл</a>
+                  </li>
+                  <!-- <li>
+                    <a href="#!">Graphic Design</a>
+                  </li> -->
+                </ul>
+              </li>
+              <li>
+                <a href="#!">Pricing</a>
+              </li>
+              <li>
+                <a href="#!">Portfolio</a>
+                <ul class="nav-dropdown">
+                  <li>
+                    <a href="#!">Web Design</a>
+                  </li>
+                  <li>
+                    <a href="#!">Web Development</a>
+                  </li>
+                  <li>
+                    <a href="#!">Graphic Design</a>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <a href="{% url 'office:old_lands' %}">Архив прокл</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </section>
+{% block content %}
+{% endblock %}
+</body>
+</html>

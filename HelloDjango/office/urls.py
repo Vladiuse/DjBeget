@@ -7,4 +7,6 @@ urlpatterns = [
     path('add/<str:summ>/', views.add_spend, name='add_spend'),
     path('update-domains', views.update_domains, name='update_domains'),
     path('get-title', views.get_title, name='get_title'),
+    path('old-lands', views.old_lands, name='old_lands'),
+    path('requisites', views.requisites, name='requisites'),
     ]
