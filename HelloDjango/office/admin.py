@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Stream, Site
+from .models import Stream, Site, OldLand
 # Register your models here.
 
 class StreamAdmin(admin.ModelAdmin):
@@ -7,3 +7,4 @@ class StreamAdmin(admin.ModelAdmin):
 
 admin.site.register(Stream, StreamAdmin)
 admin.site.register(Site)
+admin.site.register(OldLand)

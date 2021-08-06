@@ -5,8 +5,9 @@ from bs4 import BeautifulSoup
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from .help import ImagePrev
 
-from .models import Stream, Site
+from .models import Stream, Site, OldLand
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION_INFP = 'Не удалось подключиться'
@@ -123,12 +124,34 @@ def get_title(request):
 
 def old_lands(request):
     DOMAIN = 'http://vladiuse.beget.tech/'
-    url = 'http://vladiuse.beget.tech/get_lands_list.php'
-    res = requests.get(url)
+    SOURCE_URL = 'http://vladiuse.beget.tech/get_lands_list.php'
+    res = requests.get(SOURCE_URL)
     lands = res.text.split(';')
     if not lands[-1]:
         lands = lands[:-1]
-    content = {'lands': lands, 'domain':DOMAIN}
+    old_lands = OldLand.objects.all()
+    old_lands_name = [old.name for old in old_lands]
+    to_add = set(lands) - set(old_lands_name)
+    print(f'Lands to ADD {len(to_add)}')
+    to_dell = set(old_lands_name) - set(lands)
+    print(f'Lands to DELL {len(to_dell)}')
+    for name in to_add:
+        url = DOMAIN + name
+        image = ImagePrev(url=url, name=name).get_image()
+        old_dom = OldLand(name=name, url=url, image=image)
+        old_dom.save()
+    for name in to_dell:
+        dom = OldLand.objects.get(name=name)
+        dom.delete()
+    old_lands = OldLand.objects.all()
+    land_count = len(old_lands)
+    info = f'Новых: {len(to_add)}, удалено: {len(to_dell)}'
+    content = {
+        'land_count': land_count,
+        'domain': DOMAIN,
+        'old_lands': old_lands,
+        'info': info,
+    }
     return render(request, 'office/old_lands.html', content)
 
 
