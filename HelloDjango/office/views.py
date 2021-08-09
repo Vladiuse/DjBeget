@@ -124,6 +124,7 @@ def get_title(request):
 
 
 def old_lands(request):
+    host = request.get_host()
     DOMAIN = 'http://vladiuse.beget.tech/'
     SOURCE_URL = 'http://vladiuse.beget.tech/get_lands_list.php'
     res = requests.get(SOURCE_URL)
@@ -138,7 +139,7 @@ def old_lands(request):
     print(f'Lands to DELL {len(to_dell)}')
     for name in to_add:
         url = DOMAIN + name
-        image = ImagePrev(url=url, name=name).get_image()
+        image = ImagePrev(url=url, name=name, host=host).get_image()
         old_dom = OldLand(name=name, url=url, image=image)
         old_dom.save()
     for name in to_dell:
@@ -157,6 +158,7 @@ def old_lands(request):
 
 
 def requisites(request):
+    print(request.get_host())
     return render(request, 'office/requisites.html')
 
 
