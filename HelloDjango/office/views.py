@@ -6,8 +6,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .help import ImagePrev
-
+from .api import Beget, MyError
 from .models import Stream, Site, OldLand
+from .link_checker import Url, Checker, SuccessPage
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION_INFP = 'Не удалось подключиться'
@@ -157,3 +158,19 @@ def old_lands(request):
 
 def requisites(request):
     return render(request, 'office/requisites.html')
+
+
+def checker(request):
+    url = Url(url='https://feel-market.ru/')
+    success_page = SuccessPage(url.get_success_url(), pixel='123')
+    try:
+        success_page.process()
+        pixel_result = success_page.get_result()
+        print(type(pixel_result), pixel_result, len(pixel_result))
+    except MyError as exc:
+        pixel_result = exc
+    # return HttpResponse(f'{content}')
+    content = {'url': url.get_success_url(),
+        'content': pixel_result}
+    return render(request, 'office/checker.html', content)
+

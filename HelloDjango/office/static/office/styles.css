@@ -243,10 +243,13 @@ article {
 
 .coll-block{
     display: inline-block;
-    background-color: grey;
     width: 49%;
     text-align: center;
-    vertical-align: top;
+    vertical-align: middle;
+}
+
+.coll-block h4{
+    margin: 15px;
 }
 
 .glow-button {
