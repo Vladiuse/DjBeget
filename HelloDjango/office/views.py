@@ -1,28 +1,24 @@
 # import os, sys
 # sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
+
 import requests
 from bs4 import BeautifulSoup
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from .help import ImagePrev
-from .api import Beget, MyError
+
+from .api import MyError
+from .beget_api_keys import begget_login, begget_pass
+from .help import ImagePrev, get_url_link_from_name
+from .link_checker import Url, SuccessPage, LinkCheckerManager
 from .models import Stream, Site, OldLand
-from .link_checker import Url, Checker, SuccessPage
 
 DJANGO_SITE = 'https://main-prosale.store/'
-NO_CONNECTION_INFP = 'Не удалось подключиться'
-
-
-def get_url_link(domain_name):
-    protokol = 'https'
-    if 'beget' in domain_name:
-        protokol = 'http'
-    return protokol + '://' + domain_name + '/'
+NO_CONNECTION = 'Не удалось подключиться'
 
 
 def get_domains_api():
-    get_list_domains_url = 'https://api.beget.com/api/site/getList?login=vladiuse&passwd=20302030Ab%&output_format=json'
+    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
     domains = []
@@ -34,7 +30,7 @@ def get_domains_api():
 
 
 def get_free_doms():
-    get_list_domains_url = 'https://api.beget.com/api/site/getList?login=vladiuse&passwd=20302030Ab%&output_format=json'
+    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
     domains = []
@@ -46,7 +42,7 @@ def get_free_doms():
             dom_name += dom['fqdn']
             domains.append(dom_name)
 
-    get_doms = 'https://api.beget.com/api/domain/getList?login=vladiuse&passwd=20302030Ab%&output_format=json'
+    get_doms = f'https://api.beget.com/api/domain/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
     res = requests.get(get_doms)
     answer = res.json()
     doms = []
@@ -89,7 +85,7 @@ def update_domains(request):
         s = Site.objects.get(site_name=site)
         s.delete()
     for site in to_add:
-        url = get_url_link(site)
+        url = get_url_link_from_name(site)
         s = Site(site_name=site, domain=url, title='None')
         s.save()
     return HttpResponseRedirect(reverse('office:index'))
@@ -99,7 +95,7 @@ def get_h1_title(url):
     try:
         res = requests.get(url)
     except:
-        return NO_CONNECTION_INFP
+        return NO_CONNECTION
     res.encoding = 'utf-8'
     IF_NO_BLOCK = '!!! Нет описания !!!'
     result = IF_NO_BLOCK
@@ -134,9 +130,7 @@ def old_lands(request):
     old_lands = OldLand.objects.all()
     old_lands_name = [old.name for old in old_lands]
     to_add = set(lands) - set(old_lands_name)
-    print(f'Lands to ADD {len(to_add)}')
     to_dell = set(old_lands_name) - set(lands)
-    print(f'Lands to DELL {len(to_dell)}')
     for name in to_add:
         url = DOMAIN + name
         image = ImagePrev(url=url, name=name, host=host).get_image()
@@ -158,21 +152,29 @@ def old_lands(request):
 
 
 def requisites(request):
-    print(request.get_host())
     return render(request, 'office/requisites.html')
 
 
 def checker(request):
-    url = Url(url='https://feel-market.ru/')
-    success_page = SuccessPage(url.get_success_url(), pixel='123')
+    # url = Url(url='https://feel-market.ru/')
+    # success_page = SuccessPage(url.get_success_url(), pixel='123')
+    # try:
+    #     success_page.process()
+    #     pixel_result = success_page.get_result()
+    #     print(type(pixel_result), pixel_result, len(pixel_result))
+    # except MyError as exc:
+    #     pixel_result = exc
+    # # return HttpResponse(f'{content}')
+    # content = {'url': url.get_success_url(),
+    #            'content': pixel_result}
+    url = 'https://feel-market.ru/'
+    link_manager = LinkCheckerManager(url=url)
     try:
-        success_page.process()
-        pixel_result = success_page.get_result()
-        print(type(pixel_result), pixel_result, len(pixel_result))
+        link_manager.process()
+        result = link_manager.result
     except MyError as exc:
-        pixel_result = exc
+        result = exc
     # return HttpResponse(f'{content}')
-    content = {'url': url.get_success_url(),
-        'content': pixel_result}
+    content = {
+               'content': result}
     return render(request, 'office/checker.html', content)
-

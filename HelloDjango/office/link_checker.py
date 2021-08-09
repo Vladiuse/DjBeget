@@ -70,6 +70,10 @@ class MainPage(Checker):
         req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
         self.result.update({'requisites': req_res})
 
+    def process(self):
+        self.make_soup()
+        self.check_requisites()
+
 
 class SpasPage(Checker):
     """
@@ -126,4 +130,23 @@ class SuccessPage(Checker):
             self.result.update({'pixel': SuccessPage.correct_pixel})
         else:
             self.result.update({'pixel': self.pixel_in_land})
+
+
+class LinkCheckerManager:
+
+    def __init__(self, url, **kwargs):
+        self.url_class = Url(url=url)
+        self.main_page = MainPage(url=self.url_class.get_url(), )
+        self.policy_page = PolicyPage(url=self.url_class.get_policy_url())
+        self.success_page = SuccessPage(url=self.url_class.get_success_url(), **kwargs)
+        self.result = {}
+
+    def process(self):
+        self.main_page.process()
+        self.success_page.process()
+        self.collect_results()
+
+    def collect_results(self):
+        for item in self.main_page, self.policy_page, self.success_page:
+            self.result.update(item.get_result())
 

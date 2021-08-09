@@ -31,6 +31,13 @@ class ImagePrev:
         return static_path
 
 
+
+def get_url_link_from_name(domain_name):
+    protokol = 'https'
+    if 'beget' in domain_name:
+        protokol = 'http'
+    return protokol + '://' + domain_name + '/'
+
 # x = ImagePrev()
 # res = x.get_image()
 # print(res)
