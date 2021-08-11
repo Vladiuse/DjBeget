@@ -5,15 +5,19 @@
 <script src="{% static 'office/jq.js' %}"></script>
 <script type="text/javascript" src="{% static 'office/main.js' %}"></script>
 
+
 <!-- НАчало сайта -->
 <head>
 <title>Page Name</title>
+
+<!--  <link rel="shortcut icon" href="{% static 'office/favicon.svg' %}" type="image/svg">-->
 </head>
 <body>
+
     <section class="navigation" style="margin:-100px;">
         <div class="nav-container">
           <div class="brand">
-            <a href="#!">Django</a>
+            <a href="#!" style="back">Django</a>
           </div>
           <nav>
             <div class="nav-mobile"><a id="nav-toggle" href="#!"><span></span></a></div>
@@ -39,7 +43,7 @@
                 </ul>
               </li>
               <li>
-                <a href="{% url 'office:checker' %}">Checker</a>
+                <a href="{% url 'office:checker' 666 %}">Checker</a>
               </li>
               <li>
                 <a href="#!">Portfolio</a>

@@ -9,5 +9,5 @@ urlpatterns = [
     path('get-title', views.get_title, name='get_title'),
     path('old-lands', views.old_lands, name='old_lands'),
     path('requisites', views.requisites, name='requisites'),
-    path('checker', views.checker, name='checker'),
+    path('checker/<int:site_id>/', views.checker, name='checker'),
     ]

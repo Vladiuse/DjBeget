@@ -18,7 +18,7 @@ NO_CONNECTION = 'Не удалось подключиться'
 
 
 def get_domains_api():
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
+    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
     domains = []
@@ -30,7 +30,7 @@ def get_domains_api():
 
 
 def get_free_doms():
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
+    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
     domains = []
@@ -42,7 +42,7 @@ def get_free_doms():
             dom_name += dom['fqdn']
             domains.append(dom_name)
 
-    get_doms = f'https://api.beget.com/api/domain/getList?login={begget_login}&passwd={begget_pass}%&output_format=json'
+    get_doms = f'https://api.beget.com/api/domain/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_doms)
     answer = res.json()
     doms = []
@@ -155,26 +155,18 @@ def requisites(request):
     return render(request, 'office/requisites.html')
 
 
-def checker(request):
-    # url = Url(url='https://feel-market.ru/')
-    # success_page = SuccessPage(url.get_success_url(), pixel='123')
-    # try:
-    #     success_page.process()
-    #     pixel_result = success_page.get_result()
-    #     print(type(pixel_result), pixel_result, len(pixel_result))
-    # except MyError as exc:
-    #     pixel_result = exc
-    # # return HttpResponse(f'{content}')
-    # content = {'url': url.get_success_url(),
-    #            'content': pixel_result}
-    url = 'https://feel-market.ru/'
+def checker(request, site_id):
+    if site_id == 666:
+        url = 'https://good-markpro.ru/'
+    else:
+        site = Site.objects.get(pk=site_id)
+        url = site.domain
     link_manager = LinkCheckerManager(url=url)
     try:
         link_manager.process()
         result = link_manager.result
     except MyError as exc:
         result = exc
-    # return HttpResponse(f'{content}')
     content = {
                'content': result}
     return render(request, 'office/checker.html', content)

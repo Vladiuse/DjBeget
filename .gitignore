@@ -1,2 +1,3 @@
 # Ignore the default SQLite database.
 /HelloDjango/*.sqlite3
+*.sqlite3

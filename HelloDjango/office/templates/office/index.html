@@ -24,19 +24,23 @@
     <table>
         <thead>
             <tr>
-                <th>Папка beget</th>
+<!--                <th>Папка beget</th>-->
                 <th>Сылка</th>
                 <th>Прокла</th>
+                <th>Checker</th>
                 <th>Статус</th>
+
+
 
             </tr>
         </thead>
      {% for site in sites %}
 
             <tr>
-            <td>{{ site.site_name }}</td>
+<!--            <td>{{ site.site_name }}</td>-->
                 <td><a href="{{ site.domain }}" target="_blank">{{ site.site_name }}</a></td>
                 <td>{{ site.title }}</td>
+                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>
                 <td>
                     <p class="status status-paid">Paid</p>
                 </td>
