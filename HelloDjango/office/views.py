@@ -11,7 +11,7 @@ from .api import MyError
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
 from .link_checker import Url, SuccessPage, LinkCheckerManager
-from .models import Stream, Site, OldLand
+from .models import Stream, Site, OldLand, Domain
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -105,8 +105,8 @@ def get_h1_title(url):
         if len(title) != 0:
             result = title[0].text.strip()
             break
-    if len(result) > 50:
-        result = result[:50] + '...'
+    if len(result) > 40:
+        result = result[:40] + '...'
     return result
 
 
@@ -170,3 +170,9 @@ def checker(request, site_id):
     content = {
                'content': result}
     return render(request, 'office/checker.html', content)
+
+
+def domains(request):
+    domains = Domain.objects.all()
+    content = {'domains': domains}
+    return render(request, 'office/domains.html', content)

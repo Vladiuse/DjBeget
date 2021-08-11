@@ -1,0 +1,10 @@
+{% extends 'office/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Домены</h1>
+{% for domain in domains %}
+<p>{{ domain }}</p>
+{% empty %}
+<p>Нет доменов</p>
+{% endfor %}
+{% endblock %}

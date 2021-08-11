@@ -10,4 +10,5 @@ urlpatterns = [
     path('old-lands', views.old_lands, name='old_lands'),
     path('requisites', views.requisites, name='requisites'),
     path('checker/<int:site_id>/', views.checker, name='checker'),
+    path('domains', views.domains, name='domains'),
     ]
