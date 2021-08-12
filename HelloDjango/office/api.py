@@ -86,6 +86,12 @@ class Beget(ApiManager):
         elif res['status'] == 'error':
             raise MyError(res['error_text'])
 
+    def get_domains_list(self):
+        res = self.api_get(self.domains)
+        return res['answer']['result']
+
+
+
 
 if __name__ == '__main__':
     bm = Beget()

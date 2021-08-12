@@ -2,9 +2,54 @@
 {% load static %}
 {% block content %}
 <h1>Домены</h1>
-{% for domain in domains %}
-<p>{{ domain }}</p>
-{% empty %}
-<p>Нет доменов</p>
-{% endfor %}
+<table>
+        <thead>
+            <tr>
+
+                <th>Beget ID</th>
+                <th>Ссылка</th>
+                <th>FaceBook</th>
+                 <th>Google</th>
+                 <th>TikTok</th>
+
+
+
+            </tr>
+        </thead>
+     {% for domain in domains %}
+
+            <tr>
+
+                <td>{{ domain.beget_id }}</td>
+                <td><a href="{{ domain.url }}">{{ domain.name }}</a></td>
+                <td>
+
+
+                    <form>
+                    <!-- facebook-->
+                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_facebook }}">
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.BAN %}" class="status status-unpaid"
+                         {% if domain.BAN == domain.facebook %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.USE %}" class="status status-pending"
+                          {% if domain.USE == domain.facebook %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.NEW %}" class="status status-paid"
+                           {% if domain.NEW == domain.facebook %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
+                    </select>
+
+                    </form>
+
+
+
+                </td>
+                <td>
+                    <p class="{{ domain.get_html_google }}">{{ domain.google}}</p>
+                </td>
+                <td>
+                    <p class="{{ domain.get_html_tiktok }}">{{ domain.tiktok}}</p>
+                </td>
+
+            </tr>
+        {% endfor %}
+    </table>
+
 {% endblock %}

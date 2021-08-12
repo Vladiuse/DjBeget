@@ -52,7 +52,11 @@ table {
     background-color: red;
     padding: 0.2rem 1rem;
     text-align: center;
+    border: unset;
+
 }
+
+
    .status-pending {
       background-color: #fff0c2;
       color: #a68b00;
@@ -274,3 +278,7 @@ article {
     
   }
 
+
+select{
+font-size: 20px;
+}

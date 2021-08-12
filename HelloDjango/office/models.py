@@ -22,28 +22,41 @@ class OldLand(models.Model):
 
 
 class Domain(models.Model):
-    DEFAULT_STATUS = 'новый'
+    NEW = 'NEW'
+    USE = 'USE'
+    BAN = 'BAN'
+    NEW_RU = 'Новый'
+    USE_RU = 'Запускался'
+    BAN_RU = 'Забанен'
     DOMAIN_STATUS = (
-        ('новый', 'новый'),
-        ('запускался', 'запускался'),
-        ('забанен', 'забанен'),
+        (NEW, NEW_RU),
+        (USE, USE_RU),
+        (BAN, BAN_RU),
     )
+
     HTML_CLASS = {
-        'новый': 'status status-paid',
-        'запускался': 'status status-pending',
-        'забанен': 'status status-unpaid',
+        NEW: 'status status-paid',
+        USE: 'status status-pending',
+        BAN: 'status status-unpaid',
     }
-    name = models.CharField(max_length=99, verbose_name='название домена')
-    url = models.URLField(max_length=300, blank=True, null=True)
-    beget_id = models.IntegerField(verbose_name='id домена на beget')
+    name = models.CharField(max_length=99, verbose_name='название домена', unique=True)
+    url = models.URLField(max_length=300, blank=True, null=True, unique=True)
+    beget_id = models.IntegerField(verbose_name='id домена на beget', unique=True)
     description = models.TextField(max_length=999, verbose_name='доп. информация', blank=True)
 
     # some info
-    facebook = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=DEFAULT_STATUS)
-    google = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=DEFAULT_STATUS)
-    tiktok = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=DEFAULT_STATUS)
+    facebook = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
+    google = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
+    tiktok = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
 
-    def get_html_class(self, x):
-        return x
+    def get_html_facebook(self):
+        return Domain.HTML_CLASS[self.facebook]
 
+    def get_html_google(self):
+        return Domain.HTML_CLASS[self.google]
 
+    def get_html_tiktok(self):
+        return Domain.HTML_CLASS[self.tiktok]
+
+    def __str__(self):
+        return self.name

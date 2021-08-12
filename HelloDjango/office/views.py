@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .api import MyError
+from .api import MyError, Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
 from .link_checker import Url, SuccessPage, LinkCheckerManager
@@ -173,6 +173,42 @@ def checker(request, site_id):
 
 
 def domains(request):
-    domains = Domain.objects.all()
-    content = {'domains': domains}
+    b = Beget()
+    domains_list = b.get_domains_list()
+    beget_doms_id = [dom['id'] for dom in domains_list]
+    db_doms_id = [dom.beget_id for dom in Domain.objects.all()]
+    to_del = set(db_doms_id) - set(beget_doms_id)
+    to_add = set(beget_doms_id) - set(db_doms_id)
+    for dom_id in to_del:
+        dom = Domain.objects.get(beget_id=dom_id)
+        dom.delete()
+    for domain in domains_list:
+        dom_id = domain['id']
+        if dom_id in to_add:
+            name = domain['fqdn']
+            url = get_url_link_from_name(name)
+            dom = Domain(name=name, url=url, beget_id=dom_id)
+            dom.save()
+    domains_bd = Domain.objects.all()
+    content = {'domains': domains_bd}
     return render(request, 'office/domains.html', content)
+
+
+def domain_change_status(request, dom_id, source, new_status):
+    s = {
+        'BAN': Domain.BAN,
+        'USE': Domain.USE,
+        'NEW': Domain.NEW,
+    }
+    new_status = s[new_status]
+    domain = Domain.objects.get(pk=dom_id)
+    if source == 'facebook':
+        domain.facebook = new_status
+    elif source == 'google':
+        domain.google = new_status
+    elif source == 'tiktok':
+        domain.tiktok = new_status
+    else:
+        pass
+    domain.save()
+    return HttpResponseRedirect(reverse('office:domains'))
