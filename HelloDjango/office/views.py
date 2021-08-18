@@ -30,6 +30,7 @@ def get_domains_api():
 
 
 def get_free_doms():
+    "Возвращает список не прилинкованных доменов"
     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
@@ -60,10 +61,8 @@ def get_free_doms():
 def index(request):
     sites = Site.objects.all()
     site_count = len(sites)
-    free_doms = get_free_doms()
     content = {'sites': sites,
                'site_count': site_count,
-               'free_doms': free_doms,
                }
     return render(request, 'office/index.html', content)
 
@@ -165,10 +164,11 @@ def checker(request, site_id):
     try:
         link_manager.process()
         result = link_manager.result
+        content = {
+            'content': result}
     except MyError as exc:
-        result = exc
-    content = {
-               'content': result}
+        content = {'exception':exc}
+
     return render(request, 'office/checker.html', content)
 
 
@@ -190,7 +190,8 @@ def domains(request):
             dom = Domain(name=name, url=url, beget_id=dom_id)
             dom.save()
     domains_bd = Domain.objects.all()
-    content = {'domains': domains_bd}
+    free_doms = get_free_doms()
+    content = {'domains': domains_bd, 'free_doms': free_doms}
     return render(request, 'office/domains.html', content)
 
 
@@ -212,3 +213,10 @@ def domain_change_status(request, dom_id, source, new_status):
         pass
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
+
+from pprint import pprint
+def test(request):
+    if request.POST:
+        print(request.POST)
+        pprint(dict(request.POST))
+    return render(request, 'office/form.html')

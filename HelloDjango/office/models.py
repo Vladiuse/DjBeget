@@ -20,6 +20,9 @@ class OldLand(models.Model):
     url = models.URLField(max_length=200)
     image = models.ImageField(upload_to='img', height_field=None, width_field=None, max_length=200)
 
+    def __str__(self):
+        return self.name
+
 
 class Domain(models.Model):
     NEW = 'NEW'

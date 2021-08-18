@@ -2,6 +2,17 @@
 {% load static %}
 {% block content %}
 <h1>Домены</h1>
+<br>
+<div style="width:30%;display: inline-block;">
+<p>Всего сайтов: {{ site_count }}</p>
+<h5>Свободные домены:</h5>
+{% for dom in free_doms %}
+<p>{{ dom }}</p>
+{% empty %}
+<p>Нет свободных доменов</p>
+{% endfor %}
+</div>
+<br>
 <table>
         <thead>
             <tr>

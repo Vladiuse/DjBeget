@@ -21,11 +21,13 @@ class ImagePrev:
         response = requests.get(self.base + self.url, stream=True)
         # save file, see https://stackoverflow.com/a/13137873/7665691
         if response.status_code == 200:
+            path = ''
             with open(path, 'wb') as file:
                 for chunk in response:
                     file.write(chunk)
         if self.host in LOCAL_HOST:
             static_path = path.replace('office/static/', '') # local
+            print('local')
         else:
             static_path = path.replace('/home/v/vladiuse/django/public_html/static/', '')
         return static_path
@@ -54,3 +56,9 @@ def get_url_link_from_name(domain_name):
 #         for chunk in response:
 #             print(chunk)
 #             file.write(chunk)
+
+if __name__ == '__main__':
+    url = 'https://ex-press.by/'
+    # url = 'https://sekundomer.net/'
+    img = ImagePrev(url=url, name='1find', host=LOCAL_HOST)
+    img.get_image()
