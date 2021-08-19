@@ -6,6 +6,9 @@ from .api import Connection
 
 
 class Url:
+    """
+    Формирует все url
+    """
     SUCCESS_PAGE = 'success/success.html'
     POLICY = 'policy.html'
     SPAS = 'spas.html'
@@ -35,6 +38,9 @@ class Url:
 
 
 class Checker(Connection, ABC):
+    """
+    Проверочник ссылок
+    """
     NO_TITLE_ON_PAGE = 'Заголовок не найден'
 
     def __init__(self, url):
@@ -231,6 +237,9 @@ class PolicyPage(MainPage):
 
 
 class TermsPage(MainPage):
+    """
+        Обработчик terms page
+    """
     TERM_LINK = 'terms.html'
     T_ON_PAGE = 'Terms on page'
     T_NOT_ON_PAGE = 'terms not on page'
@@ -301,6 +310,10 @@ class SuccessPage(Checker):
 
 
 class LinkCheckerManager:
+
+    """
+    Менеджер страниц
+    """
 
     def __init__(self, url, **kwargs):
         self.url_class = Url(url=url)
