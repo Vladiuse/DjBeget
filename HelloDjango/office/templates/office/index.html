@@ -34,7 +34,7 @@
                 <td>{{ site.title }}</td>
                 <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>
                 <td>
-                    <p class="status status-paid">Paid</p>
+                    <p class="status status-paid">{{ site.check_status }}</p>
                 </td>
 
             </tr>

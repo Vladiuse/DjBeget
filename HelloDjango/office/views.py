@@ -160,10 +160,13 @@ def checker(request, site_id):
     else:
         site = Site.objects.get(pk=site_id)
         url = site.domain
-    link_manager = LinkCheckerManager(url=url)
     try:
+        link_manager = LinkCheckerManager(url=url)
         link_manager.process()
         result = link_manager.result
+        if result:
+            site.check_status = 'Проверен'
+            site.save()
         content = {
             'content': result}
     except MyError as exc:

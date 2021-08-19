@@ -107,7 +107,6 @@ class MainPage(Checker):
         req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
         self.result.update({'requisites': req_res})
 
-
     def process(self):
         self.make_soup()
 
@@ -180,8 +179,11 @@ class SpasPage(Checker):
     """
     CORRECT = 'Редирект натроен'
     INCORRECT = 'Ошибка - не корректный url для редиректа'
+    SPAS_PAGE_WORK = 'Страница отзыва работает'
+    SPAS_PAGE_NOT_WORK = 'Страница НЕ отзыва работает'
 
     def process(self):
+        self.check_spas_page()
         self.find_url_in_page()
 
     def find_url_in_page(self):
@@ -189,8 +191,15 @@ class SpasPage(Checker):
         url = self.url.replace(Url.SPAS, '')
         url_in_page = url in self.response.text
         result = SpasPage.CORRECT if url_in_page else SpasPage.INCORRECT
-        self.result.update({'spas_page': result})
+        self.result.update({'spas_page_res': result})
 
+    def check_spas_page(self):
+        self.conn(self.url)
+        if self.status_code == 200:
+            spas_page_result = self.SPAS_PAGE_WORK
+        else:
+            spas_page_result = self.SPAS_PAGE_NOT_WORK
+        self.result.update({'spas_page': spas_page_result})
 
 class PolicyPage(MainPage):
     """
@@ -244,9 +253,6 @@ class TermsPage(MainPage):
         link = self.soup.find('a', href=TermsPage.TERM_LINK)
         link_on_page = self.T_ON_PAGE if link else self.T_NOT_ON_PAGE
         self.result.update({'term_link': link_on_page})
-
-
-
 
 
 class SuccessPage(Checker):

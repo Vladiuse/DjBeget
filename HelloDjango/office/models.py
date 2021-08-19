@@ -10,9 +10,12 @@ class Stream(models.Model):
     
     
 class Site(models.Model):
+    NOT_CHECKED = 'Не проверен'
+
     site_name = models.CharField(max_length=99)
     domain = models.URLField(max_length=200)
     title = models.CharField(max_length=200)
+    check_status = models.CharField(max_length=200, default=NOT_CHECKED)
 
 
 class OldLand(models.Model):
