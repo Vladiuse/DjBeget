@@ -9,12 +9,14 @@ class Url:
     SUCCESS_PAGE = 'success/success.html'
     POLICY = 'policy.html'
     SPAS = 'spas.html'
+    TERM = 'terms.html'
 
     def __init__(self, url, **kwargs):
         self.url = url + '' if url.endswith('/') else '/'
         self.success_url = self.url + Url.SUCCESS_PAGE
         self.policy_url = self.url + Url.POLICY
         self.spas_url = self.url + Url.SPAS
+        self.term_url = self.url + Url.TERM
 
     def get_url(self):
         return self.url
@@ -27,6 +29,9 @@ class Url:
 
     def get_spas_url(self):
         return self.spas_url
+
+    def get_term_url(self):
+        return self.term_url
 
 
 class Checker(Connection, ABC):
@@ -97,9 +102,11 @@ class MainPage(Checker):
         }
 
     def check_requisites(self):
+
         req_res = all(req in self.soup.text for req in MainPage.REQUISITES)
         req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
         self.result.update({'requisites': req_res})
+
 
     def process(self):
         self.make_soup()
@@ -161,7 +168,7 @@ class MainPage(Checker):
         else:
             self.forms['spas_forms'] = MainPage.SPAS_FORM_NO
 
-        self.result = self.forms
+        self.result.update(self.forms)
 
     def get_spas_forms(self):
         return self.forms['spas_forms']
@@ -212,6 +219,34 @@ class PolicyPage(MainPage):
         link = self.soup.find('a', href=PolicyPage.POLICY_LINK)
         link_on_page = self.P_ON_PAGE if link else self.NO_P_ON_PAGE
         self.result.update({'policy_link': link_on_page})
+
+
+class TermsPage(MainPage):
+    TERM_LINK = 'terms.html'
+    T_ON_PAGE = 'Terms on page'
+    T_NOT_ON_PAGE = 'terms not on page'
+    T_PAGE_WORK = 'Страница соглашений работает'
+    T_PAGE_NOT_WORK = 'Страница соглашений  НЕ работает'
+
+    def process(self):
+        self.find_term_link()
+        self.check_terms_page()
+
+    def check_terms_page(self):
+        self.conn(self.url)
+        if self.status_code == 200:
+            terms_page_result = self.T_PAGE_WORK
+        else:
+            terms_page_result = self.T_PAGE_NOT_WORK
+        self.result.update({'term_page': terms_page_result})
+
+    def find_term_link(self):
+        link = self.soup.find('a', href=TermsPage.TERM_LINK)
+        link_on_page = self.T_ON_PAGE if link else self.T_NOT_ON_PAGE
+        self.result.update({'term_link': link_on_page})
+
+
+
 
 
 class SuccessPage(Checker):
@@ -267,18 +302,22 @@ class LinkCheckerManager:
         self.policy_page = PolicyPage(url=self.url_class.get_policy_url())
         self.success_page = SuccessPage(url=self.url_class.get_success_url(), **kwargs)
         self.spas_page = SpasPage(url=self.url_class.get_spas_url())
+        self.term_page = TermsPage(url=self.url_class.get_term_url())
         self.result = {}
 
     def process(self):
         self.main_page.process()
         if self.main_page.get_spas_forms() == MainPage.SPAS_FORM_IN:
             self.spas_page.process()
+        # add soup to ...
         self.policy_page.soup = self.main_page.soup
+        self.term_page.soup = self.main_page.soup
         self.success_page.process()
         self.policy_page.process()
+        self.term_page.process()
 
         self.collect_results()
 
     def collect_results(self):
-        for item in self.main_page, self.policy_page, self.success_page, self.spas_page:
+        for item in self.main_page, self.policy_page, self.success_page, self.spas_page, self.term_page:
             self.result.update(item.get_result())
