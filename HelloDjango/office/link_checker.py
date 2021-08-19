@@ -172,7 +172,7 @@ class SpasPage(Checker):
     Обработчик страницы отзыва
     """
     CORRECT = 'Редирект натроен'
-    INCORRECT = 'Ошибка'
+    INCORRECT = 'Ошибка - не корректный url для редиректа'
 
     def process(self):
         self.find_url_in_page()
