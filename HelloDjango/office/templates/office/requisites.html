@@ -1,5 +1,17 @@
 {% extends 'office/base.html' %}
 {% block content %}
+<style>
+    .code-wrapper{
+    background-color: #C0C0C0;
+     width: 50%;
+     border-radius: 20px;
+     padding: 20px;
+     display: none;
+     max-width: 50%;
+<!--     word-wrap: break-word;-->
+     overflow: hidden;
+    }
+</style>
 <h1>Реквизиты</h1>
 
 <div>
@@ -32,4 +44,76 @@
             действующий на основании Устава</p>
     </div>
 </div>
+
+<h3>Кнопка отзыва</h3>
+<div class="menu" style="text-align: left">
+<!--<a  id="showall">All</a>-->
+<a  class="showSingle status status-none" target="1">HTML</a>
+<a  class="showSingle status status-none" target="2">CSS</a>
+<a  class="showSingle status status-none" target="3">JS</a>
+
+</div>
+<br>
+<div class="code-wrapper">
+<section class="cnt">
+<div id="div1" class="targetDiv" style="display: none;">
+
+
+  <pre>
+    <code>
+        {{ modal_code.html_code|wordwrap:80 }}
+    </code>
+  </pre>
+
+
+</div>
+<div id="div2" class="targetDiv" style="display: none;">
+
+<!--    <blockquote>-->
+<!--  <pre>-->
+<!--    <code>.code-wrapper{-->
+<!--     background-color: #C0C0C0;-->
+<!--     width: 50%;-->
+<!--     border-radius: 20px;-->
+<!--     padding: 20px;-->
+<!--     display: none;-->
+<!--        }-->
+
+<!--    </code>-->
+<!--  </pre>-->
+<!--</blockquote>-->
+    <blockquote>
+        <pre>
+            <code>
+                {{ modal_code.css_code }}
+            </code>
+        </pre>
+    </blockquote>
+
+
+</div>
+<div id="div3" class="targetDiv" style="display: none;">
+      <blockquote>
+        <pre>
+            <code>
+                {{ modal_code.js_code }}
+            </code>
+        </pre>
+    </blockquote>
+</div>
+</section>
+</div>
+<script>
+    jQuery(function(){
+         jQuery('#showall').click(function(){
+               jQuery('.targetDiv').show();
+        });
+        jQuery('.showSingle').click(function(){
+              jQuery('.targetDiv').hide();
+              jQuery('.code-wrapper').show();
+              jQuery('#div'+$(this).attr('target')).show();
+              jQuery('#div'.attr('code-wrapper')).show();
+        });
+});
+</script>
 {% endblock %}

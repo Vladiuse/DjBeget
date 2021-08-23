@@ -32,8 +32,8 @@ class Connection:
             response.encoding = Connection.ENCODING
             self.status_code = response.status_code
             self.response = response
-            if self.status_code != 200:
-                raise MyError(f'status code {self.status_code}')
+            # if self.status_code != 200:
+            #     raise MyError(f'status code {self.status_code}')
 
 
 class ApiManager(Connection):
@@ -89,8 +89,6 @@ class Beget(ApiManager):
     def get_domains_list(self):
         res = self.api_get(self.domains)
         return res['answer']['result']
-
-
 
 
 if __name__ == '__main__':

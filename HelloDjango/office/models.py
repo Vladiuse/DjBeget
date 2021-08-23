@@ -1,5 +1,5 @@
 from django.db import models
-
+from .link_checker import Checker
 # Create your models here.
 
 
@@ -10,12 +10,42 @@ class Stream(models.Model):
     
     
 class Site(models.Model):
-    NOT_CHECKED = 'Не проверен'
+    GREY = 'Не проверен'
+    RED = 'Ошибка'
+    YELLOW = 'Замечание'
+    GREEN = 'Все ОК'
+
+    STATUS_HTML = {
+        GREY: 'status-none',
+        RED: 'status-unpaid',
+        YELLOW: 'status-pending',
+        GREEN: 'status-paid',
+    }
+    CHOICE = (
+        (GREY,GREY),
+        (RED, RED),
+        (YELLOW, YELLOW),
+        (GREEN, GREEN),
+    )
 
     site_name = models.CharField(max_length=99)
     domain = models.URLField(max_length=200)
     title = models.CharField(max_length=200)
-    check_status = models.CharField(max_length=200, default=NOT_CHECKED)
+    check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY)
+
+    def get_status_html(self):
+        return self.STATUS_HTML[str(self.check_status)]
+
+    def unpin_status(self):
+        self.check_status = self.GREY
+
+    def update_title(self):
+        page = Checker(url=self.domain)
+        page.make_soup()
+        self.title = page.get_h1_title()
+
+    def __str__(self):
+        return self.site_name
 
 
 class OldLand(models.Model):
@@ -63,6 +93,16 @@ class Domain(models.Model):
 
     def get_html_tiktok(self):
         return Domain.HTML_CLASS[self.tiktok]
+
+    def __str__(self):
+        return self.name
+
+
+class CodeExample(models.Model):
+    name = models.CharField(max_length=99, verbose_name='Пример кода')
+    html_code = models.TextField(verbose_name='Html код', blank=True)
+    css_code = models.TextField(verbose_name='Css код', blank=True)
+    js_code = models.TextField(verbose_name='Js код', blank=True)
 
     def __str__(self):
         return self.name

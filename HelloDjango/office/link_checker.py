@@ -56,15 +56,19 @@ class Checker(Connection, ABC):
         self.soup = BeautifulSoup(self.response.text, 'lxml')
 
     def get_h1_title(self):
-        page_title = ''
-        for number in range(1, 4):
-            tag = 'h' + str(number)
-            page_title += self.soup.find(tag)
-            if page_title:
-                break
-        return page_title if page_title else Checker.NO_TITLE_ON_PAGE
+        # page_title = ''
+        # for number in range(1, 4):
+        #     tag = 'h' + str(number)
+        #     page_title += self.soup.find(tag)
+        #     if page_title:
+        #         break
+        # return page_title if page_title else Checker.NO_TITLE_ON_PAGE
+        title = self.soup.find('title')
+        if not title:
+            return 'NO title'
+        return title.text
 
-    @abstractmethod
+    # @abstractmethod
     def process(self):
         pass
 
@@ -74,7 +78,7 @@ class Checker(Connection, ABC):
     @staticmethod
     def find_text_block(text, start, end):
         start_pos = text.find(start)
-        end_pos = text.find(end)
+        end_pos = text.find(end, start_pos + 1)
         if start_pos != -1 and end_pos != -1:
             return text[start_pos + len(start):end_pos]
 
@@ -184,6 +188,7 @@ class SpasPage(Checker):
     Обработчик страницы отзыва
     """
     CORRECT = 'Редирект натроен'
+    FIND = """eval(self.location = "https://" + location.hostname + '/');"""
     INCORRECT = 'Ошибка - не корректный url для редиректа'
     SPAS_PAGE_WORK = 'Страница отзыва работает'
     SPAS_PAGE_NOT_WORK = 'Страница НЕ отзыва работает'
@@ -194,8 +199,8 @@ class SpasPage(Checker):
 
     def find_url_in_page(self):
         self.conn(self.url)
-        url = self.url.replace(Url.SPAS, '')
-        url_in_page = url in self.response.text
+        # url = self.url.replace(Url.SPAS, '')
+        url_in_page = self.FIND in self.response.text
         result = SpasPage.CORRECT if url_in_page else SpasPage.INCORRECT
         self.result.update({'spas_page_res': result})
 
@@ -231,6 +236,7 @@ class PolicyPage(MainPage):
         self.result.update({'policy_page': policy_page_result})
 
     def find_policy_link(self):
+        """Поиск """
         link = self.soup.find('a', href=PolicyPage.POLICY_LINK)
         link_on_page = self.P_ON_PAGE if link else self.NO_P_ON_PAGE
         self.result.update({'policy_link': link_on_page})
@@ -251,6 +257,7 @@ class TermsPage(MainPage):
         self.check_terms_page()
 
     def check_terms_page(self):
+        """проверка ссылки"""
         self.conn(self.url)
         if self.status_code == 200:
             terms_page_result = self.T_PAGE_WORK
@@ -259,6 +266,7 @@ class TermsPage(MainPage):
         self.result.update({'term_page': terms_page_result})
 
     def find_term_link(self):
+        """Поиск ссылки пользовательского соглашения"""
         link = self.soup.find('a', href=TermsPage.TERM_LINK)
         link_on_page = self.T_ON_PAGE if link else self.T_NOT_ON_PAGE
         self.result.update({'term_link': link_on_page})
@@ -286,7 +294,7 @@ class SuccessPage(Checker):
 
     def find_fb_pixel(self):
         """
-        Поикс пикселя на странице
+        Поикс пикселя на странице, если указан - проверка на соответствие
         """
         pixel_block = self.find_text_block(self.text,
                                            SuccessPage.FBP_DESCRIPTION['start'], SuccessPage.FBP_DESCRIPTION['end'])
@@ -331,6 +339,7 @@ class LinkCheckerManager:
         # add soup to ...
         self.policy_page.soup = self.main_page.soup
         self.term_page.soup = self.main_page.soup
+
         self.success_page.process()
         self.policy_page.process()
         self.term_page.process()
@@ -338,5 +347,6 @@ class LinkCheckerManager:
         self.collect_results()
 
     def collect_results(self):
+        """Сбор данных проверки со всех классов"""
         for item in self.main_page, self.policy_page, self.success_page, self.spas_page, self.term_page:
             self.result.update(item.get_result())

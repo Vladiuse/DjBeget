@@ -38,7 +38,8 @@ table {
   }
 
   td {
-    padding: 1rem 2rem;
+	/* padding: 1rem 2rem; */
+    padding: 1rem;
   }
 
   a {
@@ -70,6 +71,12 @@ table {
       .status-unpaid {
       background-color: #ffcdd2;
       color: #c62828;
+    }
+
+
+      .status-none {
+      background-color: #C0C0C0;
+      color: white;
     }
   
 

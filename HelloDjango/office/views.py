@@ -11,7 +11,7 @@ from .api import MyError, Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
 from .link_checker import Url, SuccessPage, LinkCheckerManager
-from .models import Stream, Site, OldLand, Domain
+from .models import Stream, Site, OldLand, Domain, CodeExample
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -110,11 +110,17 @@ def get_h1_title(url):
 
 
 def get_title(request):
-    sites = Site.objects.all()
-    for site in sites:
-        h1_title = get_h1_title(site.domain)
-        site.title = h1_title
+    """Обновить заголовки сайтов"""
+    for site in Site.objects.all():
+        site.update_title()
         site.save()
+    # sites = Site.objects.all()
+    # for site in sites:
+    #     new_h1_title = get_h1_title(site.domain)
+    #     if site.title != new_h1_title:
+    #         site.unpin_status()
+    #     site.title = new_h1_title
+    #     site.save()
     return HttpResponseRedirect(reverse('office:index'))
 
 
@@ -151,7 +157,9 @@ def old_lands(request):
 
 
 def requisites(request):
-    return render(request, 'office/requisites.html')
+    modal_code = CodeExample.objects.get(pk=4)
+    content = {'modal_code': modal_code}
+    return render(request, 'office/requisites.html', content)
 
 
 def checker(request, site_id):
@@ -160,18 +168,26 @@ def checker(request, site_id):
     else:
         site = Site.objects.get(pk=site_id)
         url = site.domain
-    try:
-        link_manager = LinkCheckerManager(url=url)
-        link_manager.process()
-        result = link_manager.result
-        if result:
-            site.check_status = 'Проверен'
-            site.save()
-        content = {
-            'content': result}
-    except MyError as exc:
-        content = {'exception':exc}
-
+    # try:
+    #     link_manager = LinkCheckerManager(url=url)
+    #     link_manager.process()
+    #     result = link_manager.result
+    #     if result:
+    #         site.check_status = Site.GREEN
+    #         site.save()
+    #     content = {
+    #         'content': result}
+    # except MyError as exc:
+    #     content = {'exception':exc}
+    print(url, 'xxxxxxxxxxxxx')
+    link_manager = LinkCheckerManager(url=url)
+    link_manager.process()
+    result = link_manager.result
+    if result:
+        site.check_status = Site.GREEN
+        site.save()
+    content = {
+        'content': result}
     return render(request, 'office/checker.html', content)
 
 

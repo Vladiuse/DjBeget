@@ -31,10 +31,10 @@
             <tr>
 <!--            <td>{{ site.site_name }}</td>-->
                 <td><a href="{{ site.domain }}" target="_blank">{{ site.site_name }}</a></td>
-                <td>{{ site.title }}</td>
+                <td>{{ site.title|slice:":30" }}</td>
                 <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>
                 <td>
-                    <p class="status status-paid">{{ site.check_status }}</p>
+                    <p class="status {{ site.get_status_html }}">{{ site.check_status }}</p>
                 </td>
 
             </tr>
