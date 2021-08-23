@@ -1,8 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from bs4 import BeautifulSoup
 
 from .api import Connection
+
+
+class StatusHTML:
+    GREY = 'status-none'
+    RED = 'status-unpaid'
+    YELLOW = 'status-pending'
+    GREEN = 'status-paid'
 
 
 class Url:
@@ -115,7 +122,8 @@ class MainPage(Checker):
 
         req_res = all(req in self.soup.text for req in MainPage.REQUISITES)
         req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
-        self.result.update({'requisites': req_res})
+        status = StatusHTML.GREEN if req_res else StatusHTML.YELLOW
+        self.result.update({'requisites': {'status': status, 'info': req_res}})
 
     def process(self):
         self.make_soup()
@@ -162,20 +170,21 @@ class MainPage(Checker):
     def get_forms_result(self):
         # orders
         if all(self.forms['order_forms']):
-            self.forms['order_forms'] = MainPage.ORDER_FORMS_CORRECT
+            self.forms['order_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.ORDER_FORMS_CORRECT}
         else:
             number_incorrect_form = ','.join(str(id + 1) for id, x in enumerate(self.forms['order_forms']) if x)
-            self.forms['order_forms'] = MainPage.ORDER_FORMS_INCORRECT + number_incorrect_form
+            self.forms['order_forms'] = {'status': StatusHTML.RED,
+                                         'info': MainPage.ORDER_FORMS_INCORRECT + number_incorrect_form}
         # incorrect
         if not self.forms['incorrect_forms']:
-            self.forms['incorrect_forms'] = MainPage.INCORRECT_NO_IN_LAND
+            self.forms['incorrect_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.INCORRECT_NO_IN_LAND}
         else:
-            self.forms['incorrect_forms'] = MainPage.INCORRECT_IN_LAND
+            self.forms['incorrect_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.INCORRECT_IN_LAND}
         # spas forms
         if self.forms['spas_forms']:
-            self.forms['spas_forms'] = MainPage.SPAS_FORM_IN
+            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN}
         else:
-            self.forms['spas_forms'] = MainPage.SPAS_FORM_NO
+            self.forms['spas_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.SPAS_FORM_NO}
 
         self.result.update(self.forms)
 
@@ -191,26 +200,31 @@ class SpasPage(Checker):
     FIND = """eval(self.location = "https://" + location.hostname + '/');"""
     INCORRECT = 'Ошибка - не корректный url для редиректа'
     SPAS_PAGE_WORK = 'Страница отзыва работает'
-    SPAS_PAGE_NOT_WORK = 'Страница НЕ отзыва работает'
+    SPAS_PAGE_NOT_WORK = 'Страница отзыва НЕ  работает'
 
     def process(self):
         self.check_spas_page()
         self.find_url_in_page()
 
     def find_url_in_page(self):
+        """Поиск сссылки spas.html на главной странице"""
         self.conn(self.url)
-        # url = self.url.replace(Url.SPAS, '')
+        # url = self.url.replace(Url.SPAS, '')]
         url_in_page = self.FIND in self.response.text
         result = SpasPage.CORRECT if url_in_page else SpasPage.INCORRECT
-        self.result.update({'spas_page_res': result})
+        status = StatusHTML.GREEN if url_in_page else StatusHTML.YELLOW
+        self.result.update({'spas_page_res': {'status': status, 'info': result}})
 
     def check_spas_page(self):
         self.conn(self.url)
         if self.status_code == 200:
             spas_page_result = self.SPAS_PAGE_WORK
+            status = StatusHTML.GREEN
         else:
+            status = StatusHTML.RED
             spas_page_result = self.SPAS_PAGE_NOT_WORK
-        self.result.update({'spas_page': spas_page_result})
+        self.result.update({'spas_page': {'status': status, 'info': spas_page_result}})
+
 
 class PolicyPage(MainPage):
     """
@@ -231,15 +245,18 @@ class PolicyPage(MainPage):
         self.conn(self.url)
         if self.status_code == 200:
             policy_page_result = self.P_PAGE_WORK
+            status = StatusHTML.GREEN
         else:
             policy_page_result = self.P_PAGE_NOT_WORK
-        self.result.update({'policy_page': policy_page_result})
+            status = StatusHTML.RED
+        self.result.update({'policy_page': {'status': status, 'info': policy_page_result}})
 
     def find_policy_link(self):
         """Поиск """
         link = self.soup.find('a', href=PolicyPage.POLICY_LINK)
         link_on_page = self.P_ON_PAGE if link else self.NO_P_ON_PAGE
-        self.result.update({'policy_link': link_on_page})
+        status = StatusHTML.GREEN if link else StatusHTML.YELLOW
+        self.result.update({'policy_link': {'status': status, 'info': link_on_page}})
 
 
 class TermsPage(MainPage):
@@ -261,15 +278,18 @@ class TermsPage(MainPage):
         self.conn(self.url)
         if self.status_code == 200:
             terms_page_result = self.T_PAGE_WORK
+            status = StatusHTML.GREEN
         else:
             terms_page_result = self.T_PAGE_NOT_WORK
-        self.result.update({'term_page': terms_page_result})
+            status = StatusHTML.RED
+        self.result.update({'term_page': {'status': status, 'info': terms_page_result}})
 
     def find_term_link(self):
         """Поиск ссылки пользовательского соглашения"""
         link = self.soup.find('a', href=TermsPage.TERM_LINK)
         link_on_page = self.T_ON_PAGE if link else self.T_NOT_ON_PAGE
-        self.result.update({'term_link': link_on_page})
+        status = StatusHTML.GREEN if link else StatusHTML.YELLOW
+        self.result.update({'term_link': {'status': status, 'info': link_on_page}})
 
 
 class SuccessPage(Checker):
@@ -312,13 +332,17 @@ class SuccessPage(Checker):
         self.make_soup()
         self.find_fb_pixel()
         if self.pixel == self.pixel_in_land:
-            self.result.update({'pixel': SuccessPage.correct_pixel})
+            # self.result.update({'pixel': })
+            pixel_res = SuccessPage.correct_pixel
+            status = StatusHTML.GREEN
         else:
-            self.result.update({'pixel': self.pixel_in_land})
+            pixel_res = self.pixel_in_land
+            status = StatusHTML.YELLOW
+            # self.result.update({'pixel': self.pixel_in_land})
+        self.result.update({'pixel': {'status': status, 'info': pixel_res}})
 
 
 class LinkCheckerManager:
-
     """
     Менеджер страниц
     """
@@ -330,19 +354,33 @@ class LinkCheckerManager:
         self.success_page = SuccessPage(url=self.url_class.get_success_url(), **kwargs)
         self.spas_page = SpasPage(url=self.url_class.get_spas_url())
         self.term_page = TermsPage(url=self.url_class.get_term_url())
-        self.result = {}
+        self.result = {
+            'requisites': {},
+            'order_forms': {},
+            'spas_forms': {},
+            'incorrect_forms': {},
+            'policy_link': {},
+            'policy_page': {},
+            'pixel': {},
+            'term_link': {},
+            'term_page': {},
+            'spas_page': {},
+            'spas_page_res': {},
+        }
 
     def process(self):
         self.main_page.process()
-        if self.main_page.get_spas_forms() == MainPage.SPAS_FORM_IN:
-            self.spas_page.process()
+        # if self.main_page.get_spas_forms() == MainPage.SPAS_FORM_IN:
+        #     self.spas_page.process()
         # add soup to ...
         self.policy_page.soup = self.main_page.soup
         self.term_page.soup = self.main_page.soup
+        self.spas_page.soup = self.main_page.soup
 
         self.success_page.process()
         self.policy_page.process()
         self.term_page.process()
+        self.spas_page.process()
 
         self.collect_results()
 
@@ -350,3 +388,13 @@ class LinkCheckerManager:
         """Сбор данных проверки со всех классов"""
         for item in self.main_page, self.policy_page, self.success_page, self.spas_page, self.term_page:
             self.result.update(item.get_result())
+
+    def get_general_result(self):
+        stats = set([status['status'] for status in self.result.values()])
+        if StatusHTML.RED in stats:
+            return StatusHTML.RED
+        elif StatusHTML.YELLOW in stats:
+            return StatusHTML.YELLOW
+        else:
+            return StatusHTML.GREEN
+

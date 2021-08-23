@@ -4,12 +4,34 @@
 {% if exception %}
 {{ exception }}
 {% endif %}
+
+<h3 class="{{ site.get_status_html }}">{{ site.title }}</h3>
+<a href="{{ site.domain }}">{{ site.domain }}</a>
+<br>
+    <table>
+        <thead>
+            <tr>
+                <th>Поле</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+     {% for key, value in content.items %}
+            <tr>
+                <td>{{ key }}</a></td>
+                <td><p class="{{ value.status }} status" >{{ value.info }}</p></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
+
 {% for x,v in content.items %}
-<p>{{ x }} : {{ v }}</p>
+<p>{{ x }} : {{ v }} : {{ v.status }}  {{ v.info }}</p>
 {% endfor %}
+{{ test }}
+{{ test.status }}
+{{ test.info }}
 
 
-________________
-{{content.spas_page_res }}
 {% endblock %}
 

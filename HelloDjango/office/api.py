@@ -21,14 +21,17 @@ class Connection:
         self.status_code = None
 
     def conn(self, url, method='get', **kwargs):
+        print(url)
         try:
             if method == 'get':
                 response = req.get(url)
             elif method == 'post':
                 response = req.get(url, params=kwargs)
         except req.exceptions.ConnectionError:
+            print('RAISE')
             raise MyError('No connections', url=url)
         else:
+            print(response)
             response.encoding = Connection.ENCODING
             self.status_code = response.status_code
             self.response = response

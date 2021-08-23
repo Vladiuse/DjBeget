@@ -15,6 +15,7 @@ class Site(models.Model):
     YELLOW = 'Замечание'
     GREEN = 'Все ОК'
 
+
     STATUS_HTML = {
         GREY: 'status-none',
         RED: 'status-unpaid',
@@ -38,6 +39,21 @@ class Site(models.Model):
 
     def unpin_status(self):
         self.check_status = self.GREY
+
+    def set_status(self, status):
+        for k,v in self.STATUS_HTML.items():
+            if status == v:
+                self.check_status = k
+                break
+        self.save()
+        #
+        # dic = {
+        #     self.GREY:'Не проверен',
+        #     self.RED:'Ошибка',
+        #     self.YELLOW:'Замечание',
+        #     self.GREEN:'Все ОК',
+        # }
+        # self.check_status = dic[status]
 
     def update_title(self):
         page = Checker(url=self.domain)

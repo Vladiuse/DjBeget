@@ -165,6 +165,8 @@ def requisites(request):
 def checker(request, site_id):
     if site_id == 666:
         url = 'https://good-markpro.ru/'
+        site = Site.objects.get(domain=url)
+
     else:
         site = Site.objects.get(pk=site_id)
         url = site.domain
@@ -179,15 +181,11 @@ def checker(request, site_id):
     #         'content': result}
     # except MyError as exc:
     #     content = {'exception':exc}
-    print(url, 'xxxxxxxxxxxxx')
     link_manager = LinkCheckerManager(url=url)
     link_manager.process()
     result = link_manager.result
-    if result:
-        site.check_status = Site.GREEN
-        site.save()
-    content = {
-        'content': result}
+    site.set_status(link_manager.get_general_result())
+    content = {'content': result, 'site': site}
     return render(request, 'office/checker.html', content)
 
 
@@ -233,9 +231,4 @@ def domain_change_status(request, dom_id, source, new_status):
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
 
-from pprint import pprint
-def test(request):
-    if request.POST:
-        print(request.POST)
-        pprint(dict(request.POST))
-    return render(request, 'office/form.html')
+
