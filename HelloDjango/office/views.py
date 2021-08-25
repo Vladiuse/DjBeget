@@ -60,9 +60,7 @@ def get_free_doms():
 
 def index(request):
     sites = Site.objects.all()
-    site_count = len(sites)
     content = {'sites': sites,
-               'site_count': site_count,
                }
     return render(request, 'office/index.html', content)
 
@@ -209,7 +207,7 @@ def domains(request):
             url = get_url_link_from_name(name)
             dom = Domain(name=name, url=url, beget_id=dom_id)
             dom.save()
-    domains_bd = Domain.objects.all()
+    domains_bd = Domain.objects.all().order_by('name')
     free_doms = get_free_doms()
     content = {'domains': domains_bd, 'free_doms': free_doms}
     return render(request, 'office/domains.html', content)

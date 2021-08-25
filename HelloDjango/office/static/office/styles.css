@@ -95,6 +95,9 @@ table {
 
 @charset "UTF-8";
 .navigation {
+  position: fixed;
+  width: 100%;
+  top: 100;
   height: 70px;
   background: #262626;
 }

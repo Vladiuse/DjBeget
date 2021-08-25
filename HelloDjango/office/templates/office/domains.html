@@ -4,8 +4,8 @@
 <h1>Домены</h1>
 <br>
 <div style="width:30%;display: inline-block;">
-<p>Всего сайтов: {{ site_count }}</p>
-<h5>Свободные домены:</h5>
+<p>Всего доменов: {{ domains|length }}</p>
+<h5>Свободных: {{ free_doms|length }}</h5>
 {% for dom in free_doms %}
 <p>{{ dom }}</p>
 {% empty %}
