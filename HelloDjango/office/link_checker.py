@@ -99,8 +99,12 @@ class MainPage(Checker):
     COMMENT_ACTION = 'spas.html'
     FORM_NAME = 'name="name"'
     FORM_PHONE = 'name="phone"'
+    SAVED_FROM = '<!-- saved from'
+    I_AGREE = 'Я согласен с политикой конфиденциальности и пользовательским соглашением'
 
     # INFO
+    SAVE_COMM_IN = 'Комментарий saved from на странице'
+    SAVE_COMM_NOT_IN = 'Нет коментрария saved from'
     REQUISITES_IN_PAGE = 'Присутствуют'
     REQUISITES_ERROR = 'Не коректные реквизиты'
     ORDER_FORMS_CORRECT = 'Формы заказа корректны'
@@ -121,8 +125,8 @@ class MainPage(Checker):
     def check_requisites(self):
 
         req_res = all(req in self.soup.text for req in MainPage.REQUISITES)
-        req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
         status = StatusHTML.GREEN if req_res else StatusHTML.YELLOW
+        req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
         self.result.update({'requisites': {'status': status, 'info': req_res}})
 
     def process(self):
@@ -131,8 +135,18 @@ class MainPage(Checker):
         self.check_requisites()
         self.find_forms()
         self.check_forms()
+        self.find_save_comm()
 
         self.get_forms_result()
+
+    def find_save_comm(self):
+        if self.SAVED_FROM in self.response.text:
+            status = StatusHTML.YELLOW
+            res = self.SAVE_COMM_IN
+        else:
+            res = self.SAVE_COMM_NOT_IN
+            status = StatusHTML.GREEN
+        self.result.update({'html_comment': {'info': res, 'status': status}})
 
     def find_forms(self):
         forms = self.soup.find_all('form')
@@ -332,13 +346,12 @@ class SuccessPage(Checker):
         self.make_soup()
         self.find_fb_pixel()
         if self.pixel == self.pixel_in_land:
-            # self.result.update({'pixel': })
             pixel_res = SuccessPage.correct_pixel
             status = StatusHTML.GREEN
         else:
             pixel_res = self.pixel_in_land
-            status = StatusHTML.YELLOW
-            # self.result.update({'pixel': self.pixel_in_land})
+            # status = StatusHTML.YELLOW
+            status = StatusHTML.GREEN
         self.result.update({'pixel': {'status': status, 'info': pixel_res}})
 
 
@@ -366,12 +379,11 @@ class LinkCheckerManager:
             'term_page': {},
             'spas_page': {},
             'spas_page_res': {},
+            'html_comment': {},
         }
 
     def process(self):
         self.main_page.process()
-        # if self.main_page.get_spas_forms() == MainPage.SPAS_FORM_IN:
-        #     self.spas_page.process()
         # add soup to ...
         self.policy_page.soup = self.main_page.soup
         self.term_page.soup = self.main_page.soup
@@ -390,11 +402,15 @@ class LinkCheckerManager:
             self.result.update(item.get_result())
 
     def get_general_result(self):
-        stats = set([status['status'] for status in self.result.values()])
-        if StatusHTML.RED in stats:
-            return StatusHTML.RED
-        elif StatusHTML.YELLOW in stats:
-            return StatusHTML.YELLOW
+        try:
+            stats = set([status['status'] for status in self.result.values()])
+        except KeyError:
+            return StatusHTML.GREY
         else:
-            return StatusHTML.GREEN
+            if StatusHTML.RED in stats:
+                return StatusHTML.RED
+            elif StatusHTML.YELLOW in stats:
+                return StatusHTML.YELLOW
+            else:
+                return StatusHTML.GREEN
 

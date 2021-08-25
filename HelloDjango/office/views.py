@@ -158,7 +158,8 @@ def old_lands(request):
 
 def requisites(request):
     modal_code = CodeExample.objects.get(pk=4)
-    content = {'modal_code': modal_code}
+    i_agree = CodeExample.objects.get(pk=5)
+    content = {'modal_code': modal_code, 'i_agree': i_agree}
     return render(request, 'office/requisites.html', content)
 
 
@@ -192,6 +193,8 @@ def checker(request, site_id):
 def domains(request):
     b = Beget()
     domains_list = b.get_domains_list()
+    sub_domains = b.get_sub_domains_list()
+    domains_list.extend(sub_domains)
     beget_doms_id = [dom['id'] for dom in domains_list]
     db_doms_id = [dom.beget_id for dom in Domain.objects.all()]
     to_del = set(db_doms_id) - set(beget_doms_id)

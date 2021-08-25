@@ -28,10 +28,10 @@ class Connection:
             elif method == 'post':
                 response = req.get(url, params=kwargs)
         except req.exceptions.ConnectionError:
-            print('RAISE')
-            raise MyError('No connections', url=url)
+            print(f'No connections: url={url}')
+            raise MyError(f'No connections:', url=url)
         else:
-            print(response)
+            # print(response)
             response.encoding = Connection.ENCODING
             self.status_code = response.status_code
             self.response = response
@@ -81,6 +81,7 @@ class Beget(ApiManager):
     # api
     sites = f'https://api.beget.com/api/site/getList?login={login}&passwd={password}&output_format=json'
     domains = f'https://api.beget.com/api/domain/getList?login={login}&passwd={password}&output_format=json'
+    sub_domains = f'https://api.beget.com/api/domain/getSubdomainList?login={login}&passwd={password}&output_format=json'
 
     def get_sites(self):
         res = self.api_get(self.sites)
@@ -92,6 +93,11 @@ class Beget(ApiManager):
     def get_domains_list(self):
         res = self.api_get(self.domains)
         return res['answer']['result']
+
+    def get_sub_domains_list(self):
+        res = self.api_get(self.sub_domains)
+        sub_domains = [sub_doms for sub_doms in res['answer']['result']]
+        return sub_domains
 
 
 if __name__ == '__main__':

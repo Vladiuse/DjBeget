@@ -17,6 +17,8 @@
 <div>
     <div class="coll-block">
         <h4>Короткие</h4>
+        <p>ИП Гребенщиков, УНП 19345252</p>
+        <br>
         <p>ИП Гребенщиков</p>
         <p>УНП 19345252</p>
         <p>г.Минск, ул. Радиальная, д. 40</p>
@@ -45,7 +47,7 @@
     </div>
 </div>
 
-<h3>Кнопка отзыва</h3>
+<h3>{{modal_code}}</h3>
 <div class="menu" style="text-align: left">
 <!--<a  id="showall">All</a>-->
 <a  class="showSingle status status-none" target="1">HTML</a>
@@ -101,8 +103,13 @@
         </pre>
     </blockquote>
 </div>
+
 </section>
+
+
 </div>
+   <h3>Input</h3>
+    {{ i_agree.html_code }}
 <script>
     jQuery(function(){
          jQuery('#showall').click(function(){

@@ -1,6 +1,7 @@
 from django.db import models
 from .link_checker import Checker
 # Create your models here.
+from .api import MyError
 
 
 class Stream(models.Model):
@@ -57,8 +58,15 @@ class Site(models.Model):
 
     def update_title(self):
         page = Checker(url=self.domain)
-        page.make_soup()
-        self.title = page.get_h1_title()
+        try:
+            page.make_soup()
+        except MyError as exc:
+            self.title = f'{exc.text, exc.info}'
+        else:
+            self.title = page.get_h1_title()
+
+    def get_log_url(self):
+        return str(self.domain) + 'log.txt'
 
     def __str__(self):
         return self.site_name
