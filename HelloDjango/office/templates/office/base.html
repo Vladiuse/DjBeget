@@ -35,10 +35,13 @@
                 <a href="#!">Обновить</a>
                 <ul class="nav-dropdown">
                   <li>
-                    <a href="{% url 'office:update_domains' %}">Список сайтов</a>
+                    <a href="{% url 'office:update_sites' %}">Список сайтов</a>
                   </li>
                   <li>
-                    <a href="{% url 'office:get_title' %}">Заголовки прокл</a>
+                    <a href="{% url 'office:get_site_title' 0 %}">Заголовки сайтов</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'office:get_site_title' 1 %}">Заголовки сайтов(все)</a>
                   </li>
                   <!-- <li>
                     <a href="#!">Graphic Design</a>

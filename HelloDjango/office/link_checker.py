@@ -49,6 +49,7 @@ class Checker(Connection, ABC):
     Проверочник ссылок
     """
     NO_TITLE_ON_PAGE = 'Заголовок не найден'
+    TITLE_FIND = ''
 
     def __init__(self, url):
         super().__init__()
@@ -72,7 +73,7 @@ class Checker(Connection, ABC):
         # return page_title if page_title else Checker.NO_TITLE_ON_PAGE
         title = self.soup.find('title')
         if not title:
-            return 'NO title'
+            return self.NO_TITLE_ON_PAGE
         return title.text
 
     # @abstractmethod

@@ -5,10 +5,11 @@ from office.beget_api_keys import begget_login, begget_pass
 
 
 class MyError(BaseException):
+    NO_CONNECTION = 'No connection'
     def __init__(self, text='no text',**kwargs):
         self.text = text
         self.info = ', '.join(f'{k} - {v}' for k, v in kwargs.items()) if kwargs else ''
-        self.no_connection = f'No connection: {self.info}'
+        self.no_connection = 'No connection'
         self.not_200_status = f'status code is: {self.info}'
 
 
@@ -21,7 +22,6 @@ class Connection:
         self.status_code = None
 
     def conn(self, url, method='get', **kwargs):
-        print(url)
         try:
             if method == 'get':
                 response = req.get(url)

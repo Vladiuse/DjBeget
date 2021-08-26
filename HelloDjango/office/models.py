@@ -35,17 +35,19 @@ class Site(models.Model):
     )
 
     site_name = models.CharField(max_length=99)
-    domain = models.URLField(max_length=200)
-    title = models.CharField(max_length=200)
-    check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY)
+    domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
+    title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
+    check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
 
     def get_status_html(self):
         return self.STATUS_HTML[str(self.check_status)]
 
     def unpin_status(self):
+        """Установить дефолтный статус"""
         self.check_status = self.GREY
 
     def set_status(self, status):
+        """Статус сайта от чекера"""
         for k,v in self.STATUS_HTML.items():
             if status == v:
                 self.check_status = k
@@ -60,22 +62,32 @@ class Site(models.Model):
         # }
         # self.check_status = dic[status]
 
-    def update_title(self):
+    def update_title(self,hard=None):
+        """Обновить залоговок сайта - title"""
+        if not hard:
+            if self.title not in ['None', MyError.NO_CONNECTION]:
+                return
         page = Checker(url=self.domain)
         try:
             page.make_soup()
-        except MyError as exc:
-            self.title = f'{exc.text, exc.info}'
+        except MyError:
+            self.title = MyError.NO_CONNECTION
         else:
             self.title = page.get_h1_title()
 
+
+
+
     def get_log_url(self):
+        """Ссылка на лог сайта"""
         return str(self.domain) + 'log.txt'
 
     def get_beget_editor(self):
+        """Ссылка на редактор сайта в web-beget"""
         site = self.site_name
         if 'vladiuse' in site:
             site = 'old-lands'
+        site += '/public_html'
         return f'https://cp.beget.com/fm/%7B%22type%22:%22home%22,%22path%22:%22/{site}%22%7D'
 
     def __str__(self):

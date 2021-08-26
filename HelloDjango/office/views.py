@@ -77,7 +77,7 @@ def add_spend(request, summ):
     return HttpResponse('<h1>' + result_answer + '</h1>')
 
 
-def update_domains(request):
+def update_sites(request):
     """Обновить список сайтов"""
     # TODO переделать на api
     domains = set(get_domains_api())
@@ -91,7 +91,7 @@ def update_domains(request):
         url = get_url_link_from_name(site)
         s = Site(site_name=site, domain=url, title='None')
         s.save()
-    return HttpResponseRedirect(reverse('office:index'))
+    return HttpResponseRedirect(reverse('office:sites'))
 
 
 # def get_h1_title(url):
@@ -113,19 +113,12 @@ def update_domains(request):
 #     return result
 
 
-def get_title(request):
+def get_site_title(request, hard):
     """Обновить заголовки сайтов"""
     for site in Site.objects.all():
-        site.update_title()
+        site.update_title(bool(hard))
         site.save()
-    # sites = Site.objects.all()
-    # for site in sites:
-    #     new_h1_title = get_h1_title(site.domain)
-    #     if site.title != new_h1_title:
-    #         site.unpin_status()
-    #     site.title = new_h1_title
-    #     site.save()
-    return HttpResponseRedirect(reverse('office:index'))
+    return HttpResponseRedirect(reverse('office:sites'))
 
 
 def old_lands(request):
