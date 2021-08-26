@@ -183,8 +183,10 @@ class MainPage(Checker):
 
     def get_forms_result(self):
         # orders
+
         if all(self.forms['order_forms']):
-            self.forms['order_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.ORDER_FORMS_CORRECT}
+            form_count = len(self.forms['order_forms'])
+            self.forms['order_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.ORDER_FORMS_CORRECT + f': {form_count}шт.'}
         else:
             number_incorrect_form = ','.join(str(id + 1) for id, x in enumerate(self.forms['order_forms']) if x)
             self.forms['order_forms'] = {'status': StatusHTML.RED,
@@ -196,7 +198,8 @@ class MainPage(Checker):
             self.forms['incorrect_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.INCORRECT_IN_LAND}
         # spas forms
         if self.forms['spas_forms']:
-            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN}
+            form_count = self.forms['spas_forms']
+            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN + f': {form_count}шт.'}
         else:
             self.forms['spas_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.SPAS_FORM_NO}
 
