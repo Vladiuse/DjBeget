@@ -11,6 +11,9 @@ class Stream(models.Model):
     
     
 class Site(models.Model):
+    """
+    Сайт
+    """
     GREY = 'Не проверен'
     RED = 'Ошибка'
     YELLOW = 'Замечание'
@@ -79,6 +82,9 @@ class Site(models.Model):
 
 
 class OldLand(models.Model):
+    """
+    Сайт из архива
+    """
     name = models.CharField(max_length=99)
     url = models.URLField(max_length=200)
     image = models.ImageField(upload_to='img', height_field=None, width_field=None, max_length=200)
@@ -88,6 +94,9 @@ class OldLand(models.Model):
 
 
 class Domain(models.Model):
+    """
+    Домен
+    """
     NEW = 'NEW'
     USE = 'USE'
     BAN = 'BAN'
@@ -129,6 +138,9 @@ class Domain(models.Model):
 
 
 class CodeExample(models.Model):
+    """
+    Примеры кода Html, Css, JS
+    """
     name = models.CharField(max_length=99, verbose_name='Пример кода')
     html_code = models.TextField(verbose_name='Html код', blank=True)
     css_code = models.TextField(verbose_name='Css код', blank=True)

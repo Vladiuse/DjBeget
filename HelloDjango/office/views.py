@@ -58,7 +58,8 @@ def get_free_doms():
     return free_doms
 
 
-def index(request):
+def sites(request):
+    """Список сайтов, их статусов и тд"""
     sites = Site.objects.all()
     content = {'sites': sites,
                }
@@ -66,6 +67,7 @@ def index(request):
 
 
 def add_spend(request, summ):
+    """Необходимо удалить"""
     stream = Stream.objects.get(pk=1)
     stream.description = str(summ)
     stream.save()
@@ -74,6 +76,7 @@ def add_spend(request, summ):
 
 
 def update_domains(request):
+    """Обновить список сайтов"""
     domains = set(get_domains_api())
     sites = set([site.site_name for site in Site.objects.all()])
     to_del = set(sites) - set(domains)
@@ -88,23 +91,23 @@ def update_domains(request):
     return HttpResponseRedirect(reverse('office:index'))
 
 
-def get_h1_title(url):
-    try:
-        res = requests.get(url)
-    except:
-        return NO_CONNECTION
-    res.encoding = 'utf-8'
-    IF_NO_BLOCK = '!!! Нет описания !!!'
-    result = IF_NO_BLOCK
-    for h_number in range(1, 4):
-        soup = BeautifulSoup(res.text, 'lxml')
-        title = soup.find_all(f'h{h_number}')
-        if len(title) != 0:
-            result = title[0].text.strip()
-            break
-    if len(result) > 40:
-        result = result[:40] + '...'
-    return result
+# def get_h1_title(url):
+#     try:
+#         res = requests.get(url)
+#     except:
+#         return NO_CONNECTION
+#     res.encoding = 'utf-8'
+#     IF_NO_BLOCK = '!!! Нет описания !!!'
+#     result = IF_NO_BLOCK
+#     for h_number in range(1, 4):
+#         soup = BeautifulSoup(res.text, 'lxml')
+#         title = soup.find_all(f'h{h_number}')
+#         if len(title) != 0:
+#             result = title[0].text.strip()
+#             break
+#     if len(result) > 40:
+#         result = result[:40] + '...'
+#     return result
 
 
 def get_title(request):
@@ -123,6 +126,7 @@ def get_title(request):
 
 
 def old_lands(request):
+    """Архив старых лэндов"""
     host = request.get_host()
     DOMAIN = 'http://vladiuse.beget.tech/'
     SOURCE_URL = 'http://vladiuse.beget.tech/get_lands_list.php'
@@ -155,6 +159,7 @@ def old_lands(request):
 
 
 def requisites(request):
+    """Реквизиты и шаблоны html, css, js"""
     modal_code = CodeExample.objects.get(name='Модальное окно отзыва')
     i_agree = CodeExample.objects.get(name='Я согласен с ...')
     content = {'modal_code': modal_code, 'i_agree': i_agree}
@@ -162,6 +167,7 @@ def requisites(request):
 
 
 def checker(request, site_id):
+    """Проверочник сайтов"""
     if site_id == 666:
         url = 'https://good-markpro.ru/'
         site = Site.objects.get(domain=url)
@@ -189,6 +195,7 @@ def checker(request, site_id):
 
 
 def domains(request):
+    """Список доменов"""
     b = Beget()
     domains_list = b.get_domains_list()
     sub_domains = b.get_sub_domains_list()
@@ -214,6 +221,7 @@ def domains(request):
 
 
 def domain_change_status(request, dom_id, source, new_status):
+    """Изменение статуса домена"""
     s = {
         'BAN': Domain.BAN,
         'USE': Domain.USE,
