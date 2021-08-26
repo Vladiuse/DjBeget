@@ -1,16 +1,17 @@
 from django.db import models
-from .link_checker import Checker
+# develop?
 # Create your models here.
 from .api import MyError
+from .link_checker import Checker
 
 
 class Stream(models.Model):
     # TODO удалить
     baer = models.CharField(max_length=99)
-    spend = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    spend = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     description = models.CharField(max_length=200, blank=True)
-    
-    
+
+
 class Site(models.Model):
     """
     Сайт
@@ -20,7 +21,6 @@ class Site(models.Model):
     YELLOW = 'Замечание'
     GREEN = 'Все ОК'
 
-
     STATUS_HTML = {
         GREY: 'status-none',
         RED: 'status-unpaid',
@@ -28,7 +28,7 @@ class Site(models.Model):
         GREEN: 'status-paid',
     }
     CHOICE = (
-        (GREY,GREY),
+        (GREY, GREY),
         (RED, RED),
         (YELLOW, YELLOW),
         (GREEN, GREEN),
@@ -48,7 +48,7 @@ class Site(models.Model):
 
     def set_status(self, status):
         """Статус сайта от чекера"""
-        for k,v in self.STATUS_HTML.items():
+        for k, v in self.STATUS_HTML.items():
             if status == v:
                 self.check_status = k
                 break
@@ -62,7 +62,7 @@ class Site(models.Model):
         # }
         # self.check_status = dic[status]
 
-    def update_title(self,hard=None):
+    def update_title(self, hard=None):
         """Обновить залоговок сайта - title"""
         if not hard:
             if self.title not in ['None', MyError.NO_CONNECTION]:
@@ -74,9 +74,6 @@ class Site(models.Model):
             self.title = MyError.NO_CONNECTION
         else:
             self.title = page.get_h1_title()
-
-
-
 
     def get_log_url(self):
         """Ссылка на лог сайта"""
