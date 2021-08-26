@@ -5,6 +5,7 @@ from .api import MyError
 
 
 class Stream(models.Model):
+    # TODO удалить
     baer = models.CharField(max_length=99)
     spend = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
     description = models.CharField(max_length=200, blank=True)
@@ -82,6 +83,7 @@ class Site(models.Model):
 
 
 class OldLand(models.Model):
+    # TODO обьеденить с моделью Site?
     """
     Сайт из архива
     """

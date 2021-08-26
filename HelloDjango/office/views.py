@@ -18,6 +18,7 @@ NO_CONNECTION = 'Не удалось подключиться'
 
 
 def get_domains_api():
+    # TODO удалить
     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_list_domains_url)
     answer = res.json()
@@ -30,6 +31,7 @@ def get_domains_api():
 
 
 def get_free_doms():
+    # TODO переместить в модель Beget
     "Возвращает список не прилинкованных доменов"
     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
     res = requests.get(get_list_domains_url)
@@ -67,7 +69,7 @@ def sites(request):
 
 
 def add_spend(request, summ):
-    """Необходимо удалить"""
+    # TODO """Необходимо удалить"""
     stream = Stream.objects.get(pk=1)
     stream.description = str(summ)
     stream.save()
@@ -77,6 +79,7 @@ def add_spend(request, summ):
 
 def update_domains(request):
     """Обновить список сайтов"""
+    # TODO переделать на api
     domains = set(get_domains_api())
     sites = set([site.site_name for site in Site.objects.all()])
     to_del = set(sites) - set(domains)
