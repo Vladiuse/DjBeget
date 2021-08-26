@@ -21,7 +21,7 @@ class ImagePrev:
         response = requests.get(self.base + self.url, stream=True)
         # save file, see https://stackoverflow.com/a/13137873/7665691
         if response.status_code == 200:
-            path = ''
+            # path = ''
             with open(path, 'wb') as file:
                 for chunk in response:
                     file.write(chunk)

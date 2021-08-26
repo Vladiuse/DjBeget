@@ -68,6 +68,12 @@ class Site(models.Model):
     def get_log_url(self):
         return str(self.domain) + 'log.txt'
 
+    def get_beget_editor(self):
+        site = self.site_name
+        if 'vladiuse' in site:
+            site = 'old-lands'
+        return f'https://cp.beget.com/fm/%7B%22type%22:%22home%22,%22path%22:%22/{site}%22%7D'
+
     def __str__(self):
         return self.site_name
 

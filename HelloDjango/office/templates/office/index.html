@@ -18,6 +18,7 @@
             <tr>
 <!--                <th>Папка beget</th>-->
                 <th>Сылка</th>
+                <th>Редактор</th>
                 <th>Log.txt</th>
                 <th>Прокла</th>
                 <th>Checker</th>
@@ -32,6 +33,7 @@
             <tr>
 <!--            <td>{{ site.site_name }}</td>-->
                 <td><a href="{{ site.domain }}" target="_blank">{{ site.site_name }}</a></td>
+                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>
                 <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>
                 <td>{{ site.title|slice:":30" }}</td>
                 <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>
