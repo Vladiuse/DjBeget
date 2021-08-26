@@ -3,7 +3,7 @@
   /* Lazy Load Styles */
 .card-image {
 	display: block;
-	min-height: 20rem; /* layout hack */
+	min-height: 16rem; /* layout hack */
 	background: #fff center center no-repeat;
 	background-size: cover;
 	filter: blur(3px); /* blur the lowres image */
@@ -44,7 +44,7 @@ html, body {
 .card {
 	display: inline-block;
 	width: 90%;
-	max-width: 20rem;
+	max-width: 16rem;
 	margin: 1rem;
 	font-size: 1rem;
 	text-decoration: none;
