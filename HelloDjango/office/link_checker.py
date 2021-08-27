@@ -92,9 +92,11 @@ class Checker(Connection, ABC):
 
 
 class MainPage(Checker):
+
     """
     Обработчик главной страницы
     """
+
     REQUISITES = ['ИП Гребенщиков', 'УНП 19345252', 'Радиальная']
     ORDER_ACTION = 'api.php'
     COMMENT_ACTION = 'spas.html'
@@ -124,7 +126,7 @@ class MainPage(Checker):
         }
 
     def check_requisites(self):
-
+        """Проверка наличия реквизитов на странице"""
         req_res = all(req in self.soup.text for req in MainPage.REQUISITES)
         status = StatusHTML.GREEN if req_res else StatusHTML.YELLOW
         req_res = MainPage.REQUISITES_IN_PAGE if req_res else MainPage.REQUISITES_ERROR
@@ -160,31 +162,31 @@ class MainPage(Checker):
                 self.forms['incorrect_forms'].append(form)
 
     def check_forms(self):
+        """Провверка формы заказа"""
         order_forms = self.forms['order_forms']
         result = []
         for form in order_forms:
-            name = phone = False
-            # bs raise error
-            # inputs = form.get_all('input')
-            # for input_tag in inputs:
-            #     if input_tag.get('name') == MainPage.FORM_NAME:
-            #         name = True
-            #     elif input_tag.get('name') == MainPage.FORM_PHONE:
-            #         phone = True
+            name = phone = checkbox = checkbox_text = False
+            inputs = form.find('input', {'type': 'checkbox'})
+            if inputs:
+                checkbox = True
+            self.I_AGREE = self.I_AGREE.replace(' ', '')
+            form_text = form.text
+            for char in [' ', '\n', '\t']:
+                form_text = form_text.replace(char, '')
+            if self.I_AGREE in form_text:
+                checkbox_text = True
             form = str(form)
             if MainPage.FORM_NAME in form:
                 name = True
             if MainPage.FORM_PHONE in form:
                 phone = True
-            if name and phone:
-                result.append(True)
-            else:
-                result.append(False)
+            result.append(all([name, phone, checkbox, checkbox_text]))
         self.forms['order_forms'] = result
 
     def get_forms_result(self):
+        """Получение результата проверки форм"""
         # orders
-
         if all(self.forms['order_forms']):
             form_count = len(self.forms['order_forms'])
             self.forms['order_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.ORDER_FORMS_CORRECT + f': {form_count}шт.'}
@@ -199,8 +201,8 @@ class MainPage(Checker):
             self.forms['incorrect_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.INCORRECT_IN_LAND}
         # spas forms
         if self.forms['spas_forms']:
-            form_count = self.forms['spas_forms']
-            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN + f': {form_count}шт.'}
+            spas_form_count = len(self.forms['spas_forms'])
+            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN + f': {spas_form_count}шт.'}
         else:
             self.forms['spas_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.SPAS_FORM_NO}
 
