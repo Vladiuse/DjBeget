@@ -6,11 +6,17 @@
 <div style="width:30%;display: inline-block;">
 <p>Всего доменов: {{ domains|length }}</p>
 <h5>Свободных: {{ free_doms|length }}</h5>
+    <div class="for-btn">
+        <button id="my-btn" onclick="showOld(1);" class="status status-none">Show</button>
+    </div>
+
+    <div class="free-doms">
 {% for dom in free_doms %}
 <p>{{ dom }}</p>
 {% empty %}
 <p>Нет свободных доменов</p>
 {% endfor %}
+        </div>
 </div>
 <br>
 <table>
@@ -84,5 +90,22 @@
             </tr>
         {% endfor %}
     </table>
+<script>
+    var oldDoms = $('.free-doms');
+    oldDoms.hide();
+    var my_bnt = $('#my-btn');
+    var btn_div = $('.for-btn');
+    function showOld(what_do){
+    if (what_do == 0){
+    oldDoms.hide();
+    btn_div.html('<button id="my-btn" onclick="showOld(1);" class="status status-none">Show</button>')
+    }
+     if (what_do == 1){
+     oldDoms.show();
+     btn_div.html('<button id="my-btn" onclick="showOld(0);" class="status status-none">Hide</button>')
+     }
+
+    };
+</script>
 
 {% endblock %}

@@ -16,6 +16,8 @@ class Site(models.Model):
     """
     Сайт
     """
+    NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found']
+
     GREY = 'Не проверен'
     RED = 'Ошибка'
     YELLOW = 'Замечание'
@@ -65,7 +67,7 @@ class Site(models.Model):
     def update_title(self, hard=None):
         """Обновить залоговок сайта - title"""
         if not hard:
-            if self.title not in ['None', MyError.NO_CONNECTION]:
+            if self.title not in self.NOT_TITLE:
                 return
         page = Checker(url=self.domain)
         try:
@@ -159,3 +161,21 @@ class CodeExample(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class LearnCode(models.Model):
+    LANGS = (
+        ('JS', 'JS'),
+        ('HTML', 'HTML'),
+        ('CSS', 'CSS'),
+        ('Python', 'Python'),
+        ('Git', 'Git'),
+        ('Sql', 'Sql'),
+    )
+    group = models.CharField(max_length=200, choices=LANGS)
+    example = models.TextField()
+    descriptions = models.TextField()
+
+    def __str__(self):
+        return self.example

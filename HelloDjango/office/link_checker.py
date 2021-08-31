@@ -3,6 +3,7 @@ from abc import ABC
 from bs4 import BeautifulSoup
 
 from .api import Connection
+from langdetect import detect
 
 
 class StatusHTML:
@@ -76,6 +77,9 @@ class Checker(Connection, ABC):
             return self.NO_TITLE_ON_PAGE
         return title.text
 
+    def get_lang_of_page(self):
+        return detect(self.soup.text)
+
     # @abstractmethod
     def process(self):
         pass
@@ -139,8 +143,13 @@ class MainPage(Checker):
         self.find_forms()
         self.check_forms()
         self.find_save_comm()
+        self.check_lang()
 
         self.get_forms_result()
+
+    def check_lang(self):
+        lang = self.get_lang_of_page()
+        self.result.update({'main_page_lang': {'status': StatusHTML.GREEN, 'info': lang}})
 
     def find_save_comm(self):
         if self.SAVED_FROM in self.response.text:
@@ -170,11 +179,9 @@ class MainPage(Checker):
             inputs = form.find('input', {'type': 'checkbox'})
             if inputs:
                 checkbox = True
-            self.I_AGREE = self.I_AGREE.replace(' ', '')
-            form_text = form.text
-            for char in [' ', '\n', '\t']:
-                form_text = form_text.replace(char, '')
-            if self.I_AGREE in form_text:
+            form_text = ''.join(form.text.rsplit())
+            I_AGREE = ''.join(self.I_AGREE.rsplit())
+            if I_AGREE in form_text:
                 checkbox_text = True
             form = str(form)
             if MainPage.FORM_NAME in form:
@@ -386,6 +393,7 @@ class LinkCheckerManager:
             'spas_page': {},
             'spas_page_res': {},
             'html_comment': {},
+            'main_page_lang': {},
         }
 
     def process(self):
