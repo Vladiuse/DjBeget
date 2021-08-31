@@ -93,17 +93,18 @@
 <script>
     var oldDoms = $('.free-doms');
     oldDoms.hide();
-    var my_bnt = $('#my-btn');
+    var my_btn = $('#my-btn');
     var btn_div = $('.for-btn');
     function showOld(what_do){
     if (what_do == 0){
     oldDoms.hide();
-    btn_div.html('<button id="my-btn" onclick="showOld(1);" class="status status-none">Show</button>')
+    my_btn.text('Show');
+    my_btn.attr('onclick','showOld(1)');
     }
      if (what_do == 1){
      oldDoms.show();
-     btn_div.html('<button id="my-btn" onclick="showOld(0);" class="status status-none">Hide</button>')
-     }
+    my_btn.text('Hide');
+    my_btn.attr('onclick','showOld(0);');     }
 
     };
 </script>
