@@ -63,7 +63,7 @@ def get_free_doms():
 def sites(request):
     """Список сайтов, их статусов и тд"""
     # sites = Site.objects.all().order_by('-pk')
-    sites = list(Site.objects.all())
+    sites = list(Site.objects.exclude(site_name__in=['vladiuse.beget.tech', 'main-prosale.store']))
     sites.sort(key=Site.get_sort_name)
     content = {'sites': sites,
                }
