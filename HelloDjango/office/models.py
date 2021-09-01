@@ -89,6 +89,23 @@ class Site(models.Model):
         site += '/public_html'
         return f'https://cp.beget.com/fm/%7B%22type%22:%22home%22,%22path%22:%22/{site}%22%7D'
 
+    @staticmethod
+    def get_sort_name(site_model):
+        site_name = site_model.site_name
+        if site_name.count('.') == 1:
+            return site_name + 'aaa'
+        sub = site_name[:site_name.find('.')]
+        dom = site_name[site_name.find('.') + 1:]
+        return dom + sub
+
+    def status_sub(self):
+        sub_domain_class = 'sub-dom'
+        domain_class = 'dom'
+        if self.site_name.count('.') == 2 and 'beget' not in self.site_name:
+            return sub_domain_class
+        return domain_class
+
+
     def __str__(self):
         return self.site_name
 

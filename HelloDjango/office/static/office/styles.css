@@ -293,3 +293,35 @@ article {
 select{
 font-size: 20px;
 }
+
+.first{
+display: flex;
+align-items: center;
+justify-content:space-between;
+}
+
+    /* ICONS */
+
+.icon-block{
+display: inline-block;
+}
+
+i{
+color: #74c0fc;
+position: right;
+}
+.fa-address-book{
+font-size: 25px;
+
+
+}
+
+.fa-user-edit{
+font-size: 18px;
+margin-right: 15px;
+}
+
+.sub-dom{
+padding-left: 60px;
+}
+
