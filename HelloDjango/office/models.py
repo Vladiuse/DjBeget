@@ -41,6 +41,12 @@ class Site(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
 
+    def get_http_site(self):
+        return f'http://{self.site_name}/'
+
+    def get_https_site(self):
+        return f'https://{self.site_name}/'
+
     def get_status_html(self):
         return self.STATUS_HTML[str(self.check_status)]
 
@@ -69,7 +75,8 @@ class Site(models.Model):
         if not hard:
             if self.title not in self.NOT_TITLE:
                 return
-        page = Checker(url=self.domain)
+        url = self.get_http_site()
+        page = Checker(url=url)
         try:
             page.make_soup()
         except MyError:

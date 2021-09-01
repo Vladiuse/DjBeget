@@ -172,7 +172,7 @@ def checker(request, site_id):
 
     else:
         site = Site.objects.get(pk=site_id)
-        url = site.domain
+        url = site.get_http_site()
     # try:
     #     link_manager = LinkCheckerManager(url=url)
     #     link_manager.process()
