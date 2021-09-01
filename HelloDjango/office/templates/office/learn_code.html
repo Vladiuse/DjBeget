@@ -1,0 +1,11 @@
+{% extends 'office/base.html' %}
+{% block content %}
+
+{% for example in examples %}
+
+<p>{{ example.example }}/* {{ example.descriptions }} */ </p>
+{% endfor %}
+-----------------
+{{ test.abc }}
+{{ test.get_some }}
+{% endblock %}

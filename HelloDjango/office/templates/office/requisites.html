@@ -48,85 +48,63 @@
 
     </div>
 </div>
+<div class="examples-block">
 
-<h3>{{modal_code}}</h3>
-<div class="menu" style="text-align: left">
-<!--<a  id="showall">All</a>-->
-<a  class="showSingle status status-none" target="1">HTML</a>
-<a  class="showSingle status status-none" target="2">CSS</a>
-<a  class="showSingle status status-none" target="3">JS</a>
+    <div class="buttons">
+        {% for example in examples %}
+        <a class="status status-none bbb" id="{{ forloop.counter0 }}">{{ example}}</a>
+        {% endfor %}
+    </div>
+    <div class="buttons">
+      <a class="status status-none ccc" id="html">Html</a>
+      <a class="status status-none ccc" id="css">Css</a>
+      <a class="status status-none ccc" id="js1">Js</a>
+    </div>
 
-</div>
-<br>
-<div class="code-wrapper">
-<section class="cnt">
-<div id="div1" class="targetDiv" style="display: none;">
-
-
-  <pre>
-    <code>
-        {{ modal_code.html_code|wordwrap:80 }}
-    </code>
-  </pre>
-
-
-</div>
-<div id="div2" class="targetDiv" style="display: none;">
-
-<!--    <blockquote>-->
-<!--  <pre>-->
-<!--    <code>.code-wrapper{-->
-<!--     background-color: #C0C0C0;-->
-<!--     width: 50%;-->
-<!--     border-radius: 20px;-->
-<!--     padding: 20px;-->
-<!--     display: none;-->
-<!--        }-->
-
-<!--    </code>-->
-<!--  </pre>-->
-<!--</blockquote>-->
-    <blockquote>
+    <div class="info">
+        {% for example in examples %}
         <pre>
             <code>
-                {{ modal_code.css_code }}
-            </code>
+            <p class="html {{ forloop.counter0 }}">{{ example.html_code }}</p>
+            <p class="css {{ forloop.counter0 }}">{{ example.css_code }}</p>
+            <p class="js1 {{ forloop.counter0 }}">{{ example.js_code }}</p>
+        </code>
         </pre>
-    </blockquote>
+
+        {% endfor %}
+    </div>
 
 
 </div>
-<div id="div3" class="targetDiv" style="display: none;">
-      <blockquote>
-        <pre>
-            <code>
-                {{ modal_code.js_code }}
-            </code>
-        </pre>
-    </blockquote>
-</div>
-
-</section>
-
-
-</div>
-   <h3>{{i_agree}}</h3>
-<code>
-    <pre>
-        {{ i_agree.html_code }}
-    </pre>
-</code>
 <script>
-    jQuery(function(){
-         jQuery('#showall').click(function(){
-               jQuery('.targetDiv').show();
-        });
-        jQuery('.showSingle').click(function(){
-              jQuery('.targetDiv').hide();
-              jQuery('.code-wrapper').show();
-              jQuery('#div'+$(this).attr('target')).show();
-              jQuery('#div'.attr('code-wrapper')).show();
-        });
-});
+$(function(){
+    // code ...
+    var activeBtnStatus = 'active';
+    var buttonsOnPage = 2;
+    $('.info p').hide();
+    $('.ccc, .bbb').click(function(){
+        $(this).siblings().removeClass(activeBtnStatus)
+        $(this).addClass(activeBtnStatus)
+    var classToShow = '';
+    var buttonCount = 0;
+    $('.' + activeBtnStatus).each(function(){
+        console.log($(this).attr('id'))
+        classToShow += '.' + $(this).attr('id')
+        buttonCount += 1
+    })
+    if (buttonCount == buttonsOnPage) {
+        $('.info p').hide();
+        $(classToShow).show()
+    }
+
+    // console.log($(classToShow).show())
+        // $('.info p').hide(); // hide all info blocks
+        // $('.' + $(this).attr('id')).show()
+
+    })
+})
+
+function testFunc(){
+}
 </script>
 {% endblock %}

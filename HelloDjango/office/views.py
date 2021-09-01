@@ -158,9 +158,14 @@ def old_lands(request):
 
 def requisites(request):
     """Реквизиты и шаблоны html, css, js"""
-    modal_code = CodeExample.objects.get(name='Модальное окно отзыва')
-    i_agree = CodeExample.objects.get(name='Я согласен с ...')
-    content = {'modal_code': modal_code, 'i_agree': i_agree}
+    # modal_code = CodeExample.objects.get(name='Модальное окно отзыва')
+    # i_agree = CodeExample.objects.get(name='Я согласен с ...')
+    examples = CodeExample.objects.all()
+    content = {
+        # 'modal_code': modal_code,
+        # 'i_agree': i_agree
+        'examples': examples,
+    }
     return render(request, 'office/requisites.html', content)
 
 

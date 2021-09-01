@@ -325,3 +325,14 @@ margin-right: 15px;
 padding-left: 60px;
 }
 
+.active{
+  border: 2px solid rgb(255, 72, 72);
+}
+
+pre, code{
+height: 0px;
+}
+
+.buttons{
+margin-top: 10px;
+}
