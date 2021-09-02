@@ -16,6 +16,7 @@ class Site(models.Model):
     """
     Сайт
     """
+    DONT_CHECK = ['vladiuse.beget.tech', 'main-prosale.store']
     NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found']
 
     GREY = 'Не проверен'
@@ -72,6 +73,8 @@ class Site(models.Model):
 
     def update_title(self, hard=None):
         """Обновить залоговок сайта - title"""
+        if self.site_name in Site.DONT_CHECK:
+            return
         if not hard:
             if self.title not in self.NOT_TITLE:
                 return

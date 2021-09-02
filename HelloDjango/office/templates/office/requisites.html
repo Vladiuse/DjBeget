@@ -48,17 +48,20 @@
 
     </div>
 </div>
+
 <div class="examples-block">
+    <a id="textCopy" class="status status-pending">Copy</a>
+<br>
 
     <div class="buttons">
         {% for example in examples %}
-        <a class="status status-none bbb" id="{{ forloop.counter0 }}">{{ example}}</a>
+        <a class="status status-none exs" id="{{ forloop.counter0 }}">{{ example}}</a>
         {% endfor %}
     </div>
     <div class="buttons">
-      <a class="status status-none ccc" id="html">Html</a>
-      <a class="status status-none ccc" id="css">Css</a>
-      <a class="status status-none ccc" id="js1">Js</a>
+      <a class="status status-none clang" id="html">Html</a>
+      <a class="status status-none clang" id="css">Css</a>
+      <a class="status status-none clang" id="js1">Js</a>
     </div>
 
     <div class="info">
@@ -82,7 +85,7 @@ $(function(){
     var activeBtnStatus = 'active';
     var buttonsOnPage = 2;
     $('.info p').hide();
-    $('.ccc, .bbb').click(function(){
+    $('.exs, .clang').click(function(){
         $(this).siblings().removeClass(activeBtnStatus)
         $(this).addClass(activeBtnStatus)
     var classToShow = '';
@@ -95,6 +98,18 @@ $(function(){
     if (buttonCount == buttonsOnPage) {
         $('.info p').hide();
         $(classToShow).show()
+
+        $('#textCopy').click(function() {
+            var el = $(classToShow)
+            var $tmp = $("<textarea>");
+            $("body").append($tmp);
+            $tmp.val($(el).text()).select();
+            document.execCommand("copy");
+            $tmp.remove();
+        })
+
+
+
     }
 
     // console.log($(classToShow).show())
