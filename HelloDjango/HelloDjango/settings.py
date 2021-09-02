@@ -76,13 +76,24 @@ TEMPLATES = [
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# for Sqlite
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+# for MySql
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'vladiuse_beget',
+#         'USER': 'vladiuse_beget',
+#         'PASSWORD': '20302030Ab%',
+#         'HOST': 'localhost',
+#
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
