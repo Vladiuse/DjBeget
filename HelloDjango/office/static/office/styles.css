@@ -309,6 +309,7 @@ display: inline-block;
 i{
 color: #74c0fc;
 position: right;
+margin-right: 10px;
 }
 .fa-address-book{
 font-size: 25px;
@@ -316,9 +317,13 @@ font-size: 25px;
 
 }
 
+.fa-lock{
+font-size: 18px;
+margin-right: 20px;
+}
+
 .fa-user-edit{
 font-size: 18px;
-margin-right: 15px;
 }
 
 .sub-dom{
