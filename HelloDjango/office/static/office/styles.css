@@ -341,3 +341,15 @@ height: 0px;
 .buttons{
 margin-top: 10px;
 }
+
+/* Уведомление */
+
+.message{
+  width: 200px;
+  /* height: 100px; */
+  right: 100px;
+  padding: 20px;
+  background-color: #E6E6FA;
+  position: absolute;
+  border-radius: 20px;
+}

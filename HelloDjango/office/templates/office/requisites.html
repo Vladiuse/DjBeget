@@ -50,7 +50,7 @@
 </div>
 
 <div class="examples-block">
-    <a id="textCopy" class="status status-pending">Copy</a>
+    <a id="textCopy" class="status status-pending copy">Copy</a>
 <br>
 
     <div class="buttons">
@@ -77,11 +77,21 @@
         {% endfor %}
     </div>
 
+<div class="message">
+  <p>some text</p>
+</div>
 
 </div>
 <script>
 $(function(){
     // code ...
+    var messageBox = $('.message')
+    messageBox.hide()
+    function showMessage(text){
+    messageBox.children().text(text)
+    messageBox.fadeIn(500).delay(3500).fadeOut(2000)
+    }
+
     var activeBtnStatus = 'active';
     var buttonsOnPage = 2;
     $('.info p').hide();
@@ -96,6 +106,11 @@ $(function(){
         buttonCount += 1
     })
     if (buttonCount == buttonsOnPage) {
+        $('.copy').click(function(){
+        console.log(123)
+        showMessage('Скопировано')
+    })
+
         $('.info p').hide();
         $(classToShow).show()
 
@@ -109,7 +124,6 @@ $(function(){
         })
 
 
-
     }
 
     // console.log($(classToShow).show())
@@ -119,7 +133,6 @@ $(function(){
     })
 })
 
-function testFunc(){
-}
+
 </script>
 {% endblock %}
