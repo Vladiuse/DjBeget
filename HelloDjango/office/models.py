@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 from .api import MyError
 from .link_checker import Checker
-
+from django.utils import timezone
 
 class Stream(models.Model):
     # TODO удалить
@@ -41,6 +41,7 @@ class Site(models.Model):
     domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
+    datetime = models.DateTimeField(auto_now_add=True)
 
     def get_http_site(self):
         return f'http://{self.site_name}/'
@@ -115,6 +116,8 @@ class Site(models.Model):
             return sub_domain_class
         return domain_class
 
+    def get_time(self):
+        return timezone.now() - self.datetime
 
     def __str__(self):
         return self.site_name
