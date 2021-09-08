@@ -89,7 +89,7 @@ class Site(models.Model):
 
     def get_log_url(self):
         """Ссылка на лог сайта"""
-        return str(self.domain) + 'log.txt'
+        return self.get_http_site() + 'log.txt'
 
     def get_beget_editor(self):
         """Ссылка на редактор сайта в web-beget"""
