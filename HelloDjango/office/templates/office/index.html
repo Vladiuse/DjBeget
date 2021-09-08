@@ -27,6 +27,11 @@
                 <td class="first {{ site.status_sub }}">
                     <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
                     <div class="icon-block">
+
+                        {% if site.is_new %}
+                    <a class="status status-paid">Новый</a>
+                    {% endif %}
+
                         <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
                     <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
                    <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a>

@@ -116,8 +116,8 @@ class Site(models.Model):
             return sub_domain_class
         return domain_class
 
-    def get_time(self):
-        return timezone.now() - self.datetime
+    def is_new(self):
+        return (timezone.now() - self.datetime) < timezone.timedelta(days=1)
 
     def __str__(self):
         return self.site_name
