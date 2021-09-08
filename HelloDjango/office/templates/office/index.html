@@ -16,7 +16,7 @@
 <!--                <th>Редактор</th>-->
 <!--                <th>Log.txt</th>-->
                 <th>Прокла</th>
-                <th>Checker</th>
+<!--                <th>Checker</th>-->
                 <th>Статус</th>
             </tr>
         </thead>
@@ -35,9 +35,11 @@
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
                 <td>{{ site.title|slice:":30" }}</td>
-                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>
+<!--                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>-->
                 <td>
-                    <p class="status {{ site.get_status_html }}">{{ site.check_status }}</p>
+                    <p class="status {{ site.get_status_html }}">
+                        <a href="{% url 'office:checker' site.id %}" class="status {{ site.get_status_html }}">{{ site.check_status }}</a>
+                    </p>
                 </td>
 
             </tr>
