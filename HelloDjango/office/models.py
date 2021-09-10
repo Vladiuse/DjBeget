@@ -1,9 +1,10 @@
 from django.db import models
 # develop?
 # Create your models here.
-from .api import MyError
+from .api import MyError, Beget
 from .link_checker import Checker
 from django.utils import timezone
+
 
 class Stream(models.Model):
     # TODO удалить
@@ -17,7 +18,7 @@ class Site(models.Model):
     Сайт
     """
     DONT_CHECK = ['vladiuse.beget.tech', 'main-prosale.store']
-    NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found']
+    NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found', 'Домен не прилинкован ни к одной из директорий на сервере!']
 
     GREY = 'Не проверен'
     RED = 'Ошибка'
@@ -37,11 +38,12 @@ class Site(models.Model):
         (GREEN, GREEN),
     )
 
+    # beget_id = models.IntegerField(verbose_name='ID сайта на beget', null=False)
     site_name = models.CharField(max_length=99)
     domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
-    datetime = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField(auto_now_add=True, null=True)
 
     def get_http_site(self):
         return f'http://{self.site_name}/'
@@ -118,6 +120,19 @@ class Site(models.Model):
 
     def is_new(self):
         return (timezone.now() - self.datetime) < timezone.timedelta(days=1)
+
+    def get_id_beget(self):
+        b = Beget()
+        sites = b.get_sites()
+        from pprint import pprint
+        for site in sites['result']:
+            id = site['id']
+            print(id)
+            name = site['path'].split('/')[0]
+            print(name)
+            site_in_base = Site.objects.get(site_name=name)
+            site_in_base.beget_id = id
+            site_in_base.save()
 
     def __str__(self):
         return self.site_name
