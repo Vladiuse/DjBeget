@@ -5,7 +5,6 @@ from .api import MyError, Beget
 from .link_checker import Checker
 from django.utils import timezone
 
-
 class Stream(models.Model):
     # TODO удалить
     baer = models.CharField(max_length=99)
@@ -38,12 +37,11 @@ class Site(models.Model):
         (GREEN, GREEN),
     )
 
-    # beget_id = models.IntegerField(verbose_name='ID сайта на beget', null=False)
     site_name = models.CharField(max_length=99)
     domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
-    datetime = models.DateTimeField(auto_now_add=True, null=True)
+    datetime = models.DateTimeField(auto_now_add=True)
 
     def get_http_site(self):
         return f'http://{self.site_name}/'
