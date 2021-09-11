@@ -11,7 +11,7 @@ from .api import MyError, Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
 from .link_checker import Url, SuccessPage, LinkCheckerManager
-from .models import Stream, Site, OldLand, Domain, CodeExample
+from .models import Site, OldLand, Domain, CodeExample
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -69,14 +69,6 @@ def sites(request):
                }
     return render(request, 'office/index.html', content)
 
-
-def add_spend(request, summ):
-    # TODO """Необходимо удалить"""
-    stream = Stream.objects.get(pk=1)
-    stream.description = str(summ)
-    stream.save()
-    result_answer = 'Add Spend ' + str(summ)
-    return HttpResponse('<h1>' + result_answer + '</h1>')
 
 
 def update_sites(request):

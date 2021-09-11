@@ -4,7 +4,6 @@ from . import views
 app_name = 'office'
 urlpatterns = [
     path('', views.sites, name='sites'),
-    path('add/<str:summ>/', views.add_spend, name='add_spend'),
     path('update_sites/', views.update_sites, name='update_sites'),
     path('get-title/<int:hard>/', views.get_site_title, name='get_site_title'),
     path('old-lands', views.old_lands, name='old_lands'),
