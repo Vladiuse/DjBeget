@@ -2,15 +2,14 @@
 # sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
 
 import requests
-from bs4 import BeautifulSoup
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
-from .api import MyError, Beget
+from django.core.exceptions import ObjectDoesNotExist
+from .api import Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
-from .link_checker import Url, SuccessPage, LinkCheckerManager
+from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample
 
 DJANGO_SITE = 'https://main-prosale.store/'
@@ -30,36 +29,6 @@ def get_domains_api():
     return domains
 
 
-def get_free_doms():
-    # TODO переместить в модель Beget
-    "Возвращает список не прилинкованных доменов"
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_list_domains_url)
-    answer = res.json()
-    domains = []
-    for site in answer['answer']['result']:
-        dom_id = ''
-        dom_name = ''
-        for dom in site['domains']:
-            dom_id += str(dom['id'])
-            dom_name += dom['fqdn']
-            domains.append(dom_name)
-
-    get_doms = f'https://api.beget.com/api/domain/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_doms)
-    answer = res.json()
-    doms = []
-    for dom in answer['answer']['result']:
-        doms.append(dom['fqdn'])
-
-    free_doms = []
-    for d in doms:
-        if d not in domains:
-            free_doms.append(d)
-
-    return free_doms
-
-
 def sites(request):
     """Список сайтов, их статусов и тд"""
     # sites = Site.objects.all().order_by('-pk')
@@ -70,44 +39,39 @@ def sites(request):
     return render(request, 'office/index.html', content)
 
 
-
 def update_sites(request):
     """Обновить список сайтов"""
-    # TODO переделать на api
-    domains = set(get_domains_api())
-    sites = set([site.site_name for site in Site.objects.all()])
-    to_del = set(sites) - set(domains)
-    to_add = set(domains) - set(sites)
-    for site in to_del:
-        s = Site.objects.get(site_name=site)
+    #TODO при изменение домена, если можедь уже существует - домены не обновяться
+    b = Beget()
+    sites_id_bd = set([site.beget_id for site in Site.objects.all()])
+    sites_beget = b.get_sites()
+    sites_beget_id = set([site['id'] for site in sites_beget])
+    sites_to_del = sites_id_bd - sites_beget_id
+    sites_to_add = sites_beget_id - sites_id_bd
+    for site_beget_id in sites_to_del:
+        s = Site.objects.get(beget_id=site_beget_id)
         s.delete()
-    for site in to_add:
-        url = get_url_link_from_name(site)
-        s = Site(site_name=site, domain=url, title='None')
-        s.save()
+    for site_beget_id_add in sites_to_add:
+        for site_beget in sites_beget:
+            if site_beget['id'] == site_beget_id_add:
+                beget_id = site_beget['id']
+                site_name = site_beget['path']
+                s = Site(beget_id=beget_id, site_name=site_name)
+                s.save()
+                for domain in site_beget['domains']:
+                    domain_beget_id = domain['id']
+                    try:
+                        domain = Domain.objects.get(beget_id=domain_beget_id)
+                    except ObjectDoesNotExist:
+                        b.update_domains()
+                        domain = Domain.objects.get(beget_id=domain_beget_id)
+                    s.domain_set.add(domain)
+                s.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
 
-# def get_h1_title(url):
-#     try:
-#         res = requests.get(url)
-#     except:
-#         return NO_CONNECTION
-#     res.encoding = 'utf-8'
-#     IF_NO_BLOCK = '!!! Нет описания !!!'
-#     result = IF_NO_BLOCK
-#     for h_number in range(1, 4):
-#         soup = BeautifulSoup(res.text, 'lxml')
-#         title = soup.find_all(f'h{h_number}')
-#         if len(title) != 0:
-#             result = title[0].text.strip()
-#             break
-#     if len(result) > 40:
-#         result = result[:40] + '...'
-#     return result
-
-
 def get_site_title(request, hard):
+    # TODO удалить - перенести в Page
     """Обновить заголовки сайтов"""
     for site in Site.objects.all():
         site.update_title(bool(hard))
@@ -150,12 +114,8 @@ def old_lands(request):
 
 def requisites(request):
     """Реквизиты и шаблоны html, css, js"""
-    # modal_code = CodeExample.objects.get(name='Модальное окно отзыва')
-    # i_agree = CodeExample.objects.get(name='Я согласен с ...')
     examples = CodeExample.objects.all()
     content = {
-        # 'modal_code': modal_code,
-        # 'i_agree': i_agree
         'examples': examples,
     }
     return render(request, 'office/requisites.html', content)
@@ -191,27 +151,12 @@ def checker(request, site_id):
 
 def domains(request):
     """Список доменов"""
-    b = Beget()
-    domains_list = b.get_domains_list()
-    sub_domains = b.get_sub_domains_list()
-    domains_list.extend(sub_domains)
-    beget_doms_id = [dom['id'] for dom in domains_list]
-    db_doms_id = [dom.beget_id for dom in Domain.objects.all()]
-    to_del = set(db_doms_id) - set(beget_doms_id)
-    to_add = set(beget_doms_id) - set(db_doms_id)
-    for dom_id in to_del:
-        dom = Domain.objects.get(beget_id=dom_id)
-        dom.delete()
-    for domain in domains_list:
-        dom_id = domain['id']
-        if dom_id in to_add:
-            name = domain['fqdn']
-            url = get_url_link_from_name(name)
-            dom = Domain(name=name, url=url, beget_id=dom_id)
-            dom.save()
+    Beget().update_domains()
     domains_bd = Domain.objects.all().order_by('name')
-    free_doms = get_free_doms()
-    content = {'domains': domains_bd, 'free_doms': free_doms}
+    free_doms = Domain.objects.filter(site__isnull=True)
+    content = {'domains': domains_bd,
+               'free_doms': free_doms,
+               }
     return render(request, 'office/domains.html', content)
 
 
@@ -234,7 +179,3 @@ def domain_change_status(request, dom_id, source, new_status):
         pass
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
-
-
-
-

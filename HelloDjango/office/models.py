@@ -11,7 +11,8 @@ class Site(models.Model):
     Сайт
     """
     DONT_CHECK = ['vladiuse.beget.tech', 'main-prosale.store']
-    NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found', 'Домен не прилинкован ни к одной из директорий на сервере!']
+    NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found',
+                 'Домен не прилинкован ни к одной из директорий на сервере!']
 
     GREY = 'Не проверен'
     RED = 'Ошибка'
@@ -30,12 +31,20 @@ class Site(models.Model):
         (YELLOW, YELLOW),
         (GREEN, GREEN),
     )
-
+    beget_id = models.IntegerField()
     site_name = models.CharField(max_length=99)
-    domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
+    # domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
     datetime = models.DateTimeField(auto_now_add=True)
+
+    def save(self):
+        #TODO перенести в другую функцию?
+        public_dir = '/public_html'
+        if self.site_name.endswith(public_dir):
+            self.site_name = self.site_name[:-len(public_dir)]
+        super().save()
+
 
     def get_http_site(self):
         return f'http://{self.site_name}/'
@@ -126,6 +135,12 @@ class Site(models.Model):
             site_in_base.beget_id = id
             site_in_base.save()
 
+    def domain_count(self):
+        return len(self.domain_set.all())
+
+    def is_domain_link(self):
+        return bool(len(self.domain_set.all()))
+
     def __str__(self):
         return self.site_name
 
@@ -164,8 +179,9 @@ class Domain(models.Model):
         USE: 'status status-pending',
         BAN: 'status status-unpaid',
     }
+    site = models.ForeignKey(Site, on_delete=models.DO_NOTHING, blank=True, null=True)
     name = models.CharField(max_length=99, verbose_name='название домена', unique=True)
-    url = models.URLField(max_length=300, blank=True, null=True, unique=True)
+    # url = models.URLField(max_length=300, blank=True, null=True, unique=True)
     beget_id = models.IntegerField(verbose_name='id домена на beget', unique=True)
     description = models.TextField(max_length=999, verbose_name='доп. информация', blank=True)
 
@@ -183,8 +199,23 @@ class Domain(models.Model):
     def get_html_tiktok(self):
         return Domain.HTML_CLASS[self.tiktok]
 
+    def get_http_site(self):
+        return f'http://{self.name}/'
+
+    def get_https_site(self):
+        return f'https://{self.name}/'
+
     def __str__(self):
         return self.name
+
+
+class PublishedSite(models.Model):
+    site_dir = models.ForeignKey(Site, on_delete=models.CASCADE)
+    domain = models.OneToOneField(Domain, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return f'{self.site_dir}: {self.domain}'
 
 
 class CodeExample(models.Model):
