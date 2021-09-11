@@ -11,7 +11,7 @@ from .api import MyError, Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev, get_url_link_from_name
 from .link_checker import Url, SuccessPage, LinkCheckerManager
-from .models import Stream, Site, OldLand, Domain, CodeExample, LearnCode
+from .models import Stream, Site, OldLand, Domain, CodeExample
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -243,11 +243,6 @@ def domain_change_status(request, dom_id, source, new_status):
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
 
-def learn_code(request):
-    examples = LearnCode.objects.all()
-    content = {
-        'examples': examples,
-    }
-    return render(request, 'office/learn_code.html', content)
+
 
 

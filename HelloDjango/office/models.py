@@ -207,18 +207,3 @@ class CodeExample(models.Model):
 
 
 
-class LearnCode(models.Model):
-    LANGS = (
-        ('JS', 'JS'),
-        ('HTML', 'HTML'),
-        ('CSS', 'CSS'),
-        ('Python', 'Python'),
-        ('Git', 'Git'),
-        ('Sql', 'Sql'),
-    )
-    group = models.CharField(max_length=200, choices=LANGS)
-    example = models.TextField()
-    descriptions = models.TextField()
-
-    def __str__(self):
-        return self.example

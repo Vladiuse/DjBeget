@@ -1,5 +1,5 @@
 import requests as req
-
+from pprint import pprint
 # import beget_api_keys
 from office.beget_api_keys import begget_login, begget_pass
 
@@ -102,4 +102,4 @@ class Beget(ApiManager):
 
 if __name__ == '__main__':
     bm = Beget()
-    print(bm.get_sites())
+    pprint(bm.get_sites())
