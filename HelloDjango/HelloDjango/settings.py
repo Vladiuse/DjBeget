@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'office.apps.OfficeConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

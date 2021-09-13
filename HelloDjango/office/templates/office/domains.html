@@ -19,12 +19,13 @@
         </div>
 </div>
 <br>
-<table>
+<table id="domain-table">
         <thead>
             <tr>
 
                 <th>Beget ID</th>
                 <th>Ссылка</th>
+                <th>Сайт</th>
                 <th>Описание</th>
                 <th>FaceBook</th>
                  <th>Google</th>
@@ -34,65 +35,23 @@
 
             </tr>
         </thead>
-     {% for domain in domains %}
-
             <tr>
-
-                <td>{{ domain.beget_id }}</td>
-                <td><a href="{{ domain.url }}" target="_blank">{{ domain.name }}</a></td>
-                <td>{{ domain.description }}</td>
-                <td>
-
-
-                    <form>
-                    <!-- facebook-->
-                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_facebook }}">
-                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.BAN %}" class="status status-unpaid"
-                         {% if domain.BAN == domain.facebook %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.USE %}" class="status status-pending"
-                          {% if domain.USE == domain.facebook %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.NEW %}" class="status status-paid"
-                           {% if domain.NEW == domain.facebook %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
-                    </select>
-
-                    </form>
-
-
-
+                <td class="beget_id"> bbbb</td>
+                <td class="url"><a href="" target="_blank"></a></td>
+                <td class="description">xxxxxxxxx</td>
+                <td class="facebook">
+         xxxxxxx
                 </td>
-                <td>
-                    <form>
-                    <!-- google-->
-                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_google }}">
-                      <option value="{% url 'office:change_status' domain.id 'google' domain.BAN %}" class="status status-unpaid"
-                         {% if domain.BAN == domain.google %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'google' domain.USE %}" class="status status-pending"
-                          {% if domain.USE == domain.google %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'google' domain.NEW %}" class="status status-paid"
-                           {% if domain.NEW == domain.google %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
-                    </select>
-
-                    </form>
+                <td class="google">
+        xxxx
                 </td>
-                <td>
-                    <form>
-                    <!-- tiktok-->
-                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_tiktok }}">
-                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.BAN %}" class="status status-unpaid"
-                         {% if domain.BAN == domain.tiktok %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.USE %}" class="status status-pending"
-                          {% if domain.USE == domain.tiktok %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
-                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.NEW %}" class="status status-paid"
-                           {% if domain.NEW == domain.tiktok %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
-                    </select>
-
-                    </form>
+                <td class="tiktok">
+             xxxxxxx
                 </td>
-
             </tr>
-        {% endfor %}
     </table>
 <script>
+    // кнопка показать скрыть старые домены
     var oldDoms = $('.free-doms');
     oldDoms.hide();
     var my_btn = $('#my-btn');
@@ -109,6 +68,88 @@
     my_btn.attr('onclick','showOld(0);');     }
 
     };
+    /// 
+    
+    csrfmiddlewaretoken = '{{ csrf_token }}'
+    var STATUSHTML = {
+        'none':'status-none',
+        'NEW': 'status-paid',
+        'BAN': 'status-unpaid',
+        'USE': 'status-pending',
+    } 
+    URL = 'api/'
+    URL_DOM_DESC = 'api/change_domain_desc/'
+    // замена текста на input
+    $('body').on('click', 'td[class=description]', function(){
+//    var input = $('<input id="now" type="text">')
+    var input = $('<textarea id="now" type="text"></textarea>')   
+   var text = $(this).text()
+   input.val(text)
+   $(this).wrap('<div>')
+   $(this).after(input)
+   
+   var current_p = $(this)
+   current_p.hide()
+   input.focus()
+   // при изменение интута
+
+   var parrent = $(this).parent()
+   $(parrent).on('change', '#now', function(){
+
+  
+       var result = $(this).val()
+       current_p.text(result)
+       current_p.show()
+       $(this).remove()
+       var id_of = current_p.closest('tr').attr('id')
+       console.log(current_p.closest('tr').attr('id'))
+       console.log(result)
+    //    console.log(current_p.parentsUntil('table'))
+    //    changeDomainText(current_p.attr('id'), result)
+    changeDomainText(id_of, result)
+
+   }
+   )
+   // когда нет изменений
+   $(parrent).on('blur', '#now', function(){
+       console.log('unfocus')
+       current_p.show()
+       $(this).remove()
+
+   })
+
+})
+    function changeDomainText(id, result){
+            csrfmiddlewaretoken = '{{ csrf_token }}'
+    $.post(URL_DOM_DESC + id + '/',
+    {'description':result,'csrfmiddlewaretoken': csrfmiddlewaretoken,},
+    //  {'description':result,'csrfmiddlewaretoken': csrfmiddlewaretoken, },
+        function(data) {
+        // $('#news').html(data);
+        console.log('Good send to DB')
+        });
+    }
+
+    loadDomains()
+    // генерация строк таблицы
+    function loadDomains(){
+        $.getJSON(URL, function(data){
+        var table = $('#domain-table')
+        table.children().slice(1).remove() // удаляем все строки кроме заглавной(шапки)
+        $.each(data, function(key, value){
+            var row = $('<tr id="'+ value.id + '"></tr>')
+                row.append($('<td class=beget-id>'+ value.beget_id + '</td>'))
+                row.append($('<td class=name><a href="'+ value.get_http + '" blank="_tagret">' +value.name + '<a></td>'))
+                row.append($('<td class=site>'+ value.site + '</td>'))
+                row.append($('<td class=description>'+ value.description + '</td>'))
+                row.append($('<td class=facebook><p class="status '+ STATUSHTML[value.facebook] + '">'+ value.facebook + '</p></td>'))
+                row.append($('<td class=google><p class="status '+ STATUSHTML[value.google] + '">'+ value.google + '</p></td>'))
+                row.append($('<td class=tiktok><p class="status '+ STATUSHTML[value.tiktok] + '">'+ value.tiktok + '</p></td>'))
+            table.append(row)
+
+        })
+    })
+    }
 </script>
 
 {% endblock %}

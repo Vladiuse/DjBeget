@@ -9,9 +9,15 @@ from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from .api import Beget
 from .beget_api_keys import begget_login, begget_pass
-from .help import ImagePrev, get_url_link_from_name
+from .help import ImagePrev
 from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample
+from rest_framework.response import Response
+from .serializers import DomainSerializer
+from rest_framework.decorators import api_view
+from rest_framework.decorators import renderer_classes
+from rest_framework.renderers import JSONRenderer
+from rest_framework import status
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -180,3 +186,31 @@ def domain_change_status(request, dom_id, source, new_status):
         pass
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def domains_list_api(request):
+    if request.method == 'GET':
+        domains = Domain.objects.all()
+        serializer = DomainSerializer(domains, many=True)
+        return Response(serializer.data)
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def domains_detail(request, pk):
+    try:
+        domain = Domain.objects.get(pk=pk)
+    except Domain.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = DomainSerializer(domain)
+        return Response(serializer.data,)
+    elif request.method == 'POST':
+        serializer = DomainSerializer(domain, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

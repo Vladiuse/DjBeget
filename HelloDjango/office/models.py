@@ -225,6 +225,9 @@ class Domain(models.Model):
     google = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
     tiktok = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
 
+    def get_http(self):
+        return f'http://{self.name}/'
+
     def get_html_facebook(self):
         return Domain.HTML_CLASS[self.facebook]
 
