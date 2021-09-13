@@ -1,9 +1,9 @@
 from django.db import models
-# develop?
+from django.utils import timezone
+
 # Create your models here.
 from .api import MyError, Beget
 from .link_checker import Checker
-from django.utils import timezone
 
 
 class Site(models.Model):
@@ -39,12 +39,11 @@ class Site(models.Model):
     datetime = models.DateTimeField(auto_now_add=True)
 
     def save(self):
-        #TODO перенести в другую функцию?
+        # TODO перенести в другую функцию?
         public_dir = '/public_html'
         if self.site_name.endswith(public_dir):
             self.site_name = self.site_name[:-len(public_dir)]
         super().save()
-
 
     def get_http_site(self):
         return f'http://{self.site_name}/'
@@ -125,7 +124,6 @@ class Site(models.Model):
     def get_id_beget(self):
         b = Beget()
         sites = b.get_sites()
-        from pprint import pprint
         for site in sites['result']:
             id = site['id']
             print(id)
@@ -143,6 +141,43 @@ class Site(models.Model):
 
     def __str__(self):
         return self.site_name
+
+
+class TrafficSource(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Источник трафика')
+    short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Источники трафика'
+        verbose_name_plural = 'Источник трафика'
+
+
+class Country(models.Model):
+    name_ru = models.CharField(max_length=200, verbose_name='Название страны')
+    name_eng = models.CharField(max_length=200, verbose_name='Название страны ENG', blank=True, null=True)
+    short_name = models.CharField(max_length=10, verbose_name='Абревивтура страны')
+    phone_code = models.IntegerField(verbose_name='Код мобильного страны', unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name_ru
+
+    class Meta:
+        verbose_name = 'Страны'
+        verbose_name_plural = 'Страна'
+
+
+class CampaignStatus(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Статуст кампании')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Cтатусы кампаний'
+        verbose_name_plural = 'Cтатус кампании'
 
 
 class OldLand(models.Model):
@@ -209,13 +244,22 @@ class Domain(models.Model):
         return self.name
 
 
-class PublishedSite(models.Model):
-    site_dir = models.ForeignKey(Site, on_delete=models.CASCADE)
-    domain = models.OneToOneField(Domain, on_delete=models.CASCADE)
-
+class Account(models.Model):
+    source = models.ForeignKey(TrafficSource, on_delete=models.DO_NOTHING)
+    name = models.CharField(max_length=200, verbose_name='Название аккаунта', blank=True, null=True)
+    description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
 
     def __str__(self):
-        return f'{self.site_dir}: {self.domain}'
+        return self.name
+
+class Cabinet(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Название аккаунта')
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    pixel = models.IntegerField(verbose_name='Пиксель акаунта', blank=True, null=True)
+    description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
+
+    def __str__(self):
+        return self.name
 
 
 class CodeExample(models.Model):
@@ -229,6 +273,3 @@ class CodeExample(models.Model):
 
     def __str__(self):
         return self.name
-
-
-

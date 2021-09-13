@@ -2,6 +2,7 @@
 # sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
 
 import requests
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -15,7 +16,7 @@ from .models import Site, OldLand, Domain, CodeExample
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
 
-
+@login_required
 def get_domains_api():
     # TODO удалить
     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
@@ -28,7 +29,7 @@ def get_domains_api():
             domains.append(domain)
     return domains
 
-
+@login_required
 def sites(request):
     """Список сайтов, их статусов и тд"""
     # sites = Site.objects.all().order_by('-pk')
@@ -38,7 +39,7 @@ def sites(request):
                }
     return render(request, 'office/index.html', content)
 
-
+@login_required
 def update_sites(request):
     """Обновить список сайтов"""
     #TODO при изменение домена, если можедь уже существует - домены не обновяться
@@ -69,7 +70,7 @@ def update_sites(request):
                 s.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
-
+@login_required
 def get_site_title(request, hard):
     # TODO удалить - перенести в Page
     """Обновить заголовки сайтов"""
@@ -78,7 +79,7 @@ def get_site_title(request, hard):
         site.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
-
+@login_required
 def old_lands(request):
     """Архив старых лэндов"""
     host = request.get_host()
@@ -111,7 +112,7 @@ def old_lands(request):
     }
     return render(request, 'office/old_lands.html', content)
 
-
+@login_required
 def requisites(request):
     """Реквизиты и шаблоны html, css, js"""
     examples = CodeExample.objects.all()
@@ -120,7 +121,7 @@ def requisites(request):
     }
     return render(request, 'office/requisites.html', content)
 
-
+@login_required
 def checker(request, site_id):
     """Проверочник сайтов"""
     if site_id == 666:
@@ -148,7 +149,7 @@ def checker(request, site_id):
     content = {'content': result, 'site': site}
     return render(request, 'office/checker.html', content)
 
-
+@login_required
 def domains(request):
     """Список доменов"""
     Beget().update_domains()
@@ -159,7 +160,7 @@ def domains(request):
                }
     return render(request, 'office/domains.html', content)
 
-
+@login_required
 def domain_change_status(request, dom_id, source, new_status):
     """Изменение статуса домена"""
     s = {

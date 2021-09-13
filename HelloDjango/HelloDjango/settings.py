@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-ji1ch98ohaqx-h5_zau@_fn8@g(j=z10+tb5^et&8oan7e!97p
 DEBUG = True
 
 ALLOWED_HOSTS = ['handy-fun.com', 'main-prosale.store', '127.0.0.1']
-
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL= '/login'
 STATIC_ROOT = '/home/v/vladiuse/django/public_html/static'
 
 
