@@ -101,7 +101,7 @@ class MainPage(Checker):
     Обработчик главной страницы
     """
 
-    REQUISITES = ['ИП Гребенщиков', 'УНП 19345252', 'Радиальная']
+    REQUISITES = ['ИП Гребенщиков', 'УНП 19345252', 'Радиальная', '+375(29)140-29-00']
     ORDER_ACTION = 'api.php'
     COMMENT_ACTION = 'spas.html'
     FORM_NAME = 'name="name"'
