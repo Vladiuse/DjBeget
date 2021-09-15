@@ -1,6 +1,3 @@
-# import os, sys
-# sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
-
 import requests
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
@@ -13,33 +10,32 @@ from .help import ImagePrev
 from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample
 from rest_framework.response import Response
-from .serializers import DomainSerializer
-from rest_framework.decorators import api_view
-from rest_framework.decorators import renderer_classes
+from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
+from .serializers import DomainSerializer
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
 
-@login_required
-def get_domains_api():
-    # TODO удалить
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_list_domains_url)
-    answer = res.json()
-    domains = []
-    for site in answer['answer']['result']:
-        for domain in site['domains']:
-            domain = domain['fqdn']
-            domains.append(domain)
-    return domains
+# @login_required
+# def get_domains_api():
+#     # TODO удалить
+#     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
+#     res = requests.get(get_list_domains_url)
+#     answer = res.json()
+#     domains = []
+#     for site in answer['answer']['result']:
+#         for domain in site['domains']:
+#             domain = domain['fqdn']
+#             domains.append(domain)
+#     return domains
 
 @login_required
 def sites(request):
     """Список сайтов, их статусов и тд"""
     # sites = Site.objects.all().order_by('-pk')
-    sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))
+    sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))  # исключаються тех сайты
     sites.sort(key=Site.get_sort_name)
     content = {'sites': sites,
                }
@@ -48,32 +44,51 @@ def sites(request):
 @login_required
 def update_sites(request):
     """Обновить список сайтов"""
-    #TODO при изменение домена, если можедь уже существует - домены не обновяться
+    #TODO при изменение домена, если можель уже существует - домены не обновяться
     b = Beget()
     sites_id_bd = set([site.beget_id for site in Site.objects.all()])
     sites_beget = b.get_sites()
     sites_beget_id = set([site['id'] for site in sites_beget])
     sites_to_del = sites_id_bd - sites_beget_id
-    sites_to_add = sites_beget_id - sites_id_bd
+    # сайтов из базы которых нет в ответе с сервера
     for site_beget_id in sites_to_del:
         s = Site.objects.get(beget_id=site_beget_id)
         s.delete()
-    for site_beget_id_add in sites_to_add:
-        for site_beget in sites_beget:
-            if site_beget['id'] == site_beget_id_add:
-                beget_id = site_beget['id']
-                site_name = site_beget['path']
-                s = Site(beget_id=beget_id, site_name=site_name)
-                s.save()
-                for domain in site_beget['domains']:
-                    domain_beget_id = domain['id']
-                    try:
-                        domain = Domain.objects.get(beget_id=domain_beget_id)
-                    except ObjectDoesNotExist:
-                        b.update_domains()
-                        domain = Domain.objects.get(beget_id=domain_beget_id)
-                    s.domain_set.add(domain)
-                s.save()
+    for site_beget in sites_beget:
+        try:
+            site = Site.objects.get(beget_id=site_beget['id'])
+        except Site.DoesNotExist:
+            #добавление нового сайта
+            beget_id = site_beget['id']
+            site_name = site_beget['path']
+            site = Site(beget_id=beget_id, site_name=site_name)
+            site.save()
+            # обновление доменов сайта
+            for domain in site_beget['domains']:
+                domain_beget_id = domain['id']
+                try:
+                    domain = Domain.objects.get(beget_id=domain_beget_id)
+                except ObjectDoesNotExist:
+                    b.update_domains()
+                    domain = Domain.objects.get(beget_id=domain_beget_id)
+                site.domain_set.add(domain)
+            site.save()
+    # for site_beget_id_add in sites_to_add:
+    #     for site_beget in sites_beget:
+    #         if site_beget['id'] == site_beget_id_add:
+    #             beget_id = site_beget['id']
+    #             site_name = site_beget['path']
+    #             s = Site(beget_id=beget_id, site_name=site_name)
+    #             s.save()
+    #             for domain in site_beget['domains']:
+    #                 domain_beget_id = domain['id']
+    #                 try:
+    #                     domain = Domain.objects.get(beget_id=domain_beget_id)
+    #                 except ObjectDoesNotExist:
+    #                     b.update_domains()
+    #                     domain = Domain.objects.get(beget_id=domain_beget_id)
+    #                 s.domain_set.add(domain)
+    #             s.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
 @login_required

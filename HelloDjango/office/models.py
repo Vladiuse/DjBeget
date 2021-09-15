@@ -214,7 +214,7 @@ class Domain(models.Model):
         USE: 'status status-pending',
         BAN: 'status status-unpaid',
     }
-    site = models.ForeignKey(Site, on_delete=models.DO_NOTHING, blank=True, null=True)
+    site = models.ForeignKey(Site, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=99, verbose_name='название домена', unique=True)
     # url = models.URLField(max_length=300, blank=True, null=True, unique=True)
     beget_id = models.IntegerField(verbose_name='id домена на beget', unique=True)

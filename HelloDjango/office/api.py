@@ -174,6 +174,6 @@ class Beget(ApiManager):
 
 if __name__ == '__main__':
     bm = Beget()
+    list = []
     for i in bm.get_sites():
-        if 'test' in i['path']:
-            pprint(i)
+        pprint(i)
