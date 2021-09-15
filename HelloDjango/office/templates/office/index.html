@@ -7,6 +7,11 @@
 
 <h4>Всего: {{ sites|length|add:"2"}} </h4>
 <br>
+<div style="width: 130px;">
+    <a class="status status-paid show-new">Только Новые</a>
+</div>
+<br>
+
 
     <table>
         <thead>
@@ -29,7 +34,7 @@
                     <div class="icon-block">
 
                         {% if site.is_new %}
-                    <a class="status status-paid">Новый</a>
+                    <a class="status status-paid new-site">Новый</a>
                     {% endif %}
 
                         <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
@@ -51,6 +56,29 @@
         {% endfor %}
     </table>
 
-
+    <script>
+        // Кнопка показать/скрыть не новые сайты
+        var butn = $('.show-new')
+        var newSiteTo = 'hide'
+        $('a.show-new').click(function(){
+            var rows = $('tr').slice(1)
+            var rowsSiteNew = rows.filter(function(){
+                var x = $(this).find($('a.new-site'))
+                if (x.length == 0){return false}
+                if (x.length != 0){return true}
+            })
+            if (newSiteTo == 'hide'){
+                rows.hide()
+                rowsSiteNew.show()
+                newSiteTo = 'show'
+                butn.text('Все')
+                }
+            else {
+                rows.show()
+                newSiteTo = 'hide'
+                butn.text('Только Новые')
+                }
+        })
+    </script>
 
 {% endblock %}

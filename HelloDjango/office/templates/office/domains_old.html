@@ -1,0 +1,114 @@
+{% extends 'office/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Домены</h1>
+<br>
+<div style="width:30%;display: inline-block;">
+<p>Всего доменов: {{ domains|length }}</p>
+<h5>Свободных: {{ free_doms|length }}</h5>
+    <div class="for-btn">
+        <button id="my-btn" onclick="showOld(1);" class="status status-none">Show</button>
+    </div>
+
+    <div class="free-doms">
+{% for dom in free_doms %}
+<p>{{ dom }}</p>
+{% empty %}
+<p>Нет свободных доменов</p>
+{% endfor %}
+        </div>
+</div>
+<br>
+<table>
+        <thead>
+            <tr>
+
+                <th>Beget ID</th>
+                <th>Ссылка</th>
+                <th>Описание</th>
+                <th>FaceBook</th>
+                 <th>Google</th>
+                 <th>TikTok</th>
+
+
+
+            </tr>
+        </thead>
+     {% for domain in domains %}
+
+            <tr>
+
+                <td>{{ domain.beget_id }}</td>
+                <td><a href="{{ domain.url }}" target="_blank">{{ domain.name }}</a></td>
+                <td>{{ domain.description }}</td>
+                <td>
+
+
+                    <form>
+                    <!-- facebook-->
+                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_facebook }}">
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.BAN %}" class="status status-unpaid"
+                         {% if domain.BAN == domain.facebook %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.USE %}" class="status status-pending"
+                          {% if domain.USE == domain.facebook %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'facebook' domain.NEW %}" class="status status-paid"
+                           {% if domain.NEW == domain.facebook %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
+                    </select>
+
+                    </form>
+
+
+
+                </td>
+                <td>
+                    <form>
+                    <!-- google-->
+                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_google }}">
+                      <option value="{% url 'office:change_status' domain.id 'google' domain.BAN %}" class="status status-unpaid"
+                         {% if domain.BAN == domain.google %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'google' domain.USE %}" class="status status-pending"
+                          {% if domain.USE == domain.google %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'google' domain.NEW %}" class="status status-paid"
+                           {% if domain.NEW == domain.google %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
+                    </select>
+
+                    </form>
+                </td>
+                <td>
+                    <form>
+                    <!-- tiktok-->
+                    <select  onchange="document.location=this.options[this.selectedIndex].value" class="{{ domain.get_html_tiktok }}">
+                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.BAN %}" class="status status-unpaid"
+                         {% if domain.BAN == domain.tiktok %}selected="selected"{% endif %} >{{ domain.BAN_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.USE %}" class="status status-pending"
+                          {% if domain.USE == domain.tiktok %}selected="selected"{% endif %} >{{ domain.USE_RU }}</option>
+                      <option value="{% url 'office:change_status' domain.id 'tiktok' domain.NEW %}" class="status status-paid"
+                           {% if domain.NEW == domain.tiktok %}selected="selected"{% endif %} >{{ domain.NEW_RU }}</option>
+                    </select>
+
+                    </form>
+                </td>
+
+            </tr>
+        {% endfor %}
+    </table>
+<script>
+    var oldDoms = $('.free-doms');
+    oldDoms.hide();
+    var my_btn = $('#my-btn');
+    var btn_div = $('.for-btn');
+    function showOld(what_do){
+    if (what_do == 0){
+    oldDoms.hide();
+    my_btn.text('Show');
+    my_btn.attr('onclick','showOld(1)');
+    }
+     if (what_do == 1){
+     oldDoms.show();
+    my_btn.text('Hide');
+    my_btn.attr('onclick','showOld(0);');     }
+
+    };
+</script>
+
+{% endblock %}
