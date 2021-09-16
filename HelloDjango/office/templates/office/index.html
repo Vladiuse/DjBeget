@@ -1,15 +1,67 @@
 {% extends 'office/base.html' %}
-
-
 {% block content %}
+<style>
+.find-div{
+    text-align: left;
+    /* width: 130px; */
+    justify-content: left;
+    position: relative;
+    display: flex;
+    height: 30px;
+    margin-bottom: 10px;
+
+}
+#find-site{
+  width: 250px;
+  border: 3px solid #262626;
+  border-right: none;
+  padding: 5px;
+  height: 30px;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  color: #182720;
+}
+.searchButton {
+  width: 40px;
+  height: 100%;
+  border: 1px solid #262626;
+  background: #262626;
+  text-align: center;
+  color: #fff;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  font-size: 20px;
+}
+.searchButton i{
+    margin: 0px;
+}
+.show-new{
+    width: 150px;
+    margin-right: 30px;
+    height: 30px;
+}
+
+</style>
 <h1>Сайты</h1>
 <br>
 
 <h4>Всего: {{ sites|length|add:"2"}} </h4>
 <br>
-<div style="width: 130px;">
-    <a class="status status-paid show-new">Только Новые</a>
+
+<div class="find-div">
+    <div id="show-new">
+        <a class="status status-paid show-new">Только Новые</a>
+    </div>
+    <input type="text" placeholder="поиск сайта..." id="find-site" style="height: 100%;"> 
+    <button type="submit" class="searchButton">
+        <i class="fa fa-search"></i>
+     </button>
 </div>
+
+
+
+
+
 <br>
 
 
@@ -44,7 +96,7 @@
                 </td>
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
-                <td>{{ site.title|slice:":30" }}</td>
+                <td class="site-title">{{ site.title|slice:":30" }}</td>
 <!--                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>-->
                 <td>
                     <p class="status {{ site.get_status_html }}">
@@ -78,6 +130,30 @@
                 newSiteTo = 'hide'
                 butn.text('Только Новые')
                 }
+        })
+
+        // поиск по сатам substring()
+        var findInput = $('#find-site')
+        var rows = $('tr').slice(1)
+        findInput.focus(function(){
+            console.log('focus')
+            findInput.keyup(function(){
+                console.log('key up')
+                var rowsWithText = rows.filter(function(){
+                // var x = $(this).find($('.site-title:contains("'+ findInput.val().toLowerCase() + '")'))
+                var tdBlockText = $(this).find($('.site-title')).text().toLowerCase()
+                var text = findInput.val().toLowerCase()
+                // console.log(x.text().toLowerCase())
+                if (tdBlockText.indexOf(text) != -1){return true}
+                })
+                rows.hide()
+                rowsWithText.show()
+            })
+        findInput.blur(function(){
+            console.log('blur')
+            rows.show()
+            $(this).val('')
+        })
         })
     </script>
 
