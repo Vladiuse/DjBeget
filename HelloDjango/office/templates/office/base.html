@@ -55,9 +55,9 @@
                   </li> -->
                 </ul>
               </li>
-              <li>
-                <a href="{% url 'office:checker' 666 %}">Checker</a>
-              </li>
+<!--              <li>-->
+<!--                <a href="{% url 'office:checker' 666 %}">Checker</a>-->
+<!--              </li>-->
               <li>
                 <a href="#!">Portfolio</a>
                 <ul class="nav-dropdown">
@@ -78,11 +78,11 @@
               </li>
               <li>
 
-                  <p><a href="{% url 'logout' %}">{{ user.username }}, logout</a></p>
+                  <p><a href="{% url 'logout' %}">{{ user.username }}  <i class="fas fa-times"></i></a></p>
                   {% else %}
                 </li>
               <li>
-                <p><a href="{% url 'login' %}">Login</a></p>
+                <p><a href="{% url 'login' %}">Login   <i class="fas fa-sign-out-alt"></i></a></p>
                   {% endif %}
               </li>
 

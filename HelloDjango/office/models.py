@@ -34,7 +34,7 @@ class Site(models.Model):
     beget_id = models.IntegerField()
     site_name = models.CharField(max_length=99)
     # domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
-    title = models.CharField(max_length=200, verbose_name='Заголовок сайта')
+    title = models.CharField(max_length=200, verbose_name='Заголовок сайта', default='None')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
     datetime = models.DateTimeField(auto_now_add=True)
 
@@ -89,6 +89,7 @@ class Site(models.Model):
             self.title = MyError.NO_CONNECTION
         else:
             self.title = page.get_h1_title()
+        self.save()
 
     def get_log_url(self):
         """Ссылка на лог сайта"""

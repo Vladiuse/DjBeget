@@ -61,8 +61,9 @@ def update_sites(request):
             #добавление нового сайта
             beget_id = site_beget['id']
             site_name = site_beget['path']
-            site = Site(beget_id=beget_id, site_name=site_name)
+            site = Site(beget_id=beget_id, site_name=site_name, title='None')
             site.save()
+            site.update_title()
             # обновление доменов сайта
             for domain in site_beget['domains']:
                 domain_beget_id = domain['id']
@@ -97,7 +98,7 @@ def get_site_title(request, hard):
     """Обновить заголовки сайтов"""
     for site in Site.objects.all():
         site.update_title(bool(hard))
-        site.save()
+        # site.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
 @login_required
