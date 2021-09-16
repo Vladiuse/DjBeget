@@ -10,7 +10,7 @@ class Site(models.Model):
     """
     Сайт
     """
-    DONT_CHECK = ['vladiuse.beget.tech', 'main-prosale.store']
+    DONT_CHECK = ['vladiuse.beget.tech', 'django', 'old-lands',]
     NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found',
                  'Домен не прилинкован ни к одной из директорий на сервере!']
 
@@ -256,7 +256,7 @@ class Account(models.Model):
         return self.name
 
 class Cabinet(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Название аккаунта')
+    name = models.CharField(max_length=200, verbose_name='Название кабинета')
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     pixel = models.IntegerField(verbose_name='Пиксель акаунта', blank=True, null=True)
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
