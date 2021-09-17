@@ -55,6 +55,7 @@
     <input type="text" placeholder="поиск сайта..." id="find-site" style="height: 100%;"> 
     <button type="submit" class="searchButton">
         <i class="fa fa-search"></i>
+        <i class="fas fa-times" style="display: none;"></i>
      </button>
 </div>
 
@@ -132,28 +133,32 @@
                 }
         })
 
-        // поиск по сатам substring()
+        // поиск по сайтам
         var findInput = $('#find-site')
         var rows = $('tr').slice(1)
+        var findIco = $('.fa-search')
+        var findCross = $('.fa-times')
         findInput.focus(function(){
-            console.log('focus')
             findInput.keyup(function(){
-                console.log('key up')
+                // смена лупы на крестик
+                if (findInput.val() != '') {findIco.hide();findCross.show()}
+                else {findIco.show(), findCross.hide()}
+                
                 var rowsWithText = rows.filter(function(){
-                // var x = $(this).find($('.site-title:contains("'+ findInput.val().toLowerCase() + '")'))
                 var tdBlockText = $(this).find($('.site-title')).text().toLowerCase()
                 var text = findInput.val().toLowerCase()
-                // console.log(x.text().toLowerCase())
                 if (tdBlockText.indexOf(text) != -1){return true}
                 })
                 rows.hide()
                 rowsWithText.show()
             })
-        findInput.blur(function(){
-            console.log('blur')
-            rows.show()
-            $(this).val('')
         })
+        // при клике на крестик поиска
+        findCross.click(function(){
+            findIco.show();
+            findCross.hide();
+            findInput.val('');
+            rows.show()
         })
     </script>
 
