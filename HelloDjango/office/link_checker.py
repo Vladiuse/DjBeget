@@ -7,10 +7,10 @@ from langdetect import detect
 
 
 class StatusHTML:
-    GREY = 'status-none'
-    RED = 'status-unpaid'
-    YELLOW = 'status-pending'
-    GREEN = 'status-paid'
+    GREY = 'btn btn-secondary'
+    RED = 'btn btn-danger'
+    YELLOW = 'btn btn-warning'
+    GREEN = 'btn btn-success'
 
 
 class Url:

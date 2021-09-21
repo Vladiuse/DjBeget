@@ -20,10 +20,10 @@ class Site(models.Model):
     GREEN = 'Все ОК'
 
     STATUS_HTML = {
-        GREY: 'status-none',
-        RED: 'status-unpaid',
-        YELLOW: 'status-pending',
-        GREEN: 'status-paid',
+        GREY: 'btn btn-secondary',
+        RED: 'btn btn-danger',
+        YELLOW: 'btn btn-warning',
+        GREEN: 'btn btn-success',
     }
     CHOICE = (
         (GREY, GREY),
@@ -211,9 +211,9 @@ class Domain(models.Model):
     )
 
     HTML_CLASS = {
-        NEW: 'status status-paid',
-        USE: 'status status-pending',
-        BAN: 'status status-unpaid',
+        NEW: 'btn btn-success',
+        USE: 'btn btn-warning',
+        BAN: 'btn btn-danger',
     }
     site = models.ForeignKey(Site, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=99, verbose_name='название домена', unique=True)

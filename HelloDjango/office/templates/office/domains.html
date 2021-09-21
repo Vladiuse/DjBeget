@@ -1,6 +1,7 @@
 {% extends 'office/base.html' %}
 {% load static %}
 {% block content %}
+<div class="main-wrapper">
 <h1>Домены</h1>
 <br>
 <div style="width:30%;display: inline-block;">
@@ -19,8 +20,8 @@
         </div>
 </div>
 <br>
-<table id="domain-table">
-        <thead>
+<table id="domain-table" class="table">
+        <thead class="table-light">
             <tr>
 
                 <th>Beget ID</th>
@@ -50,6 +51,7 @@
                 </td>
             </tr>
     </table>
+</div>
 <script>
     // кнопка показать скрыть старые домены
     var oldDoms = $('.free-doms');
@@ -72,10 +74,10 @@
     
     csrfmiddlewaretoken = '{{ csrf_token }}'
     var STATUSHTML = {
-        'none':'status-none',
-        'NEW': 'status-paid',
-        'BAN': 'status-unpaid',
-        'USE': 'status-pending',
+        'none':'btn btn-secondary',
+        'NEW': 'btn btn-success',
+        'BAN': 'btn btn-danger',
+        'USE': 'btn btn-warning',
     } 
     URL = 'api/'
     URL_DOM_DESC = 'api/change_domain_desc/'
