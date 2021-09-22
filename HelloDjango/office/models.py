@@ -10,7 +10,7 @@ class Site(models.Model):
     """
     Сайт
     """
-    DONT_CHECK = ['vladiuse.beget.tech', 'django', 'old-lands',]
+    DONT_CHECK = ['vladiuse.beget.tech', 'django', 'old-lands', ]
     NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found',
                  'Домен не прилинкован ни к одной из директорий на сервере!']
 
@@ -144,43 +144,6 @@ class Site(models.Model):
         return self.site_name
 
 
-class TrafficSource(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Источник трафика')
-    short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Источники трафика'
-        verbose_name_plural = 'Источник трафика'
-
-
-class Country(models.Model):
-    name_ru = models.CharField(max_length=200, verbose_name='Название страны')
-    name_eng = models.CharField(max_length=200, verbose_name='Название страны ENG', blank=True, null=True)
-    short_name = models.CharField(max_length=10, verbose_name='Абревивтура страны')
-    phone_code = models.IntegerField(verbose_name='Код мобильного страны', unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return self.name_ru
-
-    class Meta:
-        verbose_name = 'Страны'
-        verbose_name_plural = 'Страна'
-
-
-class CampaignStatus(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Статуст кампании')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Cтатусы кампаний'
-        verbose_name_plural = 'Cтатус кампании'
-
-
 class OldLand(models.Model):
     # TODO обьеденить с моделью Site?
     """
@@ -248,6 +211,60 @@ class Domain(models.Model):
         return self.name
 
 
+class TrafficSource(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Источник трафика')
+    short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Источники трафика'
+        verbose_name_plural = 'Источник трафика'
+
+
+class Country(models.Model):
+    name_ru = models.CharField(max_length=200, verbose_name='Название страны')
+    name_eng = models.CharField(max_length=200, verbose_name='Название страны ENG', blank=True, null=True)
+    short_name = models.CharField(max_length=10, verbose_name='Абревивтура страны')
+    phone_code = models.IntegerField(verbose_name='Код мобильного страны', unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name_ru
+
+    class Meta:
+        verbose_name = 'Страны'
+        verbose_name_plural = 'Страна'
+
+
+class CampaignStatus(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Статуст кампании')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Cтатусы кампаний'
+        verbose_name_plural = 'Cтатус кампании'
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=299, verbose_name='Название кампании', blank=True, null=True)
+    cab = models.ForeignKey('Cabinet', on_delete=models.SET_NULL, verbose_name='Кабинет запуска', null=True)
+    geo = models.ManyToManyField(Country, verbose_name='Гео запуска')
+    land = models.ManyToManyField(Domain, verbose_name='Запускаемая ссылка')
+    status = models.ForeignKey(CampaignStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    published = models.DateTimeField(auto_now_add=True, )
+    edited = models.DateTimeField(auto_now=True, )
+
+    class Meta:
+        verbose_name =  'Рекламная кампания'
+        verbose_name_plural = 'Рекламные кампании'
+
+    def __str__(self):
+        return self.name
+
+
 class Account(models.Model):
     source = models.ForeignKey(TrafficSource, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=200, verbose_name='Название аккаунта', blank=True, null=True)
@@ -255,6 +272,11 @@ class Account(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Аккаунты'
+        verbose_name_plural = 'Аккаунт'
+
 
 class Cabinet(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название кабинета')
@@ -264,6 +286,10 @@ class Cabinet(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'Рекламные кабинеты'
+        verbose_name_plural = 'Рекламный кабинет'
 
 
 class CodeExample(models.Model):

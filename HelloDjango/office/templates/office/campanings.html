@@ -1,0 +1,192 @@
+{% extends 'office/base.html' %}
+{% block content %}
+
+
+<!-- <div class="main-wrapper">
+    <h2> Запуски</h2>
+    <div class="table-responsive table-wrapper">
+        <table class="table" id="api">
+            <thead class="table-light">
+                <tr>
+                    <th>Название</th>
+                    <th>Вертикаль</th>
+                    <th>Гео</th>
+                    <th>Аккаунт</th>
+                    <th>Кабинет</th>
+                    <th>Ссылки</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tr>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+                <td>xxxxxx</td>
+            </tr>
+        </table>
+    </div> -->
+
+<div class="main-wrapper">
+    <h3> From django</h3>
+    <div class="table-responsive table-wrapper">
+        <table class="table" id="">
+            <thead class="table-light">
+                <tr>
+                    <th>Вертикаль</th>
+                    <th>Аккаунт</th>
+                    <th>Кабинет</th>
+                    <th>Гео</th>
+                    <th>Название</th>
+                    <th>Ссылки</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            {% for comp in campanings %}
+            <tr id="{{ comp.id }}">         
+                
+                <td>{{ comp.cab.account.source.name }}</td>
+                <td>{{ comp.cab.account.name }}</td>
+                <td>{{ comp.cab }}</td>
+                <td>
+                    {% for geo in comp.geo.all %}
+                    {{ geo.short_name}}
+                    {% endfor %}
+                </td>
+                <td>{{ comp.name }}</td>
+                <td>
+                    {% for geo in comp.land.all %}
+                    {{ geo.name}}{{ geo.site.check_status}}<br>
+                    {% endfor %}
+                </td>
+                <td class="camp-status">
+                    <!-- status -->
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="" data-bs-toggle="dropdown" current-status="{{comp.status.id}}"  aria-expanded="false">{{ comp.status }}</button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            {% for status in statusys %}
+                          <li><a class="dropdown-item" camp-status="{{status.id}}" current-status="{{comp.status.id}}" href="#">{{ status.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                      </div>
+                     <!-- status -->
+                </td>
+                <td>{{ comp.published }}</td> 
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<script>
+csrfmiddlewaretoken = '{{ csrf_token }}'
+var campStatus = {
+    '3': 'btn-warning',
+    '1': 'btn-success',
+    '2': 'btn-danger',
+}
+updateAllButtons()
+function updateAllButtons(){
+    // добавление стиля на статус кампании
+    var statusBtns = $('td.camp-status button')
+    statusBtns.each(function(){
+    var curValue = $(this).attr('current-status')
+    var newClass = campStatus[curValue]
+    $(this).removeClass('btn-warning')
+    $(this).removeClass('btn-success')
+    $(this).removeClass('btn-danger')
+    $(this).addClass(newClass)
+})
+
+}
+var choseNewStat = $('td.camp-status a')
+choseNewStat.click(function(){
+    var campId = $(this).closest('tr').attr('id')
+    var choseStatus = $(this).attr('camp-status')
+    var currentStat = $(this).attr('current-status')
+    // console.log(choseStatus, 'новый выбранный статус')
+    // console.log(campId, 'id кампании')
+    // console.log(currentStat, 'Текущий статус')
+    if (choseStatus != currentStat){
+        updateApiStatus(campId, choseStatus)
+    }
+})
+
+function updateApiStatus(campId, newStatusId){
+    var host = window.location.protocol + "//" + window.location.host;
+    URL = host + '/api/campaning_detail/' + campId + '/'
+    csrfmiddlewaretoken = '{{ csrf_token }}'
+    var result = $.post(URL,
+    {'status':newStatusId,'csrfmiddlewaretoken': csrfmiddlewaretoken,},
+        function(data) {
+            console.log('Good send to DB')
+            var findBtn = $('tr#'+data.id + ' .camp-status button')
+            findBtn.text(data.status.name)
+            findBtn.attr('current-status', data.status.id)
+            var findLiA = $('tr#'+data.id + ' .camp-status li a')
+            findLiA.attr('current-status', data.status.id)
+            updateAllButtons()
+        });
+}
+</script>
+
+<!-- <script>
+    // генерация таблица по апи
+    var host = window.location.protocol + "//" + window.location.host;
+    URL = host + '/api/campanings/'
+    $('h2').text('12321')
+    loadCampanings()
+    function loadCampanings(){
+        $.getJSON(URL, function(data){
+            uploadCampaningsData(data)
+            
+        })}
+
+    function uploadCampaningsData(data){
+        console.log(data)
+        let campName;
+        let campVert;
+        let campAcc;
+        let campCab;
+        let campGeo;
+        let campLink;
+        let campStatus;
+        let campDate;
+        $.each(data, function(key, value){
+            var tableRow = $('<tr></tr>')
+            campName = value.name
+            tableRow.append('<td>' + campName + '</td>')
+            campVert = value.cab.account.source.name
+            tableRow.append('<td>' + campVert + '</td>')
+            campGeo = value.geo
+            campGeoText = ''
+            $.each(campGeo, function(value){
+                campGeoText += campGeo[value].short_name + ','
+            })
+            tableRow.append('<td>' + campGeoText + '</td>')
+            campAcc = value.cab.account.name
+            tableRow.append('<td>' + campAcc + '</td>')
+            campCab = value.cab.name
+            tableRow.append('<td>' + campCab + '</td>')
+            campLink = value.land
+            campLinkText = ''
+            $.each(campLink, function(value){
+                campLinkText += campLink[value].name + ','
+            })
+            tableRow.append('<td>' + campLinkText + '</td>')
+            campStatus = value.status.name
+            console.log(campStatus)
+            tableRow.append('<td>' + campStatus + '</td>')
+            campDate = value.published
+            tableRow.append('<td>' + campDate + '</td>')
+            $('table#api').append(tableRow)
+
+        })
+    }
+</script> -->
+
+{% endblock %}

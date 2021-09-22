@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Site, OldLand, Domain, CodeExample, \
-    TrafficSource, Country, CampaignStatus, Account, Cabinet
+    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company
 
 
 # Register your models here.
@@ -16,7 +16,20 @@ class SiteAdmin(admin.ModelAdmin):
                     'is_domain_link', 'domain_count',
                     ]
 
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'cab', 'get_account', 'get_geo', 'get_sites', 'status']
 
+    def get_account(self, obj):
+        return obj.cab.account
+
+    def get_geo(self, obj):
+        return [geo.short_name for geo in obj.geo.all()]
+
+    def get_sites(self, obj):
+        return [land.name for land in obj.land.all()]
+
+
+admin.site.register(Company, CompanyAdmin)
 admin.site.register(Account)
 admin.site.register(Cabinet)
 admin.site.register(Site, SiteAdmin)

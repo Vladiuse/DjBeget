@@ -11,7 +11,9 @@ urlpatterns = [
     path('checker/<int:site_id>/', views.checker, name='checker'),
     path('domains', views.domains, name='domains'),
     path('domains/<int:dom_id>/<str:source>/<str:new_status>/', views.domain_change_status, name='change_status'),
-
+    path('campanings/', views.campanings, name='campanings'),
     path('api/', views.domains_list_api),
+    path('api/campanings/', views.company_list_api),
+    path('api/campaning_detail/<int:pk>/', views.campaning_detail),
     path('api/change_domain_desc/<int:pk>/', views.domains_detail),
     ]

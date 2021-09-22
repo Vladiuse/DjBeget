@@ -8,12 +8,12 @@ from .api import Beget
 from .beget_api_keys import begget_login, begget_pass
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
-from .models import Site, OldLand, Domain, CodeExample
+from .models import Site, OldLand, Domain, CodeExample, Company, Account, Cabinet, CampaignStatus
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
-from .serializers import DomainSerializer
+from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, CabinetSerializer
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -211,6 +211,7 @@ def domains_list_api(request):
         serializer = DomainSerializer(domains, many=True)
         return Response(serializer.data)
 
+
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def domains_detail(request, pk):
@@ -229,4 +230,40 @@ def domains_detail(request, pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def company_list_api(request):
+    companys = Company.objects.all()
+    serializer = CompanySerializer(companys, many=True)
+    return Response(serializer.data)
 
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def campaning_detail(request, pk):
+    try:
+        company = Company.objects.get(pk=pk)
+    except Company.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CompanySerializer(company)
+        return Response(serializer.data,)
+    elif request.method == 'POST':
+        print(request.data,)
+        serializer = CompanySerializer(company)
+
+        CompanySerializer().update(company, request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     print('good')
+        return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    pass
+
+
+def campanings(request):
+    campamings = Company.objects.all()
+    statusys = CampaignStatus.objects.all()
+    content = {'campanings': campamings, 'statusys': statusys}
+    return render(request, 'office/campanings.html', content)

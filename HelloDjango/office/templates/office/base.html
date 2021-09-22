@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{% static 'office/styles.css' %}">
 <!-- js -->
 <script src="{% static 'office/jq.js' %}"></script>
+<script src="{% static 'office/popper.min.js' %}"></script>
 <script src="{% static 'office/bootstrap.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'office/main.js' %}"></script>
 
@@ -66,9 +67,12 @@
                   <li><a class="dropdown-item" href="/admin">Admin</a></li>
                 </ul>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'office:campanings' %}">Кампании</a>
+              </li>
               <li class="nav-item dropdown login" >
                 <a class="nav-link dropdown-toggle" ata-bs-display="static" href="#" id="" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  User
+                  {{ user.username  }}
                 </a>
                 <ul class="dropdown-menu position-sticky"  aria-labelledby="navbarDropdownMenuLink">
                   <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
@@ -109,12 +113,11 @@
         </div>
      
       </nav>
-<script>
+<!-- <script>
   $('nav a').click(function(){
-    $('nav ul').removeClass('show')
-    console.log(123)
+  $('nav ul').removeClass('show')
   })
-</script>
+</script> -->
 
 
 {% block content %}
