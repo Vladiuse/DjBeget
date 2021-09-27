@@ -6,14 +6,16 @@ from .models import Domain, Company, Country, TrafficSource, Account, Cabinet, C
 class DomainSerializer(ModelSerializer):
     class Meta:
         model = Domain
-        fields = ['id', 'beget_id', 'name', 'site', 'description', 'get_http', 'facebook', 'tiktok', 'google']
+        fields = ['id', 'beget_id', 'name', 'site', 'description', 'get_http', 'facebook', 'tiktok', 'google', 'get_root_domain']
         read_only_fields = ['id', 'beget_id', 'name', ]
 
 
 class TrafficSourceSerializer(ModelSerializer):
     class Meta:
         model = TrafficSource
-        fields = ['id', 'name', 'short_name']
+        fields = [
+            'id', 'name', 'short_name',
+        ]
 
 
 class AccountSerializer(ModelSerializer):
@@ -26,16 +28,17 @@ class AccountSerializer(ModelSerializer):
 
 class CabinetSerializer(ModelSerializer):
     account = AccountSerializer()
+    domain = DomainSerializer()
 
     class Meta:
         model = Cabinet
-        fields = ['id', 'name', 'account', 'description', 'pixel']
+        fields = ['id', 'name', 'account', 'description', 'pixel', 'domain']
 
 
 class CountrySerializer(ModelSerializer):
     class Meta:
         model = Country
-        fields = ['id', 'name_ru', 'name_eng', 'short_name', 'phone_code']
+        fields = '__all__'
 
 
 class CampaignStatusSerializer(ModelSerializer):
@@ -61,3 +64,9 @@ class CompanySerializer(ModelSerializer):
         instance.status = CampaignStatus.objects.get(pk=status_id)
         instance.save()
         return instance
+
+class TestSerializer(ModelSerializer):
+    class Meta:
+        model = Company
+
+

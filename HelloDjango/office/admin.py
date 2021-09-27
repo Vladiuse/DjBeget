@@ -28,10 +28,12 @@ class CompanyAdmin(admin.ModelAdmin):
     def get_sites(self, obj):
         return [land.name for land in obj.land.all()]
 
+class CabinetAdmin(admin.ModelAdmin):
+    list_display = ['name', 'account', 'domain']
 
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Account)
-admin.site.register(Cabinet)
+admin.site.register(Cabinet, CabinetAdmin)
 admin.site.register(Site, SiteAdmin)
 admin.site.register(OldLand)
 admin.site.register(Domain, DomainAdmin)

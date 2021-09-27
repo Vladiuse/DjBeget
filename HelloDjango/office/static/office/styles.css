@@ -5,6 +5,13 @@
 .table-wrapper{
   padding: 0 5%;
 }
+.sn-block{
+  margin: 15px 0;
+}
+#add-camp{
+  position: absolute;
+  right: 100;
+}
 .login{
   position: absolute;
   right: 0;
@@ -58,22 +65,30 @@
   display: inline-block;
   }
   
-  i{
+  .icon-block i{
   color: #74c0fc;
   position: right;
   margin-right: 10px;
   }
-  .fa-address-book{
+  .icon-block .fa-address-book{
   font-size: 25px;
   
   
   }
   
-  .fa-lock{
+  .icon-block .fa-lock {
   font-size: 18px;
   margin-right: 20px;
   }
   
-  .fa-user-edit{
+  .icon-block .fa-user-edit{
   font-size: 18px;
+  }
+  div .sn-block .fab{
+    font-size: 18px;
+    /* color: white; */
+  }
+  .icon-block .fab{
+    font-size: 24px;
+
   }

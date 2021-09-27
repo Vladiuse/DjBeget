@@ -12,7 +12,8 @@ class Site(models.Model):
     """
     DONT_CHECK = ['vladiuse.beget.tech', 'django', 'old-lands', ]
     NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found',
-                 'Домен не прилинкован ни к одной из директорий на сервере!']
+                 'Домен не прилинкован ни к одной из директорий на сервере!',
+                 'Новый сайт успешно создан и готов к работе',]
 
     GREY = 'Не проверен'
     RED = 'Ошибка'
@@ -189,6 +190,11 @@ class Domain(models.Model):
     google = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
     tiktok = models.CharField(max_length=99, choices=DOMAIN_STATUS, default=NEW)
 
+    def get_root_domain(self):
+        if self.name.count('.') == 2:
+            return self.name[self.name.find('.') + 1:]
+        return self.name
+
     def get_http(self):
         return f'http://{self.name}/'
 
@@ -214,6 +220,7 @@ class Domain(models.Model):
 class TrafficSource(models.Model):
     name = models.CharField(max_length=200, verbose_name='Источник трафика')
     short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
+    icon_html = models.CharField(max_length=100, verbose_name='Код иконки html', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -283,6 +290,8 @@ class Cabinet(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     pixel = models.IntegerField(verbose_name='Пиксель акаунта', blank=True, null=True)
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
+    domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
+                                  verbose_name='Закрепленный домен')
 
     def __str__(self):
         return self.name

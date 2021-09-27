@@ -1,22 +1,26 @@
 import requests
+import json
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
-from .api import Beget
-from .beget_api_keys import begget_login, begget_pass
-from .help import ImagePrev
-from .link_checker import LinkCheckerManager
-from .models import Site, OldLand, Domain, CodeExample, Company, Account, Cabinet, CampaignStatus
-from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
-from rest_framework import status
-from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, CabinetSerializer
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+
+from .api import Beget
+from .help import ImagePrev
+from .link_checker import LinkCheckerManager
+from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
+from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
+    CabinetSerializer, CountrySerializer
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
+
 
 # @login_required
 # def get_domains_api():
@@ -41,10 +45,11 @@ def sites(request):
                }
     return render(request, 'office/index.html', content)
 
+
 @login_required
 def update_sites(request):
     """Обновить список сайтов"""
-    #TODO при изменение домена, если можель уже существует - домены не обновяться
+    # TODO при изменение домена, если можель уже существует - домены не обновяться
     b = Beget()
     sites_id_bd = set([site.beget_id for site in Site.objects.all()])
     sites_beget = b.get_sites()
@@ -58,7 +63,7 @@ def update_sites(request):
         try:
             site = Site.objects.get(beget_id=site_beget['id'])
         except Site.DoesNotExist:
-            #добавление нового сайта
+            # добавление нового сайта
             beget_id = site_beget['id']
             site_name = site_beget['path']
             site = Site(beget_id=beget_id, site_name=site_name, title='None')
@@ -92,6 +97,7 @@ def update_sites(request):
     #             s.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
+
 @login_required
 def get_site_title(request, hard):
     # TODO удалить - перенести в Page
@@ -100,6 +106,7 @@ def get_site_title(request, hard):
         site.update_title(bool(hard))
         # site.save()
     return HttpResponseRedirect(reverse('office:sites'))
+
 
 @login_required
 def old_lands(request):
@@ -134,6 +141,7 @@ def old_lands(request):
     }
     return render(request, 'office/old_lands.html', content)
 
+
 @login_required
 def requisites(request):
     """Реквизиты и шаблоны html, css, js"""
@@ -142,6 +150,7 @@ def requisites(request):
         'examples': examples,
     }
     return render(request, 'office/requisites.html', content)
+
 
 @login_required
 def checker(request, site_id):
@@ -171,6 +180,7 @@ def checker(request, site_id):
     content = {'content': result, 'site': site}
     return render(request, 'office/checker.html', content)
 
+
 @login_required
 def domains(request):
     """Список доменов"""
@@ -181,6 +191,7 @@ def domains(request):
                'free_doms': free_doms,
                }
     return render(request, 'office/domains.html', content)
+
 
 @login_required
 def domain_change_status(request, dom_id, source, new_status):
@@ -203,6 +214,8 @@ def domain_change_status(request, dom_id, source, new_status):
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
 
+
+@login_required
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def domains_list_api(request):
@@ -212,6 +225,7 @@ def domains_list_api(request):
         return Response(serializer.data)
 
 
+@login_required
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def domains_detail(request, pk):
@@ -222,7 +236,7 @@ def domains_detail(request, pk):
 
     if request.method == 'GET':
         serializer = DomainSerializer(domain)
-        return Response(serializer.data,)
+        return Response(serializer.data, )
     elif request.method == 'POST':
         serializer = DomainSerializer(domain, data=request.data)
         if serializer.is_valid():
@@ -230,6 +244,8 @@ def domains_detail(request, pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@login_required
 @api_view(['GET'])
 @renderer_classes([JSONRenderer])
 def company_list_api(request):
@@ -238,6 +254,7 @@ def company_list_api(request):
     return Response(serializer.data)
 
 
+@login_required
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def campaning_detail(request, pk):
@@ -248,9 +265,9 @@ def campaning_detail(request, pk):
 
     if request.method == 'GET':
         serializer = CompanySerializer(company)
-        return Response(serializer.data,)
+        return Response(serializer.data, )
     elif request.method == 'POST':
-        print(request.data,)
+        print(request.data, )
         serializer = CompanySerializer(company)
 
         CompanySerializer().update(company, request.data)
@@ -259,11 +276,61 @@ def campaning_detail(request, pk):
         #     print('good')
         return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    pass
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def create_capmaning(request):
+    data = json.loads(request.POST['data'])
+    print(data, type(data))
+    name = data['text']
+    cab = Cabinet.objects.get(pk=data['cab_id'])
+    status = CampaignStatus.objects.get(pk=5)
+    new_camp = Company(name=name, cab=cab, status=status)
+    new_camp.save()
+    for geo_id in data['geos_id']:
+        country = Country.objects.get(pk=geo_id)
+        new_camp.geo.add(country)
+    for domain_id in data['domains_id']:
+        domain = Domain.objects.get(pk=domain_id)
+        new_camp.land.add(domain)
+    new_camp.save()
+    statusys = CampaignStatus.objects.all()
+    content = {'comp': new_camp, 'statusys': statusys}
+    # return Response(data, template_name='office/camp.html')
+    # return render(request, 'office/camp.html', content)
+    return render(request, 'office/camp.html', content)
+    return Response({'answer': 'success', 'result': template})
 
 
+
+@login_required
 def campanings(request):
-    campamings = Company.objects.all()
+    campamings = Company.objects.order_by('-published')
     statusys = CampaignStatus.objects.all()
     content = {'campanings': campamings, 'statusys': statusys}
     return render(request, 'office/campanings.html', content)
+
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def zapusk_data(request):
+    source = TrafficSource.objects.all()
+    accounts = Account.objects.all()
+    cabs = Cabinet.objects.all()
+    domains = Domain.objects.filter(site__isnull=False)
+    country = Country.objects.all()
+    source_serializer = TrafficSourceSerializer(source,many=True)
+    accounts_serializer = AccountSerializer(accounts, many=True)
+    cabs_serializer = CabinetSerializer(cabs, many=True)
+    domains_serializer = DomainSerializer(domains, many=True)
+    country_serializer = CountrySerializer(country, many=True)
+
+    return Response({
+        'source': source_serializer.data,
+        'accounts': accounts_serializer.data,
+        'cabs': cabs_serializer.data,
+        'domains': domains_serializer.data,
+        'geos': country_serializer.data,
+    })

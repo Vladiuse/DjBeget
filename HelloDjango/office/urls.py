@@ -16,4 +16,6 @@ urlpatterns = [
     path('api/campanings/', views.company_list_api),
     path('api/campaning_detail/<int:pk>/', views.campaning_detail),
     path('api/change_domain_desc/<int:pk>/', views.domains_detail),
+    path('api/zapusk/', views.zapusk_data),
+    path('api/create_capmaning/', views.create_capmaning),
     ]
