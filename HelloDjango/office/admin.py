@@ -19,6 +19,7 @@ class SiteAdmin(admin.ModelAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'cab', 'get_account', 'get_geo', 'get_sites', 'status']
 
+
     def get_account(self, obj):
         return obj.cab.account
 
@@ -29,7 +30,11 @@ class CompanyAdmin(admin.ModelAdmin):
         return [land.name for land in obj.land.all()]
 
 class CabinetAdmin(admin.ModelAdmin):
-    list_display = ['name', 'account', 'domain']
+    list_display = ['name', 'account', 'domain', 'pixel']
+
+
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name_ru', 'name_eng','short_name', 'phone_code']
 
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Account)
@@ -40,4 +45,4 @@ admin.site.register(Domain, DomainAdmin)
 admin.site.register(CodeExample)
 admin.site.register(TrafficSource)
 admin.site.register(CampaignStatus)
-admin.site.register(Country)
+admin.site.register(Country, CountryAdmin)

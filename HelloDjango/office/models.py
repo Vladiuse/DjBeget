@@ -226,8 +226,8 @@ class TrafficSource(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Источники трафика'
-        verbose_name_plural = 'Источник трафика'
+        verbose_name = 'Источник трафика'
+        verbose_name_plural = 'Источники трафика'
 
 
 class Country(models.Model):
@@ -240,8 +240,8 @@ class Country(models.Model):
         return self.name_ru
 
     class Meta:
-        verbose_name = 'Страны'
-        verbose_name_plural = 'Страна'
+        verbose_name = 'Страна'
+        verbose_name_plural = 'Страны'
 
 
 class CampaignStatus(models.Model):
@@ -251,8 +251,8 @@ class CampaignStatus(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Cтатусы кампаний'
-        verbose_name_plural = 'Cтатус кампании'
+        verbose_name = 'Cтатус кампании'
+        verbose_name_plural = 'Cтатусы кампаний'
 
 
 class Company(models.Model):
@@ -265,8 +265,8 @@ class Company(models.Model):
     edited = models.DateTimeField(auto_now=True, )
 
     class Meta:
-        verbose_name =  'Рекламная кампания'
-        verbose_name_plural = 'Рекламные кампании'
+        verbose_name = 'Кампания'
+        verbose_name_plural = 'Кампании'
 
     def __str__(self):
         return self.name
@@ -281,8 +281,8 @@ class Account(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Аккаунты'
-        verbose_name_plural = 'Аккаунт'
+        verbose_name = 'Аккаунт'
+        verbose_name_plural = 'Аккаунты'
 
 
 class Cabinet(models.Model):
@@ -297,8 +297,8 @@ class Cabinet(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Рекламные кабинеты'
-        verbose_name_plural = 'Рекламный кабинет'
+        verbose_name = 'Рекламный кабинет'
+        verbose_name_plural = 'Рекламные кабинеты'
 
 
 class CodeExample(models.Model):
