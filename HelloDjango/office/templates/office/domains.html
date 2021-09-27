@@ -21,8 +21,10 @@
         </div>
 </div>
 <br>
-<table id="domain-table" class="table thead-dark">
-        <thead class="">
+<div class="table-responsive table-camps">
+
+    <table class="table" id="domain-table">
+        <thead class="table-light">
             <tr>
 
                 <th>Beget ID</th>
@@ -38,7 +40,7 @@
             </tr>
         </thead>
             <tbody>
-                <tr>
+                <!-- <tr>
                     <td class="beget_id"> bbbb</td>
                     <td class="url"><a href="" target="_blank"></a></td>
                     <td class="description">xxxxxxxxx</td>
@@ -51,9 +53,10 @@
                     <td class="tiktok">
                             xxxxxxx
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
     </table>
+</div>
 </div>
 <script>
     // кнопка показать скрыть старые домены
@@ -139,8 +142,8 @@
     // генерация строк таблицы
     function loadDomains(){
         $.getJSON(URL, function(data){
-        var table = $('#domain-table')
-        table.children().slice(1).remove() // удаляем все строки кроме заглавной(шапки)
+        var table = $('#domain-table tbody')
+        //table.children().slice(1).remove() // удаляем все строки кроме заглавной(шапки)
         $.each(data, function(key, value){
             var row = $('<tr id="'+ value.id + '"></tr>')
                 row.append($('<td class=beget-id>'+ value.beget_id + '</td>'))
