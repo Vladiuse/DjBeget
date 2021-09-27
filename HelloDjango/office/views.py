@@ -300,7 +300,7 @@ def create_capmaning(request):
     # return Response(data, template_name='office/camp.html')
     # return render(request, 'office/camp.html', content)
     return render(request, 'office/camp.html', content)
-    return Response({'answer': 'success', 'result': template})
+    # return Response({'answer': 'success', 'result': template})
 
 
 

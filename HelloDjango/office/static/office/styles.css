@@ -17,6 +17,9 @@
   right: 0;
   text-align: right;
 }
+.sn-block-filter{
+  margin: 10px 0;
+}
 
 #site_logo{
   margin-right: 35px;

@@ -1,6 +1,7 @@
 {% extends 'office/base.html' %}
 {% load static %}
 {% block content %}
+
 <div class="main-wrapper">
 <h1>Домены</h1>
 <br>
@@ -20,8 +21,8 @@
         </div>
 </div>
 <br>
-<table id="domain-table" class="table">
-        <thead class="table-light">
+<table id="domain-table" class="table thead-dark">
+        <thead class="">
             <tr>
 
                 <th>Beget ID</th>
@@ -36,20 +37,22 @@
 
             </tr>
         </thead>
-            <tr>
-                <td class="beget_id"> bbbb</td>
-                <td class="url"><a href="" target="_blank"></a></td>
-                <td class="description">xxxxxxxxx</td>
-                <td class="facebook">
-         xxxxxxx
-                </td>
-                <td class="google">
-        xxxx
-                </td>
-                <td class="tiktok">
-             xxxxxxx
-                </td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td class="beget_id"> bbbb</td>
+                    <td class="url"><a href="" target="_blank"></a></td>
+                    <td class="description">xxxxxxxxx</td>
+                    <td class="facebook">
+                        xxx
+                    </td>
+                    <td class="google">
+                        xxxx
+                    </td>
+                    <td class="tiktok">
+                            xxxxxxx
+                    </td>
+                </tr>
+            </tbody>
     </table>
 </div>
 <script>
@@ -144,9 +147,9 @@
                 row.append($('<td class=name><a href="'+ value.get_http + '" blank="_tagret">' +value.name + '<a></td>'))
                 row.append($('<td class=site>'+ value.site + '</td>'))
                 row.append($('<td class=description>'+ value.description + '</td>'))
-                row.append($('<td class=facebook><p class="status '+ STATUSHTML[value.facebook] + '">'+ value.facebook + '</p></td>'))
-                row.append($('<td class=google><p class="status '+ STATUSHTML[value.google] + '">'+ value.google + '</p></td>'))
-                row.append($('<td class=tiktok><p class="status '+ STATUSHTML[value.tiktok] + '">'+ value.tiktok + '</p></td>'))
+                row.append($('<td class=facebook><button class="'+ STATUSHTML[value.facebook] + '">'+ value.facebook + '</button></td>'))
+                row.append($('<td class=google><button class="'+ STATUSHTML[value.google] + '">'+ value.google + '</button></td>'))
+                row.append($('<td class=tiktok><button class="'+ STATUSHTML[value.tiktok] + '">'+ value.tiktok + '</button></td>'))
             table.append(row)
 
         })

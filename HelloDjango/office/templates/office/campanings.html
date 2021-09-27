@@ -1,37 +1,6 @@
 {% extends 'office/base.html' %}
 {% block content %}
 
-
-<!-- <div class="main-wrapper">
-    <h2> Запуски</h2>
-    <div class="table-responsive table-wrapper">
-        <table class="table" id="api">
-            <thead class="table-light">
-                <tr>
-                    <th>Название</th>
-                    <th>Вертикаль</th>
-                    <th>Гео</th>
-                    <th>Аккаунт</th>
-                    <th>Кабинет</th>
-                    <th>Ссылки</th>
-                    <th>Статус</th>
-                    <th>Дата</th>
-                </tr>
-            </thead>
-            <tr>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-                <td>xxxxxx</td>
-            </tr>
-        </table>
-    </div> -->
-
-
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-fullscreen">
@@ -67,9 +36,9 @@
         <th scope="col">Аккаунт</th>
         <th scope="col">Кабинет</th>
         <th scope="col">Домены</th>
-        <th scope="col">Описание</th>
+        <th scope="col">Название</th>
         <th scope="col">Гео</th>
-        <th scope="col">Статус</th>
+        <!-- <th scope="col">Статус</th> -->
       </tr>
     </thead>
     <tbody>
@@ -115,9 +84,9 @@
           </div>
           <div class="list-group geos"></div>
          </td>
-         <td>
+         <!-- <td>
           status
-         </td>
+         </td> -->
   
   
       </tr>
@@ -137,7 +106,7 @@
 </div>
 </div>
 <div class="main-wrapper">
-    <h3> From django</h3>
+    <h3>Кампании</h3>
     <div class="btn-toolbar sn-block-filter" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group me-2" role="group" aria-label="First group">
           <button type="button" class="btn btn-primary active" id="sn-all">Все</button>
@@ -147,14 +116,27 @@
         </div>
 
 
-        <div id="add-camp">
-            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">Создать <i class="far fa-plus-square"></i></button>
-          </div>
-          
-</div>
+    <div id="add-camp">
+      <button type="button" class="btn btn-light"  data-bs-toggle="modal" data-bs-target="#exampleModal">Создать <i class="far fa-plus-square"></i></button>
+    </div>
+    <!-- фильтр по статусам -->
+    <button class="btn dropdown-toggle btn btn-light" type="button" camp-status="0" id="status-filter-main" data-bs-toggle="dropdown" current-status="{{comp.status.id}}"  aria-expanded="false">Все</button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" id="status-filter">
+        <li><a class="dropdown-item" href="#">Все</a></li>
+          {% for status in statusys %}
+        <li camp-status="{{ status.id }}"><a class="dropdown-item"  href="#">{{ status.name }}</a></li>
+          {% endfor %}
+      </ul>
+    </div>
 
-<div class="table-responsive table-wrapper table-camps">
-    <table class="table" id="">
+    
+          
+
+
+
+
+<div class="table-responsive table-camps">
+    <table class="table" id="main-table">
         <thead class="table-light">
             <tr>
                 <th>ИТ</th>
@@ -164,7 +146,7 @@
                 <th>Название</th>
                 <th>Ссылки</th>
                 <th>Статус</th>
-                <th>Описание</th>
+                <!-- <th>Описание</th> -->
                 <th>Дата Р</th>
             </tr>
         </thead>
@@ -200,8 +182,8 @@
                   </div>
                  <!-- status -->
             </td>
-            <td> --- </td> 
-            <td>{{ comp.edited }}</td> 
+            <!-- <td> --- </td>  -->
+            <td>{{ comp.edited|date:" G:i - d.m.y" }}</td> 
         </tr>
 
         
@@ -233,7 +215,35 @@ var campStatus = {
     '1': 'btn-success', //  запущено
     '2': 'btn-danger', // бан
     '5': 'btn-primary', // на расмотрении
+    '0': 'btn-light', // 
 }
+
+$('#status-filter li').click(function(){
+  console.log('click filter status')
+  $('#status-filter-main').text($(this).text())
+  var newValue = $(this).attr('camp-status')
+    var newClass = campStatus[newValue]
+    $('#status-filter-main').removeClass('btn-warning')
+    $('#status-filter-main').removeClass('btn-success')
+    $('#status-filter-main').removeClass('btn-danger')
+    $('#status-filter-main').removeClass('btn-secondary')
+    $('#status-filter-main').removeClass('btn-primary')
+    $('#status-filter-main').removeClass('btn-light')
+    $('#status-filter-main').addClass(newClass)
+    $('#status-filter-main').attr('camp-status', $(this).attr('camp-status'))
+    var tableRows = $('#main-table tr').slice(1)
+    tableRows.hide()
+    var rowsToShow = tableRows.filter(function(){
+      var x = $(this).find('.camp-status button')
+      console.log(x.length, x)
+      console.log(x.attr('current-status'))
+      if (x.attr('current-status') == newValue){return true}
+    })
+    rowsToShow.show()
+    
+
+ 
+})
 updateAllButtons()
 function updateAllButtons(){
     // добавление стиля на статус кампании
@@ -244,6 +254,9 @@ function updateAllButtons(){
     $(this).removeClass('btn-warning')
     $(this).removeClass('btn-success')
     $(this).removeClass('btn-danger')
+    $(this).removeClass('btn-secondary')
+    $(this).removeClass('btn-primary')
+    $(this).removeClass('btn-light')
     $(this).addClass(newClass)
 })
 
@@ -556,6 +569,12 @@ function updateApiStatus(campId, newStatusId){
       console.log('ответ от сервера',data)
       $('#close-modal').trigger('click')
       $(".toast").toast("show");
+      $('.list-group.domains').empty()
+      $('.list-group.geos').empty()
+      $('.list-group.cab').empty()
+      $('.list-group.acc').empty()
+      $('#camp-text').val('')
+      curCab = null;
       updateAllButtons()
       })
       
