@@ -265,18 +265,37 @@ function updateAllButtons(){
 })
 
 }
-var choseNewStat = $('td.camp-status a')
-choseNewStat.click(function(){
+// изменение статуса кампании ( старый)
+// var choseNewStat = $('td.camp-status a')
+// choseNewStat.click(function(){ 
+//     var campId = $(this).closest('tr').attr('id')
+//     var choseStatus = $(this).attr('camp-status')
+//     var currentStat = $(this).attr('current-status')
+//     console.log(choseStatus, 'новый выбранный статус')
+//     // console.log(campId, 'id кампании')
+//     // console.log(currentStat, 'Текущий статус')
+//     if (choseStatus != currentStat){
+//         updateApiStatus(campId, choseStatus)
+//     }
+// })
+// var choseNewStat = $('td.camp-status a')
+
+
+// изменение статуса кампании
+$('table').on('click','td.camp-status a',function(){
+    console.log($(this), 'xxxxxx')
     var campId = $(this).closest('tr').attr('id')
     var choseStatus = $(this).attr('camp-status')
     var currentStat = $(this).attr('current-status')
-    // console.log(choseStatus, 'новый выбранный статус')
+    console.log(choseStatus, 'новый выбранный статус')
     // console.log(campId, 'id кампании')
     // console.log(currentStat, 'Текущий статус')
     if (choseStatus != currentStat){
         updateApiStatus(campId, choseStatus)
     }
 })
+
+
 
 function updateApiStatus(campId, newStatusId){
     var host = window.location.protocol + "//" + window.location.host;

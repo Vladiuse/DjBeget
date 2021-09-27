@@ -258,6 +258,7 @@ def company_list_api(request):
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def campaning_detail(request, pk):
+    """ получения данных по РК или обновление"""
     try:
         company = Company.objects.get(pk=pk)
     except Company.DoesNotExist:
@@ -281,8 +282,8 @@ def campaning_detail(request, pk):
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def create_capmaning(request):
+    """Создание новой кампании"""
     data = json.loads(request.POST['data'])
-    print(data, type(data))
     name = data['text']
     cab = Cabinet.objects.get(pk=data['cab_id'])
     status = CampaignStatus.objects.get(pk=5)
@@ -306,6 +307,7 @@ def create_capmaning(request):
 
 @login_required
 def campanings(request):
+    """ Текущие РК"""
     campamings = Company.objects.order_by('-published')
     statusys = CampaignStatus.objects.all()
     content = {'campanings': campamings, 'statusys': statusys}
@@ -316,6 +318,7 @@ def campanings(request):
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])
 def zapusk_data(request):
+    """данные для создания нового запуска"""
     source = TrafficSource.objects.all()
     accounts = Account.objects.all()
     cabs = Cabinet.objects.all()
