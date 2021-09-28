@@ -50,6 +50,28 @@
 <h4>Всего: {{ sites|length|add:"2"}} </h4>
 <br>
 
+
+
+  
+  <!-- Modal удаление сайта-->
+  <div class="modal fade" id="dell-site" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Удаление сайта</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Удалить cool-market.store Какоето названние сайта?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <div class="find-div">
     <div class="show-new">
         <button type="button" class="btn btn-success" id="show-new">Только Новые</button>
@@ -77,6 +99,7 @@
                 <th>Tools</th>
                 <th>Прокла</th>
                 <th>Статус</th>
+                <th>Прочее</th>
             </tr>
         </thead>
      {% for site in sites %}
@@ -108,6 +131,19 @@
                     <a class="btn btn-primary {{ site.get_status_html }}" 
                     href="{% url 'office:checker' site.id %}" role="button">{{ site.check_status }}</a>
                 </td>
+                <td class="site-other">
+                    <div class="dropdown">
+                    <button type="button" class="btn btn-light dropdown-toggle icon-block"  data-bs-toggle="dropdown" data-bs-target="#exampleModal">
+                        <i class="fas fa-cogs "></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="#">---</a></li>
+                        <li><a class="dropdown-item" href="#">---</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">удалить</a></li>
+                      </ul>
+                    </div>
+                </td>
 
             </tr>
         {% endfor %}
@@ -115,6 +151,14 @@
  </div>
 </div>
     <script>
+        // удаление сайта
+        $('.site-other li a').click(function(){
+            var row = $(this).closest('tr')
+            var site = row.find('td.site-title').text()
+            var site_link = row.find('td.first a').text()
+            $('#dell-site .modal-body').text('Удалить ' + site_link + ': ' + site + '?')
+        })
+
         // Кнопка показать/скрыть не новые сайты
         var butn = $('#show-new')
         var newSiteTo = 'hide'
