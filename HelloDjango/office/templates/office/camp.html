@@ -1,5 +1,5 @@
 
-         <tr id="{{ comp.id }}">         
+        <tr id="{{ comp.id }}">         
             
             <td class="{{comp.cab.account.source.short_name}}"><div class="icon-block"><code>{{ comp.cab.account.source.icon_html|safe  }}</code></div>
                 <!-- {{ comp.cab.account.source.name }} -->
@@ -8,15 +8,18 @@
             <td>{{ comp.cab.account.name }}: {{ comp.cab }}</td>
             <td>
                 {% for geo in comp.geo.all %}
-                {{ geo.short_name}}
+                <a data-bs-toggle="tooltip" data-bs-placement="left" title="{{geo.name_ru}}">
+                  <span class="flag-icon flag-icon-{{geo.short_name}} flag-icon-squared"></span></a>
+                
+                <!-- {{ geo.short_name}} -->
                 {% endfor %}
             </td>
             <td>{{ comp.name }}</td>
             <td>
-                {% for geo in comp.land.all %}
+                {% for land in comp.land.all %}
                 <!-- {{ geo.name}} -->
 
-<a data-bs-toggle="tooltip" data-bs-placement="left" title="{{ geo.site.check_status}}">{{ geo.name}}</a>
+<a data-bs-toggle="tooltip" data-bs-placement="left" title="{{ land.site.check_status}}">{{ land.name}}</a>
                 <!-- {{ geo.name}}{{ geo.site.check_status}}<br> -->
                 {% endfor %}
             </td>
@@ -33,6 +36,6 @@
                  <!-- status -->
             </td>
             <!-- <td> --- </td>  -->
-            <td>{{ comp.edited|date:" G:i - d.m.y" }}</td> 
+            <td>{{ comp.edited|date:" G:i - d.m" }}</td> 
         </tr>
        
