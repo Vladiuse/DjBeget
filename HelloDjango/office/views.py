@@ -2,7 +2,7 @@ import requests
 import json
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from rest_framework import status
@@ -21,19 +21,6 @@ from .serializers import DomainSerializer, CompanySerializer, AccountSerializer,
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
 
-
-# @login_required
-# def get_domains_api():
-#     # TODO удалить
-#     get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-#     res = requests.get(get_list_domains_url)
-#     answer = res.json()
-#     domains = []
-#     for site in answer['answer']['result']:
-#         for domain in site['domains']:
-#             domain = domain['fqdn']
-#             domains.append(domain)
-#     return domains
 
 @login_required
 def sites(request):
@@ -69,32 +56,16 @@ def update_sites(request):
             site = Site(beget_id=beget_id, site_name=site_name, title='None')
             site.save()
             site.update_title()
-            # обновление доменов сайта
-            for domain in site_beget['domains']:
-                domain_beget_id = domain['id']
-                try:
-                    domain = Domain.objects.get(beget_id=domain_beget_id)
-                except ObjectDoesNotExist:
-                    b.update_domains()
-                    domain = Domain.objects.get(beget_id=domain_beget_id)
-                site.domain_set.add(domain)
-            site.save()
-    # for site_beget_id_add in sites_to_add:
-    #     for site_beget in sites_beget:
-    #         if site_beget['id'] == site_beget_id_add:
-    #             beget_id = site_beget['id']
-    #             site_name = site_beget['path']
-    #             s = Site(beget_id=beget_id, site_name=site_name)
-    #             s.save()
-    #             for domain in site_beget['domains']:
-    #                 domain_beget_id = domain['id']
-    #                 try:
-    #                     domain = Domain.objects.get(beget_id=domain_beget_id)
-    #                 except ObjectDoesNotExist:
-    #                     b.update_domains()
-    #                     domain = Domain.objects.get(beget_id=domain_beget_id)
-    #                 s.domain_set.add(domain)
-    #             s.save()
+        # обновление доменов сайта
+        for domain in site_beget['domains']:
+            domain_beget_id = domain['id']
+            try:
+                domain = Domain.objects.get(beget_id=domain_beget_id)
+            except ObjectDoesNotExist:
+                b.update_domains()
+                domain = Domain.objects.get(beget_id=domain_beget_id)
+            site.domain_set.add(domain)
+        site.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
 
@@ -162,17 +133,6 @@ def checker(request, site_id):
     else:
         site = Site.objects.get(pk=site_id)
         url = site.get_http_site()
-    # try:
-    #     link_manager = LinkCheckerManager(url=url)
-    #     link_manager.process()
-    #     result = link_manager.result
-    #     if result:
-    #         site.check_status = Site.GREEN
-    #         site.save()
-    #     content = {
-    #         'content': result}
-    # except MyError as exc:
-    #     content = {'exception':exc}
     link_manager = LinkCheckerManager(url=url)
     link_manager.process()
     result = link_manager.result
@@ -213,6 +173,15 @@ def domain_change_status(request, dom_id, source, new_status):
         pass
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
+
+@login_required
+def delete_site(request, site_id):
+    site = Site.objects.get(pk=site_id)
+    b = Beget()
+    result = b.del_site(site.beget_id)
+    if result:
+        site.delete()
+    return JsonResponse({'answer': result})
 
 
 @login_required

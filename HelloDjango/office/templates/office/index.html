@@ -47,10 +47,18 @@
 <h1>Сайты</h1>
 <br>
 
-<h4>Всего: {{ sites|length|add:"2"}} </h4>
-<br>
 
 
+<!-- сайт удален -->
+<div class="toast align-items-center text-white bg-primary border-0 position-fixed bottom-0 end-0"
+ role="alert" aria-live="assertive" aria-atomic="true" id="site-message" style="z-index: 11" data-bs-deley="5000">
+    <div class="d-flex">
+      <div class="toast-body">
+        Сайт удален
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
 
   
   <!-- Modal удаление сайта-->
@@ -66,7 +74,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-danger">Удалить</button>
+          <button type="button" class="btn btn-danger" id="del-site-button" data-bs-dismiss="modal" site-to-del="">Удалить</button>
         </div>
       </div>
     </div>
@@ -82,6 +90,8 @@
         <i class="fa fa-search"></i>
         <i class="fas fa-times" style="display: none;"></i>
      </button>
+
+     <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5>
 </div>
 
 
@@ -91,7 +101,7 @@
 <br>
 
 
- <div class="table-responsive">
+ <div class="">
     <table class="table">
         <thead class="table-light">
             <tr>
@@ -104,7 +114,7 @@
         </thead>
      {% for site in sites %}
 
-            <tr>
+            <tr site-id="{{ site.id}}">
 <!--            <td>{{ site.site_name }}</td>-->
                 <td class="first {{ site.status_sub }}">
                     <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
@@ -152,11 +162,28 @@
 </div>
     <script>
         // удаление сайта
+        siteTo_del = null;
         $('.site-other li a').click(function(){
             var row = $(this).closest('tr')
+            var siteId = row.attr('site-id')
+            $('#del-site-button').attr('site-to-del', siteId)
             var site = row.find('td.site-title').text()
             var site_link = row.find('td.first a').text()
             $('#dell-site .modal-body').text('Удалить ' + site_link + ': ' + site + '?')
+            
+        })
+        $('#del-site-button').click(function(){
+            var host = window.location.protocol + "//" + window.location.host;
+            siteId = $('#del-site-button').attr('site-to-del')
+            URL_del_site = host + '/delete_site/' + siteId + '/'
+            console.log(URL_del_site)
+            $.get(URL_del_site, function(data){
+                console.log(data)
+                $('#site-message').toast('show')
+                $('tr[site-id='+siteId+']').remove()
+            })
+            
+            
         })
         // подсчет новыйх сайтов
         var rows = $('tr').slice(1)
@@ -174,7 +201,6 @@
         butn.html('Только Новые' + CountSpan)
         var newSiteTo = 'hide'
         $(butn).click(function(){
-            console.log('click spn new')
             var rows = $('tr').slice(1)
             var rowsSiteNew = rows.filter(function(){
                 var x = $(this).find($('span.new-site'))

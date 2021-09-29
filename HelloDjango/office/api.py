@@ -1,6 +1,6 @@
 import requests as req
 from pprint import pprint
-
+import json
 if __name__ != '__main__':
     from . import models
     from office.beget_api_keys import begget_login, begget_pass
@@ -90,6 +90,7 @@ class Beget(ApiManager):
     sites_api = f'{BEGET_API_URL}site/getList?login={login}&passwd={password}&output_format=json'
     domains_api = f'{BEGET_API_URL}domain/getList?login={login}&passwd={password}&output_format=json'
     sub_domains_api = f'{BEGET_API_URL}domain/getSubdomainList?login={login}&passwd={password}&output_format=json'
+    delite_site = f'{BEGET_API_URL}/site/delete?login={login}&passwd={password}&input_format=json&output_format=json&input_data='
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -169,6 +170,17 @@ class Beget(ApiManager):
                 name = domain['fqdn']
                 dom = models.Domain(name=name, beget_id=dom_id)
                 dom.save()
+
+    def del_site(self,beget_id):
+        url = self.delite_site + json.dumps({'id': beget_id})
+        res = self.api(url, 'get')
+        if res['status'] == 'success':
+            return True
+        return False
+
+
+
+
 
 
 

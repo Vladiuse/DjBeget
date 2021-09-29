@@ -12,6 +12,7 @@ urlpatterns = [
     path('domains', views.domains, name='domains'),
     path('domains/<int:dom_id>/<str:source>/<str:new_status>/', views.domain_change_status, name='change_status'),
     path('campanings/', views.campanings, name='campanings'),
+    path('delete_site/<int:site_id>/', views.delete_site, name='del_site'),
     path('api/', views.domains_list_api),
     path('api/campanings/', views.company_list_api),
     path('api/campaning_detail/<int:pk>/', views.campaning_detail),
