@@ -158,9 +158,20 @@
             var site_link = row.find('td.first a').text()
             $('#dell-site .modal-body').text('Удалить ' + site_link + ': ' + site + '?')
         })
+        // подсчет новыйх сайтов
+        var rows = $('tr').slice(1)
+            var rowsSiteNew = rows.filter(function(){
+                var x = $(this).find($('span.new-site'))
+                if (x.length == 0){return false}
+                if (x.length != 0){return true}
+            })
+         var rowsSiteNewCount = rowsSiteNew.length
 
         // Кнопка показать/скрыть не новые сайты
         var butn = $('#show-new')
+        CountSpan = ''
+        if (rowsSiteNewCount > 0) {var CountSpan =  ' <span class="badge bg-danger">'+ rowsSiteNewCount +'</span>'}
+        butn.html('Только Новые' + CountSpan)
         var newSiteTo = 'hide'
         $(butn).click(function(){
             console.log('click spn new')
@@ -179,7 +190,7 @@
             else {
                 rows.show()
                 newSiteTo = 'hide'
-                butn.text('Только Новые')
+                butn.html('Только Новые' + CountSpan)
                 }
         })
 
