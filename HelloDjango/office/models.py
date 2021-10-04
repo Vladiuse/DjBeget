@@ -38,6 +38,7 @@ class Site(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта', default='None')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
     datetime = models.DateTimeField(auto_now_add=True)
+    is_camp_run = models.BooleanField(default=False)
 
     def save(self):
         # TODO перенести в другую функцию?
@@ -141,6 +142,27 @@ class Site(models.Model):
     def is_domain_link(self):
         return bool(len(self.domain_set.all()))
 
+    def set_site_run(self):
+        print('RUN')
+        self.is_camp_run = True
+        self.save()
+        print(self.is_camp_run)
+
+    def set_site_not_run(self):
+        print('RUN OFFF')
+        self.is_camp_run = False
+        self.save()
+        print(self.is_camp_run)
+
+    # def is_camp_run(self):
+    #     """Запущена ли кампания с этим сайтом"""
+    #     domains = self.domain_set.all()
+    #     for dom in domains:
+    #         for camp in dom.company_set.all():
+    #             if camp.status.name == 'Запущено':
+    #                 return True
+    #     return False
+
     def __str__(self):
         return self.site_name
 
@@ -212,6 +234,9 @@ class Domain(models.Model):
 
     def get_https_site(self):
         return f'https://{self.name}/'
+
+
+
 
     def __str__(self):
         return self.name

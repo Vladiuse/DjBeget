@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-
+from pprint import pprint
 from .api import Beget
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
@@ -25,6 +25,8 @@ NO_CONNECTION = 'Не удалось подключиться'
 @login_required
 def sites(request):
     """Список сайтов, их статусов и тд"""
+    # res = Company.objects.exclude(status_name__not="Запущено")
+    # print(len(res), 'xxxxxxxxxxxxx')
     # sites = Site.objects.all().order_by('-pk')
     sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))  # исключаються тех сайты
     sites.sort(key=Site.get_sort_name)

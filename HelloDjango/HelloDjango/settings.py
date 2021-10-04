@@ -119,12 +119,24 @@ TEMPLATES = [
 #     }
 # }
 
-# for MySql test database remote
+# for MySql database remote
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'vladiuse_beget_t',
+#         'USER': 'vladiuse_beget_t',
+#         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
+#         'HOST': 'localhost',
+#
+#     }
+# }
+
+# for MySql TEST database remote
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'vladiuse_beget_t',
-        'USER': 'vladiuse_beget_t',
+        'NAME': 'vladiuse_beget',
+        'USER': 'vladiuse_beget',
         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
         'HOST': 'vladiuse.beget.tech',
         'PORT': '3306',

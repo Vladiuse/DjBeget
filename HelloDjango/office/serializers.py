@@ -62,6 +62,11 @@ class CompanySerializer(ModelSerializer):
     def update(self, instance, validated_data):
         status_id = validated_data.get('status', instance.status)
         instance.status = CampaignStatus.objects.get(pk=status_id)
+        for dom in instance.land.all():
+            if instance.status.name == 'Запущено':
+                dom.site.set_site_run()
+            else:
+                dom.site.set_site_not_run()
         instance.save()
         return instance
 

@@ -107,6 +107,7 @@
             <tr>
                 <th>Сылка</th>
                 <th>Tools</th>
+                <th>Запуск</th>
                 <th>Прокла</th>
                 <th>Статус</th>
                 <th>Прочее</th>
@@ -135,6 +136,12 @@
                 </td>
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
+                <td>
+                    {% if site.is_camp_run %}
+                    <i class="fas fa-play-circle"></i>
+           
+                    {% endif %}
+                </td>
                 <td class="site-title">{{ site.title|slice:":30" }}</td>
 <!--                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>-->
                 <td>
@@ -150,7 +157,12 @@
                         <li><a class="dropdown-item" href="#">Отправить лид</a></li>
                         <li><a class="dropdown-item" href="#">Архивировать</a></li>
                         <li><hr class="dropdown-divider"></li>
+                        {% if site.is_camp_run %}
+                        <li><a class="dropdown-item disabled" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">Удалить</a></li>
+                        {% else %}
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">Удалить</a></li>
+                        {% endif %}
+                        
                       </ul>
                     </div>
                 </td>
