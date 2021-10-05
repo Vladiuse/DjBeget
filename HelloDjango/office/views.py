@@ -58,6 +58,7 @@ def update_sites(request):
             site = Site(beget_id=beget_id, site_name=site_name, title='None')
             site.save()
             site.update_title()
+            site.check_cloac()
         # обновление доменов сайта
         for domain in site_beget['domains']:
             domain_beget_id = domain['id']

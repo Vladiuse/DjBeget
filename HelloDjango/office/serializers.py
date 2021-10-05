@@ -63,7 +63,7 @@ class CompanySerializer(ModelSerializer):
         status_id = validated_data.get('status', instance.status)
         instance.status = CampaignStatus.objects.get(pk=status_id)
         for dom in instance.land.all():
-            if instance.status.name == 'Запущено':
+            if instance.status.name == 'Запущено' or instance.status.name == 'На расмотрении':
                 dom.site.set_site_run()
             else:
                 dom.site.set_site_not_run()

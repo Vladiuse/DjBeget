@@ -39,6 +39,7 @@ class Site(models.Model):
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
     datetime = models.DateTimeField(auto_now_add=True)
     is_camp_run = models.BooleanField(default=False)
+    is_cloac = models.BooleanField(default=False)
 
     def save(self):
         # TODO перенести в другую функцию?
@@ -92,6 +93,26 @@ class Site(models.Model):
         else:
             self.title = page.get_h1_title()
         self.save()
+
+    def check_cloac(self):
+        url = self.get_http_site()
+        page = Checker(url=url)
+        try:
+            page.make_soup()
+        except MyError:
+            self.title = MyError.NO_CONNECTION
+        else:
+            soup = page.soup
+            forms = soup.find_all('form')
+            for f in forms:
+                if f.get('action') == 's_api.php':
+                    self.is_cloac = True
+                    self.save()
+                    break
+
+    def black_page(self):
+        return self.get_http_site() + 'black.html'
+
 
     def get_log_url(self):
         """Ссылка на лог сайта"""

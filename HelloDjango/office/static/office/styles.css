@@ -80,10 +80,14 @@
   }
   .icon-block .fa-address-book{
   font-size: 25px;
-  
-  
+
+
   }
-  
+
+  .fa-user-secret{
+  font-size: 25px;
+  }
+
   .icon-block .fa-lock {
   font-size: 18px;
   margin-right: 20px;

@@ -107,6 +107,7 @@
             <tr>
                 <th>Сылка</th>
                 <th>Tools</th>
+<!--                <th>Кло</th>-->
                 <th>Запуск</th>
                 <th>Прокла</th>
                 <th>Статус</th>
@@ -132,8 +133,16 @@
                         <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
                     <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
                    <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a>
+                        {% if site.is_cloac %}
+                    <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
+                    {% endif %}
                         </div>
                 </td>
+<!--                <td>-->
+<!--                    <div class="icon-block">-->
+<!--                            заклоачена ли ссылка-->
+<!--                        </div>-->
+<!--                </td>-->
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
                 <td>

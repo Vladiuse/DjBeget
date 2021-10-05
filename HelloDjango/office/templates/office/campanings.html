@@ -57,8 +57,8 @@
                   Выбрать
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btnGroupDrop1" id="for-domain">
-                  <li><a class="dropdown-item" href="#">cool-markets.store : Money Amulet купить, Money Amu some status</a></li>
-                  <li><a class="dropdown-item" href="#">cool-xx.store : Money Amulet купить,me status</a></li>
+<!--                  <li><a class="dropdown-item" href="#">cool-markets.store : Money Amulet купить, Money Amu some status</a></li>-->
+<!--                  <li><a class="dropdown-item" href="#">cool-xx.store : Money Amulet купить,me status</a></li>-->
                 </ul>
               </div>
             </div>
@@ -184,7 +184,7 @@
                     <button class="btn dropdown-toggle" type="button" id="" data-bs-toggle="dropdown" current-status="{{comp.status.id}}"  aria-expanded="false">{{ comp.status }}</button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         {% for status in statusys %}
-                      <li><a class="dropdown-item" camp-status="{{status.id}}" current-status="{{comp.status.id}}" href="#">{{ status.name }}</a></li>
+                      <li><a class="dropdown-item" camp-status="{{status.id}}" current-status="{{comp.status.id}}">{{ status.name }}</a></li>
                         {% endfor %}
                     </ul>
                   </div>
