@@ -43,10 +43,14 @@ class Page:
 
 
 class Site:
+    # sitemap
     SUCCESS_PAGE = 'success/success.html'
     POLICY = 'policy.html'
     SPAS = 'spas.html'
     TERM = 'terms.html'
+    # if clo
+    WHITE = 'white.html'
+    BLACK = 'black.html'
 
     def __init__(self, url):
         self.main = Page(url)
@@ -67,29 +71,6 @@ class StatusHTML:
     GREEN = 'status-paid'
 
 
-#
-# class Result:
-#
-#     def __init__(self, description):
-#         self.description = description
-#         self.result_text = ''
-#         self.info = ''  # доп. информация (для ошибок)
-#         self.is_check = False
-#         self.statusHtml = None
-#
-#     def set_reprimand(self):
-#         self.statusHtml = StatusHTML.YELLOW
-#
-#     def set_all_good(self):
-#         self.statusHtml = StatusHTML.GREEN
-#
-#     def set_error(self):
-#         self.statusHtml = StatusHTML.RED
-#
-#     def set_none(self):
-#         self.statusHtml = StatusHTML.GREY
-
-
 class LinkChecker:
     class Check:
         DESCRIPTION = 'No'
@@ -98,15 +79,13 @@ class LinkChecker:
         GOOD = 'Все ок'
         REPRIMAND = 'Замечание'
         ERROR = 'Ошибка'
-        RESULT_CODE = {
-            ''
-        }
 
         def __init__(self, site):
             self.site = site
             self.description = self.DESCRIPTION
             self.result_text = ''
             self.info = []  # доп. информация (для ошибок)
+            self.errors = []  # вывод примеров ошибок
             # self.statusHtml = None
             self.is_check = False
             self.result_code = ''
@@ -119,32 +98,25 @@ class LinkChecker:
             self.is_check = True
 
         def set_reprimand(self):
-            # self.set_checked()
-            # self.result.set_reprimand()
             self.result_text = self.REPRIMAND
 
         def set_all_good(self):
-            # self.set_checked()
-            # self.result.set_all_good()
             self.result_text = self.GOOD
 
         def set_error(self):
-            # self.set_checked()
-            # self.result.set_error()
             self.result_text = self.ERROR
 
         def set_none(self):
-            # self.set_checked()
-            # self.result.set_none()
             self.result_text = self.NONE
 
     class Req(Check):
         DESCRIPTION = 'Реквизиты'
 
-        GOOD = 'Присутствуют'
-        ERROR = ''
-        REPRIMAND = 'Есть некоректные'
-        NONE = ''
+        INCORRECT_REQ = 'Есть некоректные'
+
+        STATUS_SET = {
+            INCORRECT_REQ: 'reprimand',
+        }
 
         REQUISITES = {
             'name': 'ИП Гребенщиков',
@@ -185,10 +157,11 @@ class LinkChecker:
         DESCRIPTION = 'Реквизиты'
         SAVED_FROM = '<!-- saved from'
 
-        GOOD = 'Нет коментрария saved from'
-        ERROR = ''
-        REPRIMAND = 'Комментарий saved from на странице'
-        NONE = ''
+        COMM_ON_PAGE = 'Комментарий saved from на странице'
+
+        STATUS_SET = {
+            COMM_ON_PAGE: 'reprimand',
+        }
 
         def process(self):
             self.find_comm()
@@ -210,6 +183,12 @@ class LinkChecker:
         INCORRECT_TEXT = 'Ошибка в подписи ссылки'
         NO_LINK = 'Нет ссылки на странице'
         PAGE_NOT_WORK = 'Страница не работает'
+
+        STATUS_SET = {
+            INCORRECT_TEXT: 'reprimand',
+            NO_LINK: 'reprimand',
+            PAGE_NOT_WORK: 'reprimand',
+        }
 
         def process(self):
             self.find_link()
@@ -250,6 +229,12 @@ class LinkChecker:
         PAGE_NOT_WORK = 'Страница отзыва НЕ работает'
         NO_SPAS_FORM = 'Нет формы отзыва'
 
+        STATUS_SET = {
+            INCORRECT_REDIRECT: 'error',
+            PAGE_NOT_WORK: 'reprimand',
+            NO_SPAS_FORM: 'reprimand',
+        }
+
         def process(self):
             self.check_form()
             self.check_page()
@@ -278,6 +263,10 @@ class LinkChecker:
 
         PAGE_NOT_WORK = 'Страница не работает'
 
+        STATUS_SET = {
+            PAGE_NOT_WORK: 'error',
+        }
+
         def process(self):
             self.check_page()
             # if not self.info:
@@ -300,6 +289,11 @@ class LinkChecker:
 
         PIXEL_NOT_FOUND = 'Пиксель не найден'
         ONE_NOT_CORRECT = 'Один из пикселей некоректен'
+
+        STATUS_SET = {
+            PIXEL_NOT_FOUND: 'reprimand',
+            ONE_NOT_CORRECT: 'reprimand',
+        }
 
         def process(self):
             self.find_pixel()
@@ -328,6 +322,10 @@ class LinkChecker:
 
         PIXEL_NOT_FOUND = 'Пиксель не найден'
 
+        STATUS_SET = {
+            PIXEL_NOT_FOUND: 'reprimand',
+        }
+
         def process(self):
             self.find_pixel()
             # if not self.info:
@@ -351,8 +349,14 @@ class LinkChecker:
         INCORRECT_INNER = 'Некоректные внутриние ссылки'
         NO_HREF = 'Есть ссылки без href'
 
+        STATUS_SET = {
+            FIND_ALIEN: 'error',
+            INCORRECT_INNER: 'reprimand',
+            NO_HREF: 'reprimand',
+        }
+
         def process(self):
-            pass
+            self.find_links()
 
         def find_links(self):
             soup = self.site.main.get_soup()
@@ -361,25 +365,115 @@ class LinkChecker:
                 try:
                     href = link['href']
                     if not (href.startswith('#') or href in self.DO_NOT_CHECK):
-                        print(href, 'NOTT')
-                    else:
-                        print(href, 'correct')
+                        if href.startswith('http'):
+                            self.info.append(self.FIND_ALIEN)
+                            self.errors.append(href)
+                        else:
+                            self.info.append(self.INCORRECT_INNER)
+                            self.errors.append(href)
+                except KeyError:
+                    self.info.append(self.NO_HREF)
+
+    class HTMLForm:
+        """html форма"""
+
+        def __init__(self, form_soup):
+            self.form = form_soup
+            self.action = None
+            self.name = None
+            self.phone = None
+            self.phone_minlength = None
+            self.i_agree = None
+
+        def process(self):
+            self.find_action()
+            self.find_name()
+            self.find_phone()
+            self.get_phone_minlength()
+
+        def find_action(self):
+            try:
+                self.action = self.form['action']
+            except KeyError:
+                self.action = 'not found'
+
+        def find_name(self):
+            name = self.form.find('input', {'name': 'name'})
+            if name:
+                self.name = name.get('name')
+
+        def find_phone(self):
+            phone = self.form.find('input', {'name': 'phone'})
+            if phone:
+                self.phone = phone.get('name')
+
+        def get_phone_minlength(self):
+            if self.phone:
+                phone = self.form.find('input', {'name': 'phone'})
+                try:
+                    self.phone_minlength = phone['minlength']
                 except KeyError:
                     pass
 
-
-
-    class Forms(Check):
-
-        def process(self):
+        def check_i_agree_input(self):
             pass
 
-    # тело Главного черера
+    class OrderForms(Check):
+        DESCRIPTION = 'Order формы'
+
+        NO_FORMS = 'Формы не найдены'
+        # INCORRECT_FROM = 'Есть некоректная форма'
+        # NO_ACTION = 'Отсутствует action в форме'
+        INCORRECT_ACTION = 'Некоректный action в форме'
+        NAME_ERROR = 'Нет инпута(ошибка) для имени'
+        PHONE_ERROR = 'Нет инпута(ошибка) для телефона'
+        NO_MIN_LEN = 'Минимальная длина номера не установлена'
+
+        STATUS_SET = {
+            NO_FORMS: 'error',
+            INCORRECT_ACTION: 'error',
+            NAME_ERROR: 'error',
+            PHONE_ERROR: 'error',
+            NO_MIN_LEN: 'reprimand',
+        }
+
+        def __init__(self, site):
+            super().__init__(site=site)
+            self.forms = []
+            self.order_forms_count = 0
+
+        def process(self):
+            self.find_forms()
+            for form in self.forms:
+                self.check_order_form(form)
+            if not self.order_forms_count:
+                self.info.append(self.NO_FORMS)
+
+        def find_forms(self):
+            soup = self.site.main.get_soup()
+            forms = soup.find_all('form')
+            for form in forms:
+                self.forms.append(LinkChecker.HTMLForm(form))
+
+        def check_order_form(self, form):
+            form.process()
+            if form.action != 'spas.html':
+                self.order_forms_count += 1
+                if form.action != 'api.php':
+                    self.info.append(self.INCORRECT_ACTION)
+                if form.name != 'name':
+                    self.info.append(self.NAME_ERROR)
+                if form.phone != 'phone':
+                    self.info.append(self.PHONE_ERROR)
+                if not form.phone_minlength:
+                    self.info.append(self.NO_MIN_LEN)
+
+    # тело Главного чекера
     def __init__(self, site):
         self.site = site
         self.checkers = [
             self.Req,
-            self.Forms,
+            self.OrderForms,
         ]
         self.result = []
 
@@ -390,12 +484,4 @@ class LinkChecker:
 
 
 if __name__ == '__main__':
-    pixel = """<!-- Facebook Pixel Code -->fbq('init', '379588770181368');\n
-     <noscript><img height="1" width="1" style="display:none" 
-     src="https://www.facebook.com/tr?id=379588770181368&ev=PageView&noscript=1"/></noscript>
-     <!-- End Facebook Pixel Code -->"""
-
-    pixel_block = Page.find_text_block(pixel, '<!-- Facebook Pixel Code -->', '<!-- End Facebook Pixel Code -->')
-    fbp_1 = Page.find_text_block(pixel_block, LinkChecker.FaceBookPixel.FBP_1['start'],
-                                 LinkChecker.FaceBookPixel.FBP_1['end'])
-    print(fbp_1)
+    pass

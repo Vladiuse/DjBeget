@@ -6,15 +6,6 @@ from bs4 import BeautifulSoup
 from new_checker import LinkChecker, Page, Site
 
 
-class Test:
-
-    def __init__(self):
-        self.text = 'find'
-
-    def get_text(self):
-        return self.text
-
-
 class TestReq(unittest.TestCase):
     """Тест проверки реквизитов"""
 
@@ -235,6 +226,141 @@ class TtPixelText(unittest.TestCase):
         with patch.object(Page, 'get_text', return_value=pixel):
             self.tt.process()
             self.assertTrue(self.tt.PIXEL_NOT_FOUND in self.tt.info)
+
+
+class LinksTest(unittest.TestCase):
+
+    def setUp(self):
+        self.site = Site('1')
+        self.link_check = LinkChecker.PageLink(self.site)
+
+    def test_all_good(self):
+        text = '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="#order" class="button-m">Оставить отзыв</a>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.link_check.process()
+            self.assertTrue(len(self.link_check.info) == 0)
+
+    def test_alien_http(self):
+        text = '<a href="http://spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="https://policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="#order" class="button-m">Оставить отзыв</a>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.link_check.process()
+            self.assertTrue(self.link_check.FIND_ALIEN in self.link_check.info)
+            self.assertTrue('http://spas.html' in self.link_check.errors)
+
+    def test_incorrect(self):
+        text = '<a href="123#spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="pp#policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="#order" class="button-m">Оставить отзыв</a>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.link_check.process()
+            self.assertTrue(self.link_check.INCORRECT_INNER in self.link_check.info)
+            self.assertTrue('pp#policy.html' in self.link_check.errors)
+
+    def test_no_href(self):
+        text = '<a href="" class="button-m">Оставить отзыв</a>' \
+               '<a href="pp#policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="#order" class="button-m">Оставить отзыв</a>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.link_check.process()
+            self.assertTrue(self.link_check.INCORRECT_INNER in self.link_check.info)
+
+
+class HTMLFormTest(unittest.TestCase):
+
+    def setUp(self):
+        text = '<form action="good.php">' \
+               '<input type="text" name="name">' \
+               '<input type="text" name="phone" minlength="111">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        form_soup_work = soup.find('form')
+        self.form = LinkChecker.HTMLForm(form_soup=form_soup_work)
+
+    def test_get_action(self):
+        self.form.find_action()
+        self.assertEqual(self.form.action, 'good.php')
+
+    def test_get_name(self):
+        self.form.find_name()
+        self.assertEqual(self.form.name, 'name')
+
+    def test_get_phone(self):
+        self.form.find_phone()
+        self.assertEqual(self.form.phone, 'phone')
+
+    def test_min_length(self):
+        self.form.find_phone()
+        self.form.get_phone_minlength()
+        self.assertEqual(self.form.phone_minlength, '111')
+
+
+class OrderFormsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.site = Site('1')
+        self.forms = LinkChecker.OrderForms(self.site)
+
+    def test_all_good(self):
+        text = '<form action="api.php">' \
+               '<input type="text" name="name">' \
+               '<input type="text" name="phone" minlength="9">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.forms.process()
+            self.assertEqual(self.forms.info, [])
+
+    def test_no_phone(self):
+        text = '<form action="api.php">' \
+               '<input type="text" name="name">' \
+               '<input type="text" name="phone1" minlength="9">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.forms.process()
+            self.assertTrue(self.forms.PHONE_ERROR in self.forms.info)
+
+    def test_no_name(self):
+        text = '<form action="api.php">' \
+               '<input type="text" name="xxxx">' \
+               '<input type="text" name="phone" minlength="9">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.forms.process()
+            self.assertTrue(self.forms.NAME_ERROR in self.forms.info)
+
+    def test_no_minlenght(self):
+        text = '<form action="api.php">' \
+               '<input type="text" name="name">' \
+               '<input type="text" name="phone" minlength="">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.forms.process()
+            self.assertTrue(self.forms.NO_MIN_LEN in self.forms.info)
+
+    def test_no_forms(self):
+        text = '<form action="spas.html">' \
+               '<input type="text" name="xxxx">' \
+               '<input type="text" name="phone" minlength="9">' \
+               '</form>'
+        soup = BeautifulSoup(text, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.forms.process()
+            self.assertTrue(self.forms.NO_FORMS in self.forms.info)
 
 
 if __name__ == '__main__':
