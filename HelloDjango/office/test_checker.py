@@ -25,30 +25,39 @@ class TestReq(unittest.TestCase):
                                  '<p>г.Минск,ул.Радиальная,д.40</p>' \
                                  '<p>E-mail:zenitcotrade@gmail.com</p>' \
                                  '<p>Телефон:+375'
+        self.req_no_all = 'ifninieqvneqv'
 
     def test_no_req(self):
         with patch.object(Page, 'get_text_no_spaces_soup', return_value='123'):
             req = LinkChecker.Req(self.site)
             req.process()
-            self.assertEqual(req.result_text, req.REPRIMAND)
+            self.assertTrue(req.NO_REQS in req.info)
 
     def test_fb_In(self):
         with patch.object(Page, 'get_text_no_spaces_soup', return_value=self.reqALL):
             req = LinkChecker.Req(self.site)
             req.find_req_fb()
-            self.assertEqual(req.result_text, req.GOOD)
+            req.get_result_status()
+            self.assertEqual(req.result_code, 'good')
 
     def test_fb_no_name(self):
         with patch.object(Page, 'get_text_no_spaces_soup', return_value=self.req_no_name):
             req = LinkChecker.Req(self.site)
             req.find_req_fb()
-            self.assertEqual(req.info, ['name'])
+            self.assertTrue('name' in req.errors)
 
     def test_tt_no_name_phone(self):
         with patch.object(Page, 'get_text_no_spaces_soup', return_value=self.req_no_name_phone):
             req = LinkChecker.Req(self.site)
             req.find_req_tt()
-            self.assertEqual(req.info, ['name', 'phone'])
+            self.assertTrue('name' in req.errors and 'phone' in req.errors)
+
+    def test_no_reqs(self):
+        with patch.object(Page, 'get_text_no_spaces_soup', return_value=self.req_no_all):
+            req = LinkChecker.Req(self.site)
+            req.find_req_tt()
+            self.assertEqual(len(req.errors), 5)
+            self.assertTrue(req.NO_REQS in req.info and len(req.info) == 1)
 
 
 class FindCommTest(unittest.TestCase):
@@ -216,10 +225,11 @@ class TtPixelText(unittest.TestCase):
         self.tt = LinkChecker.TtPixel(self.site)
 
     def test_pixel_found(self):
-        pixel = " xx  xx ttq.load('C4TM1C7PECQ6U88FAJ20'); xx "
+        # pixel = " xx  xx ttq.load('C4TM1C7PECQ6U88FAJ20'); xx "
+        pixel = "ttq.load('C59GNENGE0M9N03GTOE0');"
         with patch.object(Page, 'get_text', return_value=pixel):
             self.tt.process()
-            self.assertEqual(self.tt.result_text, 'C4TM1C7PECQ6U88FAJ20')
+            self.assertEqual(self.tt.result_text, 'C59GNENGE0M9N03GTOE0')
 
     def test_not_pixel_found(self):
         pixel = " xx  xx ttq.loadxx('C4TM1C7PECQ6U88FAJ20'); xx "
@@ -320,7 +330,7 @@ class OrderFormsTest(unittest.TestCase):
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
             self.forms.process()
-            self.assertEqual(self.forms.info, [])
+            self.assertEqual(self.forms.info, set())
 
     def test_no_phone(self):
         text = '<form action="api.php">' \
@@ -361,6 +371,30 @@ class OrderFormsTest(unittest.TestCase):
         with patch.object(Page, 'get_soup', return_value=soup):
             self.forms.process()
             self.assertTrue(self.forms.NO_FORMS in self.forms.info)
+
+class CheckTest(unittest.TestCase):
+
+    def setUp(self):
+        site = Site('1')
+        self.checker = LinkChecker.Check(site)
+        self.checker.STATUS_SET.update({'error_1': 'error', 'error_2': 'reprimand'})
+
+    def test_all_good(self):
+        self.checker.get_result_status()
+        self.assertEqual(self.checker.result_code, 'good')
+
+    def test_error_status(self):
+        self.checker.info.add('error_1')
+        self.checker.info.add('error_2')
+        self.checker.get_result_status()
+        self.assertEqual(self.checker.result_code, 'error')
+
+    def test_rep_status(self):
+        self.checker.info.add('error_2')
+        self.checker.get_result_status()
+        self.assertEqual(self.checker.result_code, 'reprimand')
+
+
 
 
 if __name__ == '__main__':

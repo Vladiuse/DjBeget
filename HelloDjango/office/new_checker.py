@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 class Page:
 
     def __init__(self, url):
-        self.url = url if not url.endswith('/') else url + '/'
+        self.url = url
         self.status_code = None
         self.text = None
         self.soup = None
@@ -16,17 +16,21 @@ class Page:
     def connect(self):
         try:
             res = req.get(self.url)
+            res.encoding = 'utf-8'
             self.status_code = res.status_code
             self.text = res.text
-            self.soup = BeautifulSoup(self.text, 'lxml')
+            self.soup = BeautifulSoup(res.text, 'lxml')
+            print(f'Page work: {self.url}')
+            return True
         except req.exceptions.ConnectionError:
             print(f'Page dont work: {self.url}')
+            return False
 
     def get_text(self):
         return self.text
 
     def get_soup(self):
-        return self.soup()
+        return self.soup
 
     def get_text_no_spaces_soup(self):
         """Возвращает текст со страницы без верстки и пробелов"""
@@ -43,21 +47,24 @@ class Page:
 
 
 class Site:
-    # sitemap
-    SUCCESS_PAGE = 'success/success.html'
-    POLICY = 'policy.html'
-    SPAS = 'spas.html'
-    TERM = 'terms.html'
+    SUCCESS_PAGE = '/success/success.html'
+    POLICY = '/policy.html'
+    SPAS = '/spas.html'
+    TERM = '/terms.html'
     # if clo
-    WHITE = 'white.html'
-    BLACK = 'black.html'
+    WHITE = '/white.html'
+    BLACK = '/black.html'
 
-    def __init__(self, url):
-        self.main = Page(url)
+    def __init__(self, url, is_cloac=False):
+        self.cloac = is_cloac
+        # sitemap
+        self.main = Page(url) if not is_cloac else Page(url + Site.BLACK)
         self.spas = Page(url + Site.SPAS)
         self.policy = Page(url + Site.POLICY)
         self.terms = Page(url + Site.TERM)
         self.success = Page(url + Site.SUCCESS_PAGE)
+        self.black = Page(url + Site.BLACK)
+        self.white = Page(url + Site.WHITE)
 
     def check_pages_conn(self):
         for page in self.main, self.success, self.policy, self.terms, self.spas:
@@ -80,11 +87,13 @@ class LinkChecker:
         REPRIMAND = 'Замечание'
         ERROR = 'Ошибка'
 
+        STATUS_SET = {}
+
         def __init__(self, site):
             self.site = site
             self.description = self.DESCRIPTION
             self.result_text = ''
-            self.info = []  # доп. информация (для ошибок)
+            self.info = set()  # информация об ошибоке
             self.errors = []  # вывод примеров ошибок
             # self.statusHtml = None
             self.is_check = False
@@ -93,6 +102,19 @@ class LinkChecker:
 
         def process(self):
             pass
+
+        def get_result_status(self):
+            if not self.info:
+                self.result_code = 'good'
+            else:
+                res = set()
+                for text_error in self.info:
+                    res.add(self.STATUS_SET[text_error])
+                if 'error' in res:
+                    self.result_code = 'error'
+                    return
+                if 'reprimand' in res:
+                    self.result_code = 'reprimand'
 
         def set_checked(self):
             self.is_check = True
@@ -113,9 +135,11 @@ class LinkChecker:
         DESCRIPTION = 'Реквизиты'
 
         INCORRECT_REQ = 'Есть некоректные'
+        NO_REQS = 'Реквизиты отсутсвуют'
 
         STATUS_SET = {
             INCORRECT_REQ: 'reprimand',
+            NO_REQS: 'reprimand',
         }
 
         REQUISITES = {
@@ -145,16 +169,20 @@ class LinkChecker:
             for req in reqs:
                 req_text = self.REQUISITES[req].replace(' ', '')
                 if req_text not in page_text:
-                    self.info.append(req)
-            if not self.info:
-                self.set_all_good()
-            else:
-                # self.info = ','.join(errors)
-                self.set_reprimand()
+                    self.errors.append(req)
+                    self.info.add(self.INCORRECT_REQ)
+            if len(self.errors) == len(reqs):
+                self.info = set()
+                self.info.add(self.NO_REQS)
+            # if not self.info:
+            #     self.set_all_good()
+            # else:
+            #     # self.info = ','.join(errors)
+            #     self.set_reprimand()
 
     class SaveComment(Check):
         """Поиск коментария от google chrome"""
-        DESCRIPTION = 'Реквизиты'
+        DESCRIPTION = 'Комметрарий от гугл хром'
         SAVED_FROM = '<!-- saved from'
 
         COMM_ON_PAGE = 'Комментарий saved from на странице'
@@ -203,13 +231,13 @@ class LinkChecker:
             link = soup.find('a', href=self.POLICY_LINK)
             if link:
                 if self.LINK_TEXT not in link.text:
-                    self.info.append(self.INCORRECT_TEXT)
+                    self.info.add(self.INCORRECT_TEXT)
             else:
-                self.info.append(self.NO_LINK)
+                self.info.add(self.NO_LINK)
 
         def check_page(self):
             if not self.site.main.is_work():
-                self.info.append(self.PAGE_NOT_WORK)
+                self.info.add(self.PAGE_NOT_WORK)
 
     class TermsPage(PolicyPage):
         DESCRIPTION = 'Страница пользовательского соглашения'
@@ -248,15 +276,15 @@ class LinkChecker:
             soup = self.site.spas.get_soup()
             form = soup.find('form', action=self.ACTION)
             if not form:
-                self.info.append(self.NO_SPAS_FORM)
+                self.info.add(self.NO_SPAS_FORM)
 
         def check_page(self):
             if not self.site.spas.is_work:
-                self.info.append(self.PAGE_NOT_WORK)
+                self.info.add(self.PAGE_NOT_WORK)
 
         def find_redirect_url(self):
             if self.FIND not in self.site.spas.get_text():
-                self.info.append(self.INCORRECT_REDIRECT)
+                self.info.add(self.INCORRECT_REDIRECT)
 
     class SuccessPage(Check):
         DESCRIPTION = 'Итоговая страница'
@@ -276,7 +304,7 @@ class LinkChecker:
 
         def check_page(self):
             if not self.site.success.is_work():
-                self.info.append(self.PAGE_NOT_WORK)
+                self.info.add(self.PAGE_NOT_WORK)
 
     class FaceBookPixel(Check):
         """Пиклесль ФБ"""
@@ -309,11 +337,11 @@ class LinkChecker:
                 fbp_1 = Page.find_text_block(pixel_block, self.FBP_1['start'], self.FBP_1['end'])
                 fbp_2 = Page.find_text_block(pixel_block, self.FBP_2['start'], self.FBP_2['end'])
                 if fbp_1 != fbp_2:
-                    self.info.append(self.ONE_NOT_CORRECT)
+                    self.info.add(self.ONE_NOT_CORRECT)
                 else:
                     self.result_text = fbp_1
             else:
-                self.info.append(self.PIXEL_NOT_FOUND)
+                self.info.add(self.PIXEL_NOT_FOUND)
 
     class TtPixel(Check):
         DESCRIPTION = 'Пиклесль TikTok'
@@ -336,7 +364,7 @@ class LinkChecker:
         def find_pixel(self):
             tt_pixel = Page.find_text_block(self.site.success.get_text(), self.TT['start'], self.TT['end'])
             if not tt_pixel:
-                self.info.append(self.PIXEL_NOT_FOUND)
+                self.info.add(self.PIXEL_NOT_FOUND)
             else:
                 self.result_text = tt_pixel
 
@@ -366,13 +394,13 @@ class LinkChecker:
                     href = link['href']
                     if not (href.startswith('#') or href in self.DO_NOT_CHECK):
                         if href.startswith('http'):
-                            self.info.append(self.FIND_ALIEN)
+                            self.info.add(self.FIND_ALIEN)
                             self.errors.append(href)
                         else:
-                            self.info.append(self.INCORRECT_INNER)
+                            self.info.add(self.INCORRECT_INNER)
                             self.errors.append(href)
                 except KeyError:
-                    self.info.append(self.NO_HREF)
+                    self.info.add(self.NO_HREF)
 
     class HTMLForm:
         """html форма"""
@@ -447,7 +475,7 @@ class LinkChecker:
             for form in self.forms:
                 self.check_order_form(form)
             if not self.order_forms_count:
-                self.info.append(self.NO_FORMS)
+                self.info.add(self.NO_FORMS)
 
         def find_forms(self):
             soup = self.site.main.get_soup()
@@ -460,13 +488,13 @@ class LinkChecker:
             if form.action != 'spas.html':
                 self.order_forms_count += 1
                 if form.action != 'api.php':
-                    self.info.append(self.INCORRECT_ACTION)
+                    self.info.add(self.INCORRECT_ACTION)
                 if form.name != 'name':
-                    self.info.append(self.NAME_ERROR)
+                    self.info.add(self.NAME_ERROR)
                 if form.phone != 'phone':
-                    self.info.append(self.PHONE_ERROR)
+                    self.info.add(self.PHONE_ERROR)
                 if not form.phone_minlength:
-                    self.info.append(self.NO_MIN_LEN)
+                    self.info.add(self.NO_MIN_LEN)
 
     # тело Главного чекера
     def __init__(self, site):
@@ -474,14 +502,41 @@ class LinkChecker:
         self.checkers = [
             self.Req,
             self.OrderForms,
+            self.SaveComment,
+            self.PolicyPage,
+            self.TermsPage,
+            self.SpasPage,
+            self.SuccessPage,
+            self.FaceBookPixel,
+            self.TtPixel,
+            self.PageLink,
         ]
-        self.result = []
+        self.results_from_checkers = set()
+        self.result = None
 
     def process(self):
         self.site.check_pages_conn()
-        for check in self.checkers:
-            check(self.site).process()
+        for check_class in self.checkers:
+            checker = check_class(self.site)
+            checker.process()
+            checker.get_result_status()
+            self.results_from_checkers.add(checker.result_code)
+            print(checker.DESCRIPTION, checker.result_code, checker.info)
+        self.get_general_result()
+        print(self.result, 'general')
+
+    def get_general_result(self):
+        if 'error' in self.results_from_checkers:
+            self.result = 'error'
+        elif 'reprimand' in self.results_from_checkers:
+            self.result = 'reprimand'
+        else:
+            self.result = 'good'
+
+
 
 
 if __name__ == '__main__':
-    pass
+    site = Site(url='https://spaces-market.store/', is_cloac=True)
+    main_ckecker = LinkChecker(site=site)
+    main_ckecker.process()
