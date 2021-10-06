@@ -85,6 +85,8 @@ class Site(models.Model):
             if self.title not in self.NOT_TITLE:
                 return
         url = self.get_http_site()
+        if self.is_cloac:
+            url = self.black_page()
         page = Checker(url=url)
         try:
             page.make_soup()
@@ -95,6 +97,7 @@ class Site(models.Model):
         self.save()
 
     def check_cloac(self):
+        """Определить заклоачена ссылка или нет - есть ли в action формы s_api.php"""
         url = self.get_http_site()
         page = Checker(url=url)
         try:
@@ -111,8 +114,8 @@ class Site(models.Model):
                     break
 
     def black_page(self):
+        """Получить ссылку на скрытую страницу"""
         return self.get_http_site() + 'black.html'
-
 
     def get_log_url(self):
         """Ссылка на лог сайта"""
@@ -196,6 +199,9 @@ class OldLand(models.Model):
     name = models.CharField(max_length=99)
     url = models.URLField(max_length=200)
     image = models.ImageField(upload_to='img', height_field=None, width_field=None, max_length=200)
+
+    def beget_edit_link(self):
+        return f'https://cp.beget.com/fm/%7B%22type%22:%22home%22,%22path%22:%22/old-lands/public_html/{self.name}%22%7D'
 
     def __str__(self):
         return self.name
