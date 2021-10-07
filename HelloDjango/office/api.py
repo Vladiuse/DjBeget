@@ -1,7 +1,14 @@
 import requests as req
+from pprint import pprint
+import json
+if __name__ != '__main__':
+    from . import models
+    from office.beget_api_keys import begget_login, begget_pass
+else:
+    import beget_api_keys
+    begget_login = beget_api_keys.begget_login
+    begget_pass = beget_api_keys.begget_pass
 
-# import beget_api_keys
-from office.beget_api_keys import begget_login, begget_pass
 
 
 class MyError(BaseException):
@@ -79,27 +86,106 @@ class Beget(ApiManager):
     login = begget_login
     password = begget_pass
     # api
-    sites = f'https://api.beget.com/api/site/getList?login={login}&passwd={password}&output_format=json'
-    domains = f'https://api.beget.com/api/domain/getList?login={login}&passwd={password}&output_format=json'
-    sub_domains = f'https://api.beget.com/api/domain/getSubdomainList?login={login}&passwd={password}&output_format=json'
+    BEGET_API_URL = 'https://api.beget.com/api/'
+    sites_api = f'{BEGET_API_URL}site/getList?login={login}&passwd={password}&output_format=json'
+    domains_api = f'{BEGET_API_URL}domain/getList?login={login}&passwd={password}&output_format=json'
+    sub_domains_api = f'{BEGET_API_URL}domain/getSubdomainList?login={login}&passwd={password}&output_format=json'
+    delite_site = f'{BEGET_API_URL}/site/delete?login={login}&passwd={password}&input_format=json&output_format=json&input_data='
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.domains = []
+        self.sub_domains = []
+        self.sites = []
+
+    def upload_sites(self):
+        """Загрузсть сайты"""
+        if not self.sites:
+
+            res = self.api_get(self.sites_api)
+            print(res)
+            if res['status'] == 'success':
+                for site in res['answer']['result']:
+                    self.sites.append(site)
+
+
+    def upload_domains_list(self):
+        """Загрузсть домены"""
+        if not self.domains:
+            res = self.api_get(self.domains_api)
+            if res['status'] == 'success':
+                for domain in res['answer']['result']:
+                    self.domains.append(domain)
+
+
+    def upload_sub_domains_list(self):
+        """Загрузсть поддомены"""
+        if not self.sub_domains:
+            res = self.api_get(self.sub_domains_api)
+            if res['status'] == 'success':
+                for sub_domain in res['answer']['result']:
+                    self.sub_domains.append(sub_domain)
 
     def get_sites(self):
-        res = self.api_get(self.sites)
+        """Получить список сайтов"""
+        if not self.sites:
+            self.upload_sites()
+        return self.sites
+
+    def get_domains(self):
+        """Получить список доменов"""
+        if not self.domains:
+            self.upload_domains_list()
+        return self.domains
+
+    def get_sub_domains(self):
+        """Получить список поддоменов"""
+        if not self.sub_domains:
+            self.upload_sub_domains_list()
+        return self.sub_domains
+
+    def get_all_domains(self):
+        """Получить список всех доменов"""
+        if not self.domains:
+            self.upload_domains_list()
+        if not self.sub_domains:
+            self.upload_sub_domains_list()
+
+        return self.domains + self.sub_domains
+
+    def update_domains(self):
+        """Обновить список доменов"""
+        # TODO - перенести в Domain?
+        all_domains_list = self.get_all_domains()
+        beget_doms_id = [dom['id'] for dom in all_domains_list]
+        db_doms_id = [dom.beget_id for dom in models.Domain.objects.all()]
+        to_del = set(db_doms_id) - set(beget_doms_id)
+        to_add = set(beget_doms_id) - set(db_doms_id)
+        for dom_id in to_del:
+            dom = models.Domain.objects.get(beget_id=dom_id)
+            dom.delete()
+        for domain in all_domains_list:
+            dom_id = domain['id']
+            if dom_id in to_add:
+                name = domain['fqdn']
+                dom = models.Domain(name=name, beget_id=dom_id)
+                dom.save()
+
+    def del_site(self,beget_id):
+        url = self.delite_site + json.dumps({'id': beget_id})
+        res = self.api(url, 'get')
         if res['status'] == 'success':
-            return res['answer']
-        elif res['status'] == 'error':
-            raise MyError(res['error_text'])
+            return True
+        return False
 
-    def get_domains_list(self):
-        res = self.api_get(self.domains)
-        return res['answer']['result']
 
-    def get_sub_domains_list(self):
-        res = self.api_get(self.sub_domains)
-        sub_domains = [sub_doms for sub_doms in res['answer']['result']]
-        return sub_domains
+
+
+
 
 
 if __name__ == '__main__':
     bm = Beget()
-    print(bm.get_sites())
+    list = []
+    for i in bm.get_sites():
+        pprint(i)

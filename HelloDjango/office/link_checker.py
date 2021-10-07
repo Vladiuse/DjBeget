@@ -1,16 +1,30 @@
 from abc import ABC
 
 from bs4 import BeautifulSoup
+from langdetect import detect
 
 from .api import Connection
-from langdetect import detect
 
 
 class StatusHTML:
-    GREY = 'status-none'
-    RED = 'status-unpaid'
-    YELLOW = 'status-pending'
-    GREEN = 'status-paid'
+    GREY = 'btn btn-secondary'
+    RED = 'btn btn-danger'
+    YELLOW = 'btn btn-warning'
+    GREEN = 'btn btn-success'
+
+    @staticmethod
+    def get_checker_status(status):
+        dic = {
+            'good': StatusHTML.GREEN,
+            'reprimand': StatusHTML.YELLOW,
+            'error': StatusHTML.RED,
+            'none': StatusHTML.GREY,
+        }
+        try:
+            html_status = dic[status]
+        except KeyError:
+            html_status = ''
+        return html_status
 
 
 class Url:
@@ -96,7 +110,6 @@ class Checker(Connection, ABC):
 
 
 class MainPage(Checker):
-
     """
     Обработчик главной страницы
     """
@@ -196,7 +209,8 @@ class MainPage(Checker):
         # orders
         if all(self.forms['order_forms']):
             form_count = len(self.forms['order_forms'])
-            self.forms['order_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.ORDER_FORMS_CORRECT + f': {form_count}шт.'}
+            self.forms['order_forms'] = {'status': StatusHTML.GREEN,
+                                         'info': MainPage.ORDER_FORMS_CORRECT + f': {form_count}шт.'}
         else:
             number_incorrect_form = ','.join(str(id + 1) for id, x in enumerate(self.forms['order_forms']) if x)
             self.forms['order_forms'] = {'status': StatusHTML.RED,
@@ -209,7 +223,8 @@ class MainPage(Checker):
         # spas forms
         if self.forms['spas_forms']:
             spas_form_count = len(self.forms['spas_forms'])
-            self.forms['spas_forms'] = {'status': StatusHTML.GREEN, 'info': MainPage.SPAS_FORM_IN + f': {spas_form_count}шт.'}
+            self.forms['spas_forms'] = {'status': StatusHTML.GREEN,
+                                        'info': MainPage.SPAS_FORM_IN + f': {spas_form_count}шт.'}
         else:
             self.forms['spas_forms'] = {'status': StatusHTML.YELLOW, 'info': MainPage.SPAS_FORM_NO}
 
@@ -427,4 +442,3 @@ class LinkCheckerManager:
                 return StatusHTML.YELLOW
             else:
                 return StatusHTML.GREEN
-

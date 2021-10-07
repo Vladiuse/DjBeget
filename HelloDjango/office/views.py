@@ -1,128 +1,90 @@
-# import os, sys
-# sys.path.append('/home/v/vladiuse/.local/lib/python3.6/site-packages/requests')
-
 import requests
-from bs4 import BeautifulSoup
-from django.http import HttpResponse, HttpResponseRedirect
+import json
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+from pprint import pprint
+from .api import Beget
+from .help import ImagePrev
+from .link_checker import LinkCheckerManager
+from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
+from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
+    CabinetSerializer, CountrySerializer
+from .new_checker import Site as SiteMap, LinkChecker as NewLinkChecker
 
-from .api import MyError, Beget
-from .beget_api_keys import begget_login, begget_pass
-from .help import ImagePrev, get_url_link_from_name
-from .link_checker import Url, SuccessPage, LinkCheckerManager
-from .models import Stream, Site, OldLand, Domain, CodeExample, LearnCode
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
 
 
-def get_domains_api():
-    # TODO удалить
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_list_domains_url)
-    answer = res.json()
-    domains = []
-    for site in answer['answer']['result']:
-        for domain in site['domains']:
-            domain = domain['fqdn']
-            domains.append(domain)
-    return domains
-
-
-def get_free_doms():
-    # TODO переместить в модель Beget
-    "Возвращает список не прилинкованных доменов"
-    get_list_domains_url = f'https://api.beget.com/api/site/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_list_domains_url)
-    answer = res.json()
-    domains = []
-    for site in answer['answer']['result']:
-        dom_id = ''
-        dom_name = ''
-        for dom in site['domains']:
-            dom_id += str(dom['id'])
-            dom_name += dom['fqdn']
-            domains.append(dom_name)
-
-    get_doms = f'https://api.beget.com/api/domain/getList?login={begget_login}&passwd={begget_pass}&output_format=json'
-    res = requests.get(get_doms)
-    answer = res.json()
-    doms = []
-    for dom in answer['answer']['result']:
-        doms.append(dom['fqdn'])
-
-    free_doms = []
-    for d in doms:
-        if d not in domains:
-            free_doms.append(d)
-
-    return free_doms
-
-
+@login_required
 def sites(request):
     """Список сайтов, их статусов и тд"""
+    # res = Company.objects.exclude(status_name__not="Запущено")
+    # print(len(res), 'xxxxxxxxxxxxx')
     # sites = Site.objects.all().order_by('-pk')
-    sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))
+    sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))  # исключаються тех сайты
     sites.sort(key=Site.get_sort_name)
     content = {'sites': sites,
                }
     return render(request, 'office/index.html', content)
 
 
-def add_spend(request, summ):
-    # TODO """Необходимо удалить"""
-    stream = Stream.objects.get(pk=1)
-    stream.description = str(summ)
-    stream.save()
-    result_answer = 'Add Spend ' + str(summ)
-    return HttpResponse('<h1>' + result_answer + '</h1>')
-
-
+@login_required
 def update_sites(request):
     """Обновить список сайтов"""
-    # TODO переделать на api
-    domains = set(get_domains_api())
-    sites = set([site.site_name for site in Site.objects.all()])
-    to_del = set(sites) - set(domains)
-    to_add = set(domains) - set(sites)
-    for site in to_del:
-        s = Site.objects.get(site_name=site)
+    # TODO при изменение домена, если можель уже существует - домены не обновяться
+    b = Beget()
+    sites_id_bd = set([site.beget_id for site in Site.objects.all()])
+    sites_beget = b.get_sites()
+    sites_beget_id = set([site['id'] for site in sites_beget])
+    sites_to_del = sites_id_bd - sites_beget_id
+    # сайтов из базы которых нет в ответе с сервера
+    for site_beget_id in sites_to_del:
+        s = Site.objects.get(beget_id=site_beget_id)
         s.delete()
-    for site in to_add:
-        url = get_url_link_from_name(site)
-        s = Site(site_name=site, domain=url, title='None')
-        s.save()
-    return HttpResponseRedirect(reverse('office:sites'))
-
-
-# def get_h1_title(url):
-#     try:
-#         res = requests.get(url)
-#     except:
-#         return NO_CONNECTION
-#     res.encoding = 'utf-8'
-#     IF_NO_BLOCK = '!!! Нет описания !!!'
-#     result = IF_NO_BLOCK
-#     for h_number in range(1, 4):
-#         soup = BeautifulSoup(res.text, 'lxml')
-#         title = soup.find_all(f'h{h_number}')
-#         if len(title) != 0:
-#             result = title[0].text.strip()
-#             break
-#     if len(result) > 40:
-#         result = result[:40] + '...'
-#     return result
-
-
-def get_site_title(request, hard):
-    """Обновить заголовки сайтов"""
-    for site in Site.objects.all():
-        site.update_title(bool(hard))
+    for site_beget in sites_beget:
+        try:
+            site = Site.objects.get(beget_id=site_beget['id'])
+        except Site.DoesNotExist:
+            # добавление нового сайта
+            beget_id = site_beget['id']
+            site_name = site_beget['path']
+            site = Site(beget_id=beget_id, site_name=site_name, title='None')
+            site.save()
+            site.check_cloac()
+            site.update_title()
+        # обновление доменов сайта
+        for domain in site_beget['domains']:
+            domain_beget_id = domain['id']
+            try:
+                domain = Domain.objects.get(beget_id=domain_beget_id)
+            except ObjectDoesNotExist:
+                b.update_domains()
+                domain = Domain.objects.get(beget_id=domain_beget_id)
+            site.domain_set.add(domain)
         site.save()
     return HttpResponseRedirect(reverse('office:sites'))
 
 
+@login_required
+def get_site_title(request, hard):
+    # TODO удалить - перенести в Page
+    """Обновить заголовки сайтов"""
+    for site in Site.objects.all():
+        site.update_title(bool(hard))
+        # site.save()
+    return HttpResponseRedirect(reverse('office:sites'))
+
+
+@login_required
 def old_lands(request):
     """Архив старых лэндов"""
     host = request.get_host()
@@ -156,73 +118,58 @@ def old_lands(request):
     return render(request, 'office/old_lands.html', content)
 
 
+@login_required
 def requisites(request):
     """Реквизиты и шаблоны html, css, js"""
-    # modal_code = CodeExample.objects.get(name='Модальное окно отзыва')
-    # i_agree = CodeExample.objects.get(name='Я согласен с ...')
     examples = CodeExample.objects.all()
     content = {
-        # 'modal_code': modal_code,
-        # 'i_agree': i_agree
         'examples': examples,
     }
     return render(request, 'office/requisites.html', content)
 
 
-def checker(request, site_id):
+@login_required
+def checker(request, site_id, mode):
     """Проверочник сайтов"""
-    if site_id == 666:
-        url = 'https://good-markpro.ru/'
-        site = Site.objects.get(domain=url)
-
-    else:
-        site = Site.objects.get(pk=site_id)
-        url = site.get_http_site()
-    # try:
-    #     link_manager = LinkCheckerManager(url=url)
-    #     link_manager.process()
-    #     result = link_manager.result
-    #     if result:
-    #         site.check_status = Site.GREEN
-    #         site.save()
-    #     content = {
-    #         'content': result}
-    # except MyError as exc:
-    #     content = {'exception':exc}
-    link_manager = LinkCheckerManager(url=url)
-    link_manager.process()
-    result = link_manager.result
-    site.set_status(link_manager.get_general_result())
-    content = {'content': result, 'site': site}
+    print('Вызов проверочника')
+    site_model = Site.objects.get(pk=site_id)
+    if not (mode == 0 and site_model.check_status != 'Не проверен'):
+        print('LOAD xxxxxxxxxxxxxxxx')
+        # с главной страницы
+        url = site_model.get_http_site()
+        site = SiteMap(url=url, is_cloac=site_model.is_cloac)
+        checker = NewLinkChecker(site=site)
+        checker.process()
+        site_model.check_status = checker.result['result_text']
+        new_check_data = {'main': checker.result,
+                          'checkers': checker.results_from_checkers,}
+        site_model.check_data = new_check_data
+        site_model.save()
+    content = {'site': site_model, 'data': site_model.check_data}
+    # print(checker.result)
+    # print(checker.results_from_checkers)
     return render(request, 'office/checker.html', content)
+    # link_manager = LinkCheckerManager(url=url)
+    # link_manager.process()
+    # result = link_manager.result
+    # site.set_status(link_manager.get_general_result())
+    # content = {'content': result, 'site': site}
+    # return render(request, 'office/checker.html', content)
 
 
+@login_required
 def domains(request):
     """Список доменов"""
-    b = Beget()
-    domains_list = b.get_domains_list()
-    sub_domains = b.get_sub_domains_list()
-    domains_list.extend(sub_domains)
-    beget_doms_id = [dom['id'] for dom in domains_list]
-    db_doms_id = [dom.beget_id for dom in Domain.objects.all()]
-    to_del = set(db_doms_id) - set(beget_doms_id)
-    to_add = set(beget_doms_id) - set(db_doms_id)
-    for dom_id in to_del:
-        dom = Domain.objects.get(beget_id=dom_id)
-        dom.delete()
-    for domain in domains_list:
-        dom_id = domain['id']
-        if dom_id in to_add:
-            name = domain['fqdn']
-            url = get_url_link_from_name(name)
-            dom = Domain(name=name, url=url, beget_id=dom_id)
-            dom.save()
+    Beget().update_domains()
     domains_bd = Domain.objects.all().order_by('name')
-    free_doms = get_free_doms()
-    content = {'domains': domains_bd, 'free_doms': free_doms}
+    free_doms = Domain.objects.filter(site__isnull=True)
+    content = {'domains': domains_bd,
+               'free_doms': free_doms,
+               }
     return render(request, 'office/domains.html', content)
 
 
+@login_required
 def domain_change_status(request, dom_id, source, new_status):
     """Изменение статуса домена"""
     s = {
@@ -243,11 +190,135 @@ def domain_change_status(request, dom_id, source, new_status):
     domain.save()
     return HttpResponseRedirect(reverse('office:domains'))
 
-def learn_code(request):
-    examples = LearnCode.objects.all()
-    content = {
-        'examples': examples,
-    }
-    return render(request, 'office/learn_code.html', content)
+@login_required
+def delete_site(request, site_id):
+    site = Site.objects.get(pk=site_id)
+    b = Beget()
+    result = b.del_site(site.beget_id)
+    if result:
+        site.delete()
+    return JsonResponse({'answer': result})
 
 
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def domains_list_api(request):
+    if request.method == 'GET':
+        domains = Domain.objects.all()
+        serializer = DomainSerializer(domains, many=True)
+        return Response(serializer.data)
+
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def domains_detail(request, pk):
+    try:
+        domain = Domain.objects.get(pk=pk)
+    except Domain.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = DomainSerializer(domain)
+        return Response(serializer.data, )
+    elif request.method == 'POST':
+        serializer = DomainSerializer(domain, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+@api_view(['GET'])
+@renderer_classes([JSONRenderer])
+def company_list_api(request):
+    companys = Company.objects.all()
+    serializer = CompanySerializer(companys, many=True)
+    return Response(serializer.data)
+
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def campaning_detail(request, pk):
+    """ получения данных по РК или обновление"""
+    try:
+        company = Company.objects.get(pk=pk)
+    except Company.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CompanySerializer(company)
+        return Response(serializer.data, )
+    elif request.method == 'POST':
+        print(request.data, )
+        serializer = CompanySerializer(company)
+
+        CompanySerializer().update(company, request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     print('good')
+        return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def create_capmaning(request):
+    """Создание новой кампании"""
+    data = json.loads(request.POST['data'])
+    name = data['text']
+    cab = Cabinet.objects.get(pk=data['cab_id'])
+    status = CampaignStatus.objects.get(pk=5)
+    new_camp = Company(name=name, cab=cab, status=status)
+    new_camp.save()
+    for geo_id in data['geos_id']:
+        country = Country.objects.get(pk=geo_id)
+        new_camp.geo.add(country)
+    for domain_id in data['domains_id']:
+        domain = Domain.objects.get(pk=domain_id)
+        new_camp.land.add(domain)
+    new_camp.save()
+    statusys = CampaignStatus.objects.all()
+    content = {'comp': new_camp, 'statusys': statusys}
+    # return Response(data, template_name='office/camp.html')
+    # return render(request, 'office/camp.html', content)
+    return render(request, 'office/camp.html', content)
+    # return Response({'answer': 'success', 'result': template})
+
+
+
+@login_required
+def campanings(request):
+    """ Текущие РК"""
+    campamings = Company.objects.order_by('-published')
+    statusys = CampaignStatus.objects.all()
+    content = {'campanings': campamings, 'statusys': statusys}
+    return render(request, 'office/campanings.html', content)
+
+
+@login_required
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+def zapusk_data(request):
+    """данные для создания нового запуска"""
+    source = TrafficSource.objects.all()
+    accounts = Account.objects.all()
+    cabs = Cabinet.objects.all()
+    domains = Domain.objects.filter(site__isnull=False)
+    country = Country.objects.all()
+    source_serializer = TrafficSourceSerializer(source,many=True)
+    accounts_serializer = AccountSerializer(accounts, many=True)
+    cabs_serializer = CabinetSerializer(cabs, many=True)
+    domains_serializer = DomainSerializer(domains, many=True)
+    country_serializer = CountrySerializer(country, many=True)
+
+    return Response({
+        'source': source_serializer.data,
+        'accounts': accounts_serializer.data,
+        'cabs': cabs_serializer.data,
+        'domains': domains_serializer.data,
+        'geos': country_serializer.data,
+    })

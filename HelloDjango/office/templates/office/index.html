@@ -1,56 +1,351 @@
 {% extends 'office/base.html' %}
-
-
 {% block content %}
+<style>
+.find-div{
+    text-align: left;
+    /* width: 200px; */
+    justify-content: left;
+    position: relative;
+    display: flex;
+    height: 30px;
+    margin-bottom: 10px;
+
+}
+#find-site{
+  width: 250px;
+  border: 3px solid #262626;
+  border-right: none;
+  padding: 5px;
+  height: 30px;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  color: #182720;
+}
+.searchButton {
+  width: 40px;
+  height: 100%;
+  border: 1px solid #262626;
+  background: #262626;
+  text-align: center;
+  color: #fff;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  font-size: 20px;
+}
+.searchButton i{
+    margin: 0px;
+}
+.show-new{
+    width: 250px;
+    margin-right: 30px;
+    height: 30px;
+    /* padding: 0 20px; */
+}
+
+</style>
+<div class="main-wrapper">
 <h1>Сайты</h1>
 <br>
 
-<h4>Всего: {{ sites|length|add:"2"}} </h4>
+
+
+<!-- сайт удален -->
+<div class="toast align-items-center text-white bg-primary border-0 position-fixed bottom-0 end-0"
+ role="alert" aria-live="assertive" aria-atomic="true" id="site-message" style="z-index: 11" data-bs-deley="5000">
+    <div class="d-flex">
+      <div class="toast-body">
+        Сайт удален
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+
+  
+  <!-- Modal удаление сайта-->
+  <div class="modal fade" id="dell-site" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Удаление сайта</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Удалить cool-market.store Какоето названние сайта?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="del-site-button" data-bs-dismiss="modal" site-to-del="">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="find-div">
+    <div class="show-new">
+        <button type="button" class="btn btn-success" id="show-new">Только Новые</button>
+        <!-- <a class="show-new"><span class="bg-success ">Только Новые</span></a> -->
+    </div>
+    <input type="text" placeholder="поиск сайта..." id="find-site" style="height: 100%;"> 
+    <button type="submit" class="searchButton">
+        <i class="fa fa-search"></i>
+        <i class="fas fa-times" style="display: none;"></i>
+     </button>
+
+     <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5>
+</div>
+
+
+
+
+
 <br>
 
-    <table>
-        <thead>
+
+ <div class="">
+    <table class="table">
+        <thead class="table-light">
             <tr>
-<!--                <th>Папка beget</th>-->
                 <th>Сылка</th>
-<!--                <th>Редактор</th>-->
-<!--                <th>Log.txt</th>-->
+                <th>Tools</th>
+<!--                <th>Кло</th>-->
+                <th>Запуск</th>
                 <th>Прокла</th>
-<!--                <th>Checker</th>-->
                 <th>Статус</th>
+                <th>Прочее</th>
             </tr>
         </thead>
      {% for site in sites %}
 
-            <tr>
+            <tr site-id="{{ site.id}}">
 <!--            <td>{{ site.site_name }}</td>-->
                 <td class="first {{ site.status_sub }}">
                     <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
+                    {% if site.is_new %}
+                    <span class="badge bg-success new-site">Новый</span>
+                    <!-- <a class="status status-paid new-site">Новый</a> -->
+                    {% endif %}
+                </td>
+                <td>
                     <div class="icon-block">
 
-                        {% if site.is_new %}
-                    <a class="status status-paid">Новый</a>
-                    {% endif %}
+                        
 
                         <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
                     <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
                    <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a>
+                        {% if site.is_cloac %}
+                    <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
+                    {% endif %}
                         </div>
                 </td>
+<!--                <td>-->
+<!--                    <div class="icon-block">-->
+<!--                            заклоачена ли ссылка-->
+<!--                        </div>-->
+<!--                </td>-->
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
-                <td>{{ site.title|slice:":30" }}</td>
-<!--                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>-->
                 <td>
-                    <p class="status {{ site.get_status_html }}">
-                        <a href="{% url 'office:checker' site.id %}" class="status {{ site.get_status_html }}">{{ site.check_status }}</a>
-                    </p>
+                    {% if site.is_camp_run %}
+                    <i class="fas fa-play-circle"></i>
+           
+                    {% endif %}
+                </td>
+                <td class="site-title">{{ site.title|slice:":30" }}</td>
+
+                <td>
+                    <a class="btn btn-primary {{ site.get_status_html }}" 
+                    href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a>
+                </td>
+                <td class="site-other">
+                    <div class="dropdown">
+                    <button type="button" class="btn btn-light dropdown-toggle icon-block"  data-bs-toggle="dropdown" data-bs-target="#exampleModal">
+                        <i class="fas fa-cogs "></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="#">Отправить лид</a></li>
+                        <li><a class="dropdown-item" href="#">Архивировать</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% if site.is_camp_run %}
+                        <li><a class="dropdown-item disabled" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">Удалить</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">Удалить</a></li>
+                        {% endif %}
+                        
+                      </ul>
+                    </div>
                 </td>
 
             </tr>
         {% endfor %}
     </table>
+ </div>
+</div>
+    <script>
+        // удаление сайта
+        siteTo_del = null;
+        $('.site-other li a').click(function(){
+            var row = $(this).closest('tr')
+            var siteId = row.attr('site-id')
+            $('#del-site-button').attr('site-to-del', siteId)
+            var site = row.find('td.site-title').text()
+            var site_link = row.find('td.first a').text()
+            $('#dell-site .modal-body').text('Удалить ' + site_link + ': ' + site + '?')
+            
+        })
+        $('#del-site-button').click(function(){
+            var host = window.location.protocol + "//" + window.location.host;
+            siteId = $('#del-site-button').attr('site-to-del')
+            URL_del_site = host + '/delete_site/' + siteId + '/'
+            console.log(URL_del_site)
+            $.get(URL_del_site, function(data){
+                console.log(data)
+                $('#site-message').toast('show')
+                $('tr[site-id='+siteId+']').remove()
+            })
+            
+            
+        })
+        // подсчет новыйх сайтов
+        var rows = $('tr').slice(1)
+            var rowsSiteNew = rows.filter(function(){
+                var x = $(this).find($('span.new-site'))
+                if (x.length == 0){return false}
+                if (x.length != 0){return true}
+            })
+         var rowsSiteNewCount = rowsSiteNew.length
 
+        // Кнопка показать/скрыть не новые сайты
+        var butn = $('#show-new')
+        CountSpan = ''
+        if (rowsSiteNewCount > 0) {var CountSpan =  ' <span class="badge bg-danger">'+ rowsSiteNewCount +'</span>'}
+        butn.html('Только Новые' + CountSpan)
+        var newSiteTo = 'hide'
+        $(butn).click(function(){
+            var rows = $('tr').slice(1)
+            var rowsSiteNew = rows.filter(function(){
+                var x = $(this).find($('span.new-site'))
+                if (x.length == 0){return false}
+                if (x.length != 0){return true}
+            })
+            if (newSiteTo == 'hide'){
+                rows.hide()
+                rowsSiteNew.show()
+                newSiteTo = 'show'
+                butn.text('Все')
+                }
+            else {
+                rows.show()
+                newSiteTo = 'hide'
+                butn.html('Только Новые' + CountSpan)
+                }
+        })
 
+        // поиск по сайтам
+        var findInput = $('#find-site')
+        var rows = $('tr').slice(1)
+        var findIco = $('.fa-search')
+        var findCross = $('.fa-times')
+        findInput.focus(function(){
+            findInput.keyup(function(){
+                // смена лупы на крестик
+                if (findInput.val() != '') {findIco.hide();findCross.show()}
+                else {findIco.show(), findCross.hide()}
+                
+                var rowsWithText = rows.filter(function(){
+                var tdBlockText = $(this).find($('.site-title')).text().toLowerCase()
+                var text = findInput.val().toLowerCase()
+                if (tdBlockText.indexOf(text) != -1 ||
+                    tdBlockText.indexOf(trnsformText(text)) != -1){return true}
+                })
+                rows.hide()
+                rowsWithText.show()
+            })
+        })
+        // при клике на крестик поиска
+        findCross.click(function(){
+            findIco.show();
+            findCross.hide();
+            findInput.val('');
+            rows.show()
+        })
+
+var transformLang = {
+    'q': 'й',
+    'w': 'ц',
+    'e': 'у',
+    'r': 'к',
+    't': 'е',
+    'y': 'н',
+    'u': 'г',
+    'i': 'ш',
+    'o': 'щ',
+    'p': 'з',
+    '[': 'х',
+    ']': 'ъ',
+    'a': 'ф',
+    's': 'ы',
+    'd': 'в',
+    'f': 'а',
+    'g': 'п',
+    'h': 'р',
+    'j': 'о',
+    'k': 'л',
+    'l': 'д',
+    ';': 'ж',
+    "'": 'э',
+    'z': 'я',
+    'x': 'ч',
+    'c': 'с',
+    'v': 'м',
+    'b': 'и',
+    'n': 'т',
+    'm': 'ь',
+    ',': 'б',
+    '.': 'ю',
+    'й': 'q',
+    'ц': 'w',
+    'у': 'e',
+    'к': 'r',
+    'е': 't',
+    'н': 'y',
+    'г': 'u',
+    'ш': 'i',
+    'щ': 'o',
+    'з': 'p',
+    'х': '[',
+    'ъ': ']',
+    'ф': 'a',
+    'ы': 's',
+    'в': 'd',
+    'а': 'f',
+    'п': 'g',
+    'р': 'h',
+    'о': 'j',
+    'л': 'k',
+    'д': 'l',
+    'ж': ';',
+    'э': "'",
+    'я': 'z',
+    'ч': 'x',
+    'с': 'c',
+    'м': 'v',
+    'и': 'b',
+    'т': 'n',
+    'ь': 'm',
+    'б': ',',
+    'ю': '.',
+  }
+    function trnsformText(text){
+    // принимает текста - переводит символы на другую раскладку
+    var result = '';
+    for (let i of text){
+        var char = transformLang[i]
+        if (char != undefined){result += char}
+        else {result += i}
+    }
+    return result
+    }
+    </script>
 
 {% endblock %}

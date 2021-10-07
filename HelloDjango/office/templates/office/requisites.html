@@ -8,10 +8,11 @@
      padding: 20px;
      display: none;
      max-width: 50%;
-<!--     word-wrap: break-word;-->
+/* <!--     word-wrap: break-word;--> */
      overflow: hidden;
     }
 </style>
+<div class="main-wrapper">
 <h1>Реквизиты</h1>
 
 <div>
@@ -50,19 +51,24 @@
 </div>
 
 <div class="examples-block">
-    <a id="textCopy" class="status status-pending copy">Copy</a>
+    <a class="btn btn-primary btn btn-warning" id="textCopy" 
+                    role="button">Copy</a>
 <br>
-
     <div class="buttons">
         {% for example in examples %}
-        <a class="status status-none exs" id="{{ forloop.counter0 }}">{{ example}}</a>
+        <button class="btn btn-primary btn btn-secondary exs" id="{{ forloop.counter0 }}" role="button">{{ example}}</button>
         {% endfor %}
     </div>
     <div class="buttons">
-      <a class="status status-none clang" id="html">Html</a>
-      <a class="status status-none clang" id="css">Css</a>
-      <a class="status status-none clang" id="js1">Js</a>
+      <button class="btn btn-primary btn btn-secondary clang" id="html" role="button">Html</button>
+      <button class="btn btn-primary btn btn-secondary clang" id="css" role="button">Css</button>
+      <button class="btn btn-primary btn btn-secondary clang" id="js1" role="button">Js</button>
     </div>
+
+    <pre>
+        <code class="to-show">
+        </code>
+    </pre>
 
     <div class="info">
         {% for example in examples %}
@@ -77,10 +83,9 @@
         {% endfor %}
     </div>
 
-<div class="message">
-  <p>some text</p>
-</div>
 
+
+</div>
 </div>
 <script>
 $(function(){
@@ -91,31 +96,34 @@ $(function(){
     messageBox.children().text(text)
     messageBox.fadeIn(500).delay(3500).fadeOut(2000)
     }
-
-    var activeBtnStatus = 'active';
+    var activeBtnStatus = 'active-req';
     var buttonsOnPage = 2;
     $('.info p').hide();
     $('.exs, .clang').click(function(){
         $(this).siblings().removeClass(activeBtnStatus)
         $(this).addClass(activeBtnStatus)
-    var classToShow = '';
-    var buttonCount = 0;
-    $('.' + activeBtnStatus).each(function(){
-        console.log($(this).attr('id'))
-        classToShow += '.' + $(this).attr('id')
-        buttonCount += 1
-    })
+        $('.exs, .clang').css('color', 'white')
+        $('')
+        var classToShow = '';
+        var buttonCount = 0;
+        $('.' + activeBtnStatus).each(function(){
+            $(this).css('color', 'red')
+            console.log($(this).attr('id'))
+            classToShow += '.' + $(this).attr('id')
+            buttonCount += 1
+        })
     if (buttonCount == buttonsOnPage) {
+        // для копирования текста
         $('.copy').click(function(){
         console.log(123)
         showMessage('Скопировано')
     })
 
         $('.info p').hide();
-        $(classToShow).show()
+        $('.to-show').text($(classToShow).text())
 
         $('#textCopy').click(function() {
-            var el = $(classToShow)
+            var el = $('.to-show')
             var $tmp = $("<textarea>");
             $("body").append($tmp);
             $tmp.val($(el).text()).select();
