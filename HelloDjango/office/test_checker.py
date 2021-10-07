@@ -71,13 +71,13 @@ class FindCommTest(unittest.TestCase):
         with patch.object(Page, 'get_text', return_value=self.COMM_IN):
             save = LinkChecker.SaveComment(self.site)
             save.process()
-            self.assertEqual(save.result_text, save.REPRIMAND)
+            self.assertTrue(save.COMM_ON_PAGE in save.info)
 
     def test_comm_not_page(self):
         with patch.object(Page, 'get_text', return_value=self.NO_COMM):
             save = LinkChecker.SaveComment(self.site)
             save.process()
-            self.assertEqual(save.result_text, save.GOOD)
+            self.assertFalse(save.info)
 
 
 class PolicyTest(unittest.TestCase):
@@ -97,7 +97,7 @@ class PolicyTest(unittest.TestCase):
         with patch.object(Page, 'get_soup', return_value=soup):
             checker = LinkChecker.PolicyPage(self.site)
             checker.process()
-            self.assertTrue(checker.result_text, checker.GOOD)
+            self.assertFalse(checker.info)
 
     def test_no_href(self):
         soup = BeautifulSoup(self.INCORRECT_HREF, 'lxml')
@@ -139,7 +139,7 @@ class TermsTest(unittest.TestCase):
         with patch.object(Page, 'get_soup', return_value=soup):
             checker = LinkChecker.TermsPage(self.site)
             checker.process()
-            self.assertTrue(checker.result_text, checker.GOOD)
+            self.assertFalse(checker.info)
 
     def test_no_href(self):
         soup = BeautifulSoup(self.INCORRECT_HREF, 'lxml')
@@ -170,9 +170,10 @@ class SpasPageTest(unittest.TestCase):
     def setUp(self):
         self.site = Site('1')
         self.spas = LinkChecker.SpasPage(self.site)
-        self.site.spas.status_code = 200
+        # self.site.spas.status_code = 200
 
     def test_no_redirect(self):
+        self.site.spas.status_code = 200
         with patch.object(Page, 'get_text', return_value='123'):
             self.spas.find_redirect_url()
             self.assertTrue(self.spas.INCORRECT_REDIRECT in self.spas.info)
@@ -182,6 +183,12 @@ class SpasPageTest(unittest.TestCase):
         with patch.object(Page, 'get_soup', return_value=soup):
             self.spas.check_form()
             self.assertTrue(self.spas.NO_SPAS_FORM in self.spas.info)
+
+    def test_page_not_work(self):
+        self.site.spas.status_code = 404
+        self.spas.check_page()
+        self.assertTrue(self.spas.PAGE_NOT_WORK in self.spas.info)
+
 
 
 class FbPixelText(unittest.TestCase):

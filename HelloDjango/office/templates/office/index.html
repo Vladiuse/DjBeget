@@ -152,10 +152,10 @@
                     {% endif %}
                 </td>
                 <td class="site-title">{{ site.title|slice:":30" }}</td>
-<!--                <td><a href="{% url 'office:checker' site.id %}">Проверить</a></td>-->
+
                 <td>
                     <a class="btn btn-primary {{ site.get_status_html }}" 
-                    href="{% url 'office:checker' site.id %}" role="button">{{ site.check_status }}</a>
+                    href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a>
                 </td>
                 <td class="site-other">
                     <div class="dropdown">

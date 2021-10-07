@@ -2,6 +2,65 @@ import requests as req
 from bs4 import BeautifulSoup
 
 
+class StatusHTML:
+    # GREY = 'btn btn-secondary'
+    # RED = 'btn btn-danger'
+    # YELLOW = 'btn btn-warning'
+    # GREEN = 'btn btn-success'
+
+    GREY = 'secondary'
+    RED = 'danger'
+    YELLOW = 'warning'
+    GREEN = 'success'
+
+    GOOD = 'Все ок'
+    REPRIMAND = 'Замечание'
+    ERROR = 'Ошибка'
+    NONE = 'Не проверен'
+
+    @staticmethod
+    def get_checker_status_html(status):
+        dic = {
+            'good': StatusHTML.GREEN,
+            'reprimand': StatusHTML.YELLOW,
+            'error': StatusHTML.RED,
+            'none': StatusHTML.GREY,
+        }
+        try:
+            html_status = dic[status]
+        except KeyError:
+            html_status = ''
+        return html_status
+
+    @staticmethod
+    def get_checker_status_text(status):
+        dic = {
+            'good': StatusHTML.GOOD,
+            'reprimand': StatusHTML.REPRIMAND,
+            'error': StatusHTML.ERROR,
+            'none': StatusHTML.NONE,
+        }
+        try:
+            html_status = dic[status]
+        except KeyError:
+            html_status = ''
+        return html_status
+
+    @staticmethod
+    def get_checker_status_bg(status):
+        dic = {
+            'good': StatusHTML.GOOD,
+            'reprimand': StatusHTML.REPRIMAND,
+            'error': StatusHTML.ERROR,
+            'none': StatusHTML.NONE,
+        }
+        try:
+            html_status = dic[status]
+        except KeyError:
+            html_status = ''
+        return html_status
+
+
 class Page:
 
     def __init__(self, url):
@@ -25,6 +84,9 @@ class Page:
         except req.exceptions.ConnectionError:
             print(f'Page dont work: {self.url}')
             return False
+
+    def get_page_status_code(self):
+        return self.status_code
 
     def get_text(self):
         return self.text
@@ -71,13 +133,6 @@ class Site:
             page.connect()
 
 
-class StatusHTML:
-    GREY = 'status-none'
-    RED = 'status-unpaid'
-    YELLOW = 'status-pending'
-    GREEN = 'status-paid'
-
-
 class LinkChecker:
     class Check:
         DESCRIPTION = 'No'
@@ -99,6 +154,22 @@ class LinkChecker:
             self.is_check = False
             self.result_code = ''
             # self.result = Result(description=self.DESCRIPTION)
+
+        def get_class_name(self):
+            return self.__class__.__name__
+
+        def get_result(self):
+            result = {
+                'name': self.get_class_name(),
+                'description': self.description,
+                'info': list(self.info),
+                'errors': self.errors,
+                'result_code': self.result_code,
+                'result_text': self.result_text,
+                'status_html': StatusHTML.get_checker_status_html(self.result_code),
+                'status_text': StatusHTML.get_checker_status_text(self.result_code),
+            }
+            return result
 
         def process(self):
             pass
@@ -199,9 +270,9 @@ class LinkChecker:
             lines = text.split('\n')[:5]
             for line in lines:
                 if self.SAVED_FROM in line:
-                    self.set_reprimand()
-                    return
-            self.set_all_good()
+                    self.info.add(self.COMM_ON_PAGE)
+                    self.errors.append(self.SAVED_FROM)
+
 
     class PolicyPage(Check):
         DESCRIPTION = 'Страница политики конфиденциальности'
@@ -221,10 +292,10 @@ class LinkChecker:
         def process(self):
             self.find_link()
             self.check_page()
-            if not self.info:
-                self.set_reprimand()
-            else:
-                self.set_all_good()
+            # if not self.info:
+            #     self.set_reprimand()
+            # else:
+            #     self.set_all_good()
 
         def find_link(self):
             soup = self.site.main.get_soup()
@@ -264,11 +335,11 @@ class LinkChecker:
         }
 
         def process(self):
-            self.check_form()
             self.check_page()
+            self.check_form()
             self.find_redirect_url()
-            if self.info:
-                self.set_reprimand()
+            # if self.info:
+            #     self.set_reprimand()
             # else:
             #     self.set_all_good()
 
@@ -279,8 +350,11 @@ class LinkChecker:
                 self.info.add(self.NO_SPAS_FORM)
 
         def check_page(self):
-            if not self.site.spas.is_work:
+            # if self.site.spas.get_page_status_code() != 200:
+            #     self.info.add(self.PAGE_NOT_WORK)
+            if not self.site.spas.is_work():
                 self.info.add(self.PAGE_NOT_WORK)
+
 
         def find_redirect_url(self):
             if self.FIND not in self.site.spas.get_text():
@@ -511,8 +585,8 @@ class LinkChecker:
             self.TtPixel,
             self.PageLink,
         ]
-        self.results_from_checkers = set()
-        self.result = None
+        self.results_from_checkers = []
+        self.result = set()
 
     def process(self):
         self.site.check_pages_conn()
@@ -520,18 +594,26 @@ class LinkChecker:
             checker = check_class(self.site)
             checker.process()
             checker.get_result_status()
-            self.results_from_checkers.add(checker.result_code)
-            print(checker.DESCRIPTION, checker.result_code, checker.info)
+            self.results_from_checkers.append(checker.get_result())
+            self.result.add(checker.result_code)
         self.get_general_result()
-        print(self.result, 'general')
+        # print(self.result, 'general')
 
     def get_general_result(self):
-        if 'error' in self.results_from_checkers:
-            self.result = 'error'
-        elif 'reprimand' in self.results_from_checkers:
-            self.result = 'reprimand'
+        if 'error' in self.result:
+            result_code = 'error'
+        elif 'reprimand' in self.result:
+            result_code = 'reprimand'
+        elif 'good' in self.result:
+            result_code = 'good'
         else:
-            self.result = 'good'
+            result_code = 'none'
+        dic = {
+            'result_code': result_code,
+            'result_html': StatusHTML.get_checker_status_html(result_code),
+            'result_text': StatusHTML.get_checker_status_text(result_code),
+        }
+        self.result = dic
 
 
 

@@ -13,7 +13,7 @@ class Site(models.Model):
     DONT_CHECK = ['vladiuse.beget.tech', 'django', 'old-lands', ]
     NOT_TITLE = ['None', MyError.NO_CONNECTION, '404 Not Found',
                  'Домен не прилинкован ни к одной из директорий на сервере!',
-                 'Новый сайт успешно создан и готов к работе',]
+                 'Новый сайт успешно создан и готов к работе', ]
 
     GREY = 'Не проверен'
     RED = 'Ошибка'
@@ -37,6 +37,7 @@ class Site(models.Model):
     # domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта', default='None')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
+    check_data = models.JSONField(default=dict)
     datetime = models.DateTimeField(auto_now_add=True)
     is_camp_run = models.BooleanField(default=False)
     is_cloac = models.BooleanField(default=False)
@@ -262,9 +263,6 @@ class Domain(models.Model):
     def get_https_site(self):
         return f'https://{self.name}/'
 
-
-
-
     def __str__(self):
         return self.name
 
@@ -364,3 +362,10 @@ class CodeExample(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Test(models.Model):
+    DIC_1 = {'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'}
+    DIC_2 = {"result": [{'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'},
+                        {'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'}]}
+    json = models.JSONField()

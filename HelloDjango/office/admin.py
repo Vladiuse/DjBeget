@@ -1,14 +1,12 @@
 from django.contrib import admin
 
 from .models import Site, OldLand, Domain, CodeExample, \
-    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company
-
-
-# Register your models here.
+    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company, Test
 
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = ['id', 'beget_id', 'name', 'site']
+    search_fields = ['name']
 
 
 class SiteAdmin(admin.ModelAdmin):
@@ -16,9 +14,11 @@ class SiteAdmin(admin.ModelAdmin):
                     'is_domain_link', 'domain_count',
                     ]
 
+
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'cab', 'get_account', 'get_geo', 'get_sites', 'status']
 
+    # autocomplete_fields = ['land']
 
     def get_account(self, obj):
         return obj.cab.account
@@ -29,13 +29,17 @@ class CompanyAdmin(admin.ModelAdmin):
     def get_sites(self, obj):
         return [land.name for land in obj.land.all()]
 
+
 class CabinetAdmin(admin.ModelAdmin):
-    list_display = ['name', 'account', 'domain', 'pixel']
+    list_display = ['name', 'account', 'pixel', 'domain']
+    autocomplete_fields = ['domain']
 
 
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name_ru', 'name_eng','short_name', 'phone_code']
+    list_display = ['id', 'name_ru', 'name_eng', 'short_name', 'phone_code']
 
+
+admin.site.register(Test)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Account)
 admin.site.register(Cabinet, CabinetAdmin)

@@ -17,6 +17,8 @@ from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
 from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
     CabinetSerializer, CountrySerializer
+from .new_checker import Site as SiteMap, LinkChecker as NewLinkChecker
+
 
 DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
@@ -127,21 +129,32 @@ def requisites(request):
 
 
 @login_required
-def checker(request, site_id):
+def checker(request, site_id, mode):
     """Проверочник сайтов"""
-    if site_id == 666:
-        url = 'https://good-markpro.ru/'
-        site = Site.objects.get(domain=url)
-
-    else:
-        site = Site.objects.get(pk=site_id)
-        url = site.get_http_site()
-    link_manager = LinkCheckerManager(url=url)
-    link_manager.process()
-    result = link_manager.result
-    site.set_status(link_manager.get_general_result())
-    content = {'content': result, 'site': site}
+    print('Вызов проверочника')
+    site_model = Site.objects.get(pk=site_id)
+    if not (mode == 0 and site_model.check_status != 'Не проверен'):
+        print('LOAD xxxxxxxxxxxxxxxx')
+        # с главной страницы
+        url = site_model.get_http_site()
+        site = SiteMap(url=url, is_cloac=site_model.is_cloac)
+        checker = NewLinkChecker(site=site)
+        checker.process()
+        site_model.check_status = checker.result['result_text']
+        new_check_data = {'main': checker.result,
+                          'checkers': checker.results_from_checkers,}
+        site_model.check_data = new_check_data
+        site_model.save()
+    content = {'site': site_model, 'data': site_model.check_data}
+    # print(checker.result)
+    # print(checker.results_from_checkers)
     return render(request, 'office/checker.html', content)
+    # link_manager = LinkCheckerManager(url=url)
+    # link_manager.process()
+    # result = link_manager.result
+    # site.set_status(link_manager.get_general_result())
+    # content = {'content': result, 'site': site}
+    # return render(request, 'office/checker.html', content)
 
 
 @login_required

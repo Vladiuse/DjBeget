@@ -1,27 +1,70 @@
 {% extends 'office/base.html' %}
 {% block content %}
-<h1>Checker</h1>
-{% if exception %}
-{{ exception }}
-{% endif %}
+<!--<h1>Checker</h1>-->
+<!--{% if exception %}-->
+<!--{{ exception }}-->
+<!--{% endif %}-->
 
-<h3 class="{{ site.get_status_html }}">{{ site.check_status }}</h3>
-<a href="{{ site.domain }}">{{ site.domain }}</a>
-<br>
-    <table>
-        <thead>
-            <tr>
-                <th>Поле</th>
-                <th>Статус</th>
-            </tr>
+<!--<h3 class="{{ site.get_status_html }}">{{ site.check_status }}</h3>-->
+<!--<a href="{{ site.domain }}">{{ site.domain }}</a>-->
+<!--<br>-->
+<!--    <table>-->
+<!--        <thead>-->
+<!--            <tr>-->
+<!--                <th>Поле</th>-->
+<!--                <th>Статус</th>-->
+<!--            </tr>-->
+<!--        </thead>-->
+<!--     {% for key, value in content.items %}-->
+<!--            <tr>-->
+<!--                <td>{{ key }}</a></td>-->
+<!--                <td><p class="{{ value.status }} status" >{{ value.info }}</p></td>-->
+<!--            </tr>-->
+<!--        {% endfor %}-->
+<!--    </table>-->
+<div class="main-wrapper">
+<h1>Status: {{ data.main.result_text }}</h1>
+<p>Проверяемый сайт: <a href="{{ site.get_http_site }}">{{ site.site_name }}</a></p>
+<a href="{% url 'office:checker' site.id 1 %}">Check Again</a>
+    <table class="table">
+        <thead class="table-light">
+        <tr>
+            <!-- <th>Класс проверочник</th> -->
+            <th>Описание</th>
+            <th>Код</th>
+            <th>Инфо</th>
+            <th>Ошибки</th>
+            
+            <th>Текст</th>
+        </tr>
         </thead>
-     {% for key, value in content.items %}
-            <tr>
-                <td>{{ key }}</a></td>
-                <td><p class="{{ value.status }} status" >{{ value.info }}</p></td>
-            </tr>
+        <tbody>
+        {% for checker in data.checkers %}
+        <tr >
+            <!-- <td>{{ res.name }}</td> -->
+            <td>{{ checker.description }}</td>
+            <td class="mb-2 bg-{{ checker.status_html }}">
+                {{ checker.status_text }}
+            </td>
+            <td>{% for info in checker.info %}
+                {{ info }}<br>
+                {% endfor %}
+            </td>
+            <td>
+                {% for error in checker.errors %}
+                {{ error }}<br>
+                {% endfor %}
+            </td>
+            
+            <td>{{ checker.result_text }}</td>
+        </tr>
         {% endfor %}
+        </tbody>
     </table>
 
+
+
+
+</div>
 {% endblock %}
 
