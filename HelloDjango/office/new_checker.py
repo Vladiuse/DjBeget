@@ -187,6 +187,9 @@ class LinkChecker:
                 if 'reprimand' in res:
                     self.result_code = 'reprimand'
 
+                if 'good' in res:
+                    self.result_code = 'good'
+
         def set_checked(self):
             self.is_check = True
 
@@ -242,8 +245,9 @@ class LinkChecker:
                 if req_text not in page_text:
                     self.errors.append(req)
                     self.info.add(self.INCORRECT_REQ)
-            if len(self.errors) == len(reqs):
+            if len(self.errors) == len(reqs):  # если все реквизиты отсутствуют
                 self.info = set()
+                self.errors.clear()
                 self.info.add(self.NO_REQS)
             # if not self.info:
             #     self.set_all_good()
@@ -257,9 +261,10 @@ class LinkChecker:
         SAVED_FROM = '<!-- saved from'
 
         COMM_ON_PAGE = 'Комментарий saved from на странице'
-
+        COMM_ON_PAGE_BLACK = 'Комментарий saved from на странице(black)'
         STATUS_SET = {
             COMM_ON_PAGE: 'reprimand',
+            COMM_ON_PAGE_BLACK: 'good',
         }
 
         def process(self):
@@ -270,8 +275,12 @@ class LinkChecker:
             lines = text.split('\n')[:5]
             for line in lines:
                 if self.SAVED_FROM in line:
-                    self.info.add(self.COMM_ON_PAGE)
+                    if not self.site.cloac:
+                        self.info.add(self.COMM_ON_PAGE)
+                    else:
+                        self.info.add(self.COMM_ON_PAGE_BLACK)
                     self.errors.append(self.SAVED_FROM)
+                    break
 
 
     class PolicyPage(Check):
@@ -300,6 +309,8 @@ class LinkChecker:
         def find_link(self):
             soup = self.site.main.get_soup()
             link = soup.find('a', href=self.POLICY_LINK)
+            if not link:
+                link = soup.find('a', href='/' + self.POLICY_LINK)
             if link:
                 if self.LINK_TEXT not in link.text:
                     self.info.add(self.INCORRECT_TEXT)
@@ -445,7 +456,9 @@ class LinkChecker:
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""
         DESCRIPTION = 'Внутрение сслыки'
-        DO_NOT_CHECK = {'policy.html', 'terms.html', 'spas.html'}
+        DO_NOT_CHECK = {'policy.html', 'terms.html',
+                        '/policy.html', '/terms.html',
+                        'spas.html'}
 
         FIND_ALIEN = 'Есть ссылки на чужой лэнд'
         INCORRECT_INNER = 'Некоректные внутриние ссылки'

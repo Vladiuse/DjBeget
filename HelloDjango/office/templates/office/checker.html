@@ -24,7 +24,13 @@
 <!--    </table>-->
 <div class="main-wrapper">
 <h1>Status: {{ data.main.result_text }}</h1>
-<p>Проверяемый сайт: <a href="{{ site.get_http_site }}">{{ site.site_name }}</a></p>
+<div class="icon-block">
+    Проверяемый сайт: <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
+    {% if site.is_cloac %}
+                    <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
+                    {% endif %}
+</div>
+<br>
 <a href="{% url 'office:checker' site.id 1 %}">Check Again</a>
     <table class="table">
         <thead class="table-light">
@@ -41,7 +47,7 @@
         <tbody>
         {% for checker in data.checkers %}
         <tr >
-            <!-- <td>{{ res.name }}</td> -->
+            <!-- <td>{{ checker.name }}</td> -->
             <td>{{ checker.description }}</td>
             <td class="mb-2 bg-{{ checker.status_html }}">
                 {{ checker.status_text }}
