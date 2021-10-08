@@ -23,13 +23,15 @@
 <!--        {% endfor %}-->
 <!--    </table>-->
 <div class="main-wrapper">
-<h1>Status: {{ data.main.result_text }}</h1>
+<h3>{{ data.main.result_text }}: {{ site.title| slice:":30" }}</h3>
 <div class="icon-block">
     Проверяемый сайт: <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
+    <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
     {% if site.is_cloac %}
                     <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
                     {% endif %}
 </div>
+
 <br>
 <a href="{% url 'office:checker' site.id 1 %}">Check Again</a>
     <table class="table">
