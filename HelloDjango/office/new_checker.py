@@ -355,7 +355,7 @@ class LinkChecker:
             #     self.set_all_good()
 
         def check_form(self):
-            soup = self.site.spas.get_soup()
+            soup = self.site.main.get_soup()
             form = soup.find('form', action=self.ACTION)
             if not form:
                 self.info.add(self.NO_SPAS_FORM)

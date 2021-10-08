@@ -199,6 +199,14 @@ class SpasPageTest(unittest.TestCase):
         self.spas = LinkChecker.SpasPage(self.site)
         # self.site.spas.status_code = 200
 
+    def test_form_find(self):
+        html = ' <form class="form" action="spas.html" method="post" id="register"></form>'
+        soup = BeautifulSoup(html, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.spas.check_form()
+            self.assertEqual(self.spas.info, set())
+
+
     def test_no_redirect(self):
         self.site.spas.status_code = 200
         with patch.object(Page, 'get_text', return_value='123'):
