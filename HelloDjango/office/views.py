@@ -131,7 +131,6 @@ def requisites(request):
 @login_required
 def checker(request, site_id, mode):
     """Проверочник сайтов"""
-    print('Вызов проверочника')
     site_model = Site.objects.get(pk=site_id)
     if not (mode == 0 and site_model.check_status != 'Не проверен'):
         print('LOAD xxxxxxxxxxxxxxxx')
