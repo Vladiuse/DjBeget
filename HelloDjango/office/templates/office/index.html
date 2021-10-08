@@ -154,8 +154,40 @@
                 <td class="site-title">{{ site.title|slice:":30" }}</td>
 
                 <td>
-                    <a class="btn btn-primary {{ site.get_status_html }}" 
+                    <div class="btn-group dropend">
+                        <a class="btn btn-primary {{ site.get_status_html }}" 
                     href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a>
+                    {% if site.check_data and site.check_data.main.result_code != 'good' %}
+                        <button type="button" class="btn {{ site.get_status_html }} dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                        <!-- <ul class="dropdown-menu">
+                            <li style="font-size: 10px;"> -->
+                                <table class="table dropdown-menu" style="font-size: 13px; padding: 0;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for checker in site.check_data.checkers %}
+                                    {% if checker.result_code != 'good' %}
+                                    <tr >
+                                        <td>{{ checker.name }}</td>
+                                        <td class="mb-2 bg-{{ checker.status_html }}">
+                                            {{ checker.status_text }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            <!-- </li>
+                        </ul> -->
+                        {% endif %}
+                      </div>
+
+                    <!-- <a class="btn btn-primary {{ site.get_status_html }}" 
+                    href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a> -->
                 </td>
                 <td class="site-other">
                     <div class="dropdown">
