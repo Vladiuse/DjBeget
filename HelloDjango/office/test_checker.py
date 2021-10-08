@@ -56,7 +56,7 @@ class TestReq(unittest.TestCase):
         with patch.object(Page, 'get_text_no_spaces_soup', return_value=self.req_no_all):
             req = LinkChecker.Req(self.site)
             req.find_req_tt()
-            self.assertEqual(len(req.errors), 5)
+            self.assertEqual(len(req.errors), 0)
             self.assertTrue(req.NO_REQS in req.info and len(req.info) == 1)
 
 
@@ -78,6 +78,14 @@ class FindCommTest(unittest.TestCase):
             save = LinkChecker.SaveComment(self.site)
             save.process()
             self.assertFalse(save.info)
+
+    def test_cloac_comm(self):
+        """коментарий на заклоаченой странице"""
+        self.site.cloac = True
+        with patch.object(Page, 'get_text', return_value=self.COMM_IN):
+            save = LinkChecker.SaveComment(self.site)
+            save.process()
+            self.assertTrue(save.COMM_ON_PAGE_BLACK in save.info)
 
 
 class PolicyTest(unittest.TestCase):
@@ -273,6 +281,9 @@ class LinksTest(unittest.TestCase):
     def test_all_good(self):
         text = '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="/policy.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="terms.html" class="button-m">Оставить отзыв</a>' \
+               '<a href="/terms.html" class="button-m">Оставить отзыв</a>' \
                '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="#order" class="button-m">Оставить отзыв</a>'
         soup = BeautifulSoup(text, 'lxml')
