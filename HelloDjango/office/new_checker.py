@@ -300,6 +300,8 @@ class LinkChecker:
         def find_link(self):
             soup = self.site.main.get_soup()
             link = soup.find('a', href=self.POLICY_LINK)
+            if not link:
+                link = soup.find('a', href='/' + self.POLICY_LINK)
             if link:
                 if self.LINK_TEXT not in link.text:
                     self.info.add(self.INCORRECT_TEXT)

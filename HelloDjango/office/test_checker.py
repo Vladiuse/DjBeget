@@ -91,9 +91,18 @@ class PolicyTest(unittest.TestCase):
                               '<a class="nav-link" href="policy1.html">Политика конфиденциальности </a></p>'
         self.NO_TEXT = '<p class="conf-link doclinks">' \
                        '<a class="nav-link" href="policy.html">Политика конxxxxфиденциальности </a></p>'
+        self.SLASH_LINK = '<p class="conf-link doclinks">' \
+                       '<a class="nav-link" href="/policy.html">Политика конфиденциальности </a></p>'
 
     def test_all_good(self):
         soup = BeautifulSoup(self.LINK_CORRECT, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            checker = LinkChecker.PolicyPage(self.site)
+            checker.process()
+            self.assertFalse(checker.info)
+
+    def test_all_good_slash(self):
+        soup = BeautifulSoup(self.SLASH_LINK, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
             checker = LinkChecker.PolicyPage(self.site)
             checker.process()
@@ -134,8 +143,18 @@ class TermsTest(unittest.TestCase):
         self.NO_TEXT = '<p class="conf-link doclinks">' \
                        '<a class="nav-link" href="terms.html">Пользоватxxxxxxxельское соглашение </a></p>'
 
+        self.LINK_CORRECT_SLASH = '<p class="conf-link doclinks">' \
+                            '<a class="nav-link" href="terms.html">Пользовательское соглашение </a></p>'
+
     def test_all_good(self):
         soup = BeautifulSoup(self.LINK_CORRECT, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            checker = LinkChecker.TermsPage(self.site)
+            checker.process()
+            self.assertFalse(checker.info)
+
+    def test_all_good_slash(self):
+        soup = BeautifulSoup(self.LINK_CORRECT_SLASH, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
             checker = LinkChecker.TermsPage(self.site)
             checker.process()
