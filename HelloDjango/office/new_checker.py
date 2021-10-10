@@ -212,7 +212,7 @@ class LinkChecker:
             self.description = self.DESCRIPTION
             self.result_text = ''
             self.info = set()  # информация об ошибоке
-            self.errors = []  # вывод примеров ошибок
+            self.errors = set()  # вывод примеров ошибок
             # self.statusHtml = None
             self.is_check = False
             self.result_code = ''
@@ -309,7 +309,7 @@ class LinkChecker:
             for req in reqs:
                 req_text = self.REQUISITES[req].replace(' ', '')
                 if req_text not in page_text:
-                    self.errors.append(req)
+                    self.errors.add(req)
                     self.info.add(self.INCORRECT_REQ)
             if len(self.errors) == len(reqs):  # если все реквизиты отсутствуют
                 self.info = set()
@@ -345,7 +345,7 @@ class LinkChecker:
                         self.info.add(self.COMM_ON_PAGE)
                     else:
                         self.info.add(self.COMM_ON_PAGE_BLACK)
-                    self.errors.append(self.SAVED_FROM)
+                    self.errors.add(self.SAVED_FROM)
                     break
 
     class PolicyPage(Check):
@@ -543,10 +543,10 @@ class LinkChecker:
                     if not (href.startswith('#') or href in self.DO_NOT_CHECK):
                         if href.startswith('http'):
                             self.info.add(self.FIND_ALIEN)
-                            self.errors.append(href)
+                            self.errors.add(href)
                         else:
                             self.info.add(self.INCORRECT_INNER)
-                            self.errors.append(href)
+                            self.errors.add(href)
                 except KeyError:
                     self.info.add(self.NO_HREF)
 
