@@ -95,6 +95,7 @@ class Page:
         if start_pos != -1 and end_pos != -1:
             return text[start_pos + len(start):end_pos]
 
+
 class SHHConnector:
 
     def __init__(self):
@@ -150,6 +151,7 @@ class PageFile:
             return value.strip("'")
         return value
 
+
 class Site:
     SUCCESS_PAGE = '/success/success.html'
     POLICY = '/policy.html'
@@ -199,6 +201,7 @@ class Site:
 class LinkChecker:
     class Check:
         DESCRIPTION = 'No'
+        KEY_NAME = 'No'
         # text_statuses
         NONE = 'Не проверялся'
         GOOD = 'Все ок'
@@ -210,13 +213,12 @@ class LinkChecker:
         def __init__(self, site):
             self.site = site
             self.description = self.DESCRIPTION
-            self.result_text = ''
+            self.key_name = self.KEY_NAME
+            self.result_value = dict()  # возвращаемые значения
             self.info = set()  # информация об ошибоке
             self.errors = set()  # вывод примеров ошибок
-            # self.statusHtml = None
             self.is_check = False
-            self.result_code = ''
-            # self.result = Result(description=self.DESCRIPTION)
+            self.result_code = ''  # error, remrimand ...
 
         def get_class_name(self):
             return self.__class__.__name__
@@ -228,7 +230,7 @@ class LinkChecker:
                 'info': list(self.info),
                 'errors': self.errors,
                 'result_code': self.result_code,
-                'result_text': self.result_text,
+                'result_value': self.result_value,
                 'status_html': StatusHTML.get_checker_status_html(self.result_code),
                 'status_text': StatusHTML.get_checker_status_text(self.result_code),
             }
@@ -256,23 +258,10 @@ class LinkChecker:
                 if 'disabled' in res:
                     self.result_code = 'disabled'
 
-        # def set_checked(self):
-        #     self.is_check = True
-        #
-        # def set_reprimand(self):
-        #     self.result_text = self.REPRIMAND
-        #
-        # def set_all_good(self):
-        #     self.result_text = self.GOOD
-        #
-        # def set_error(self):
-        #     self.result_text = self.ERROR
-        #
-        # def set_none(self):
-        #     self.result_text = self.NONE
 
     class Req(Check):
         DESCRIPTION = 'Реквизиты'
+        KEY_NAME = 'req'
 
         INCORRECT_REQ = 'Есть некоректные'
         NO_REQS = 'Реквизиты отсутсвуют'
@@ -324,6 +313,7 @@ class LinkChecker:
     class SaveComment(Check):
         """Поиск коментария от google chrome"""
         DESCRIPTION = 'Комметрарий от гугл хром'
+        KEY_NAME = 'g_comm'
         SAVED_FROM = '<!-- saved from'
 
         COMM_ON_PAGE = 'Комментарий saved from на странице'
@@ -350,6 +340,7 @@ class LinkChecker:
 
     class PolicyPage(Check):
         DESCRIPTION = 'Страница политики конфиденциальности'
+        KEY_NAME = 'policy'
         POLICY_LINK = 'policy.html'
         LINK_TEXT = 'Политика конфиденциальности'
 
@@ -388,6 +379,7 @@ class LinkChecker:
 
     class TermsPage(PolicyPage):
         DESCRIPTION = 'Страница пользовательского соглашения'
+        KEY_NAME = 'terms'
         POLICY_LINK = 'terms.html'
         LINK_TEXT = 'Пользовательское соглашение'
 
@@ -437,6 +429,7 @@ class LinkChecker:
 
     class SuccessPage(Check):
         DESCRIPTION = 'Итоговая страница'
+        KEY_NAME = 'success'
 
         PAGE_NOT_WORK = 'Страница не работает'
 
@@ -458,6 +451,7 @@ class LinkChecker:
     class FaceBookPixel(Check):
         """Пиклесль ФБ"""
         DESCRIPTION = 'Пиклесль ФБ'
+        KEY_NAME = 'fb_pixel'
         FBP_DESCRIPTION = {'start': '<!-- Facebook Pixel Code -->', 'end': '<!-- End Facebook Pixel Code -->'}
         FBP_1 = {'start': "fbq('init', '",
                  'end': "');"}
@@ -484,12 +478,13 @@ class LinkChecker:
                 if fbp_1 != fbp_2:
                     self.info.add(self.ONE_NOT_CORRECT)
                 else:
-                    self.result_text = fbp_1
+                    self.result_value.update({'pixel' :fbp_1})
             else:
                 self.info.add(self.PIXEL_NOT_FOUND)
 
     class TtPixel(Check):
         DESCRIPTION = 'Пиклесль TikTok'
+        KEY_NAME = 'tt_pixel'
         TT = {'start': "ttq.load('",
               'end': "');"}
 
@@ -512,11 +507,12 @@ class LinkChecker:
             if not tt_pixel:
                 self.info.add(self.PIXEL_NOT_FOUND)
             else:
-                self.result_text = tt_pixel
+                self.result_value.update({'pixel' :tt_pixel})
 
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""
         DESCRIPTION = 'Внутрение сслыки'
+        KEY_NAME = 'links'
         DO_NOT_CHECK = {'policy.html', 'terms.html',
                         '/policy.html', '/terms.html',
                         'spas.html'}
@@ -596,6 +592,7 @@ class LinkChecker:
 
     class OrderForms(Check):
         DESCRIPTION = 'Order формы'
+        KEY_NAME = 'order_forms'
 
         NO_FORMS = 'Формы не найдены'
         # INCORRECT_FROM = 'Есть некоректная форма'
@@ -645,13 +642,17 @@ class LinkChecker:
                     self.info.add(self.NO_MIN_LEN)
 
     class ApiOrderTT(Check):
-        """Проверка файла обработки заказа"""
+        """Проверка файла обработки заказа Trirazat API"""
+        DESCRIPTION = 'Trirazat API'
+        KEY_NAME = 'trirazat_api'
 
-        FLOW = '$data["flow"]'
-        OFFER = '$data["offer"]'
-        PRICE = '$data["base"]'
-        COUNTRY = '$data["country"]'
-        COMM = '$data["comm"]'
+        VARIABLES = {
+            'flow': '$data["flow"]',
+            'offer': '$data["offer"]',
+            'base': '$data["base"]',
+            'country': '$data["country"]',
+            'comm': '$data["comm"]',
+        }
 
         # text errors info
         FILE_NOT_FOUND = 'Файл не найден в папке сайта'
@@ -673,35 +674,16 @@ class LinkChecker:
         def process(self):
             if Site.ORDER not in self.site.files:
                 self.info.add(self.FILE_NOT_FOUND)
-                return
-            file_text = self.site.api_php.get_text()
-            self.file_lines = file_text.split('\n')
+            else:
+                file_text = self.site.api_php.get_text()
+                self.file_lines = file_text.split('\n')
+                self.find_params()
 
-
-        def find_params(self, param, func):
-            pass
-
-        def find_price(self):
+        def find_params(self):
             for line in self.file_lines:
-                if self.PRICE in line:
-                    self.find_price()
-                    break
-
-        def find_flow(self):
-            for line in self.file_lines:
-                if self.FLOW in line:
-                    self.find_price()
-                    break
-
-        def find_offer(self):
-            pass
-
-        def find_country(self):
-            pass
-
-        def find_comm(self):
-            pass
-
+                for param, variable in self.VARIABLES:
+                    if variable in line:
+                        value = PageFile.get_variable_value(line)
 
 
     # тело Главного чекера
@@ -747,7 +729,7 @@ class LinkChecker:
         dic = {
             'result_code': result_code,
             'result_html': StatusHTML.get_checker_status_html(result_code),
-            'result_text': StatusHTML.get_checker_status_text(result_code),
+            # 'result_text': StatusHTML.get_checker_status_text(result_code),
         }
         self.result = dic
 

@@ -238,7 +238,7 @@ class FbPixelText(unittest.TestCase):
         <!-- End Facebook Pixel Code -->"""
         with patch.object(Page, 'get_text', return_value=pixel):
             self.fb.process()
-            self.assertEqual(self.fb.result_text, '379588770181368')
+            self.assertEqual(self.fb.result_value['pixel'], '379588770181368')
 
     def test_different_pixels(self):
         pixel = """<!-- Facebook Pixel Code -->fbq('init', '379588770181368');\n
@@ -270,7 +270,7 @@ class TtPixelText(unittest.TestCase):
         pixel = "ttq.load('C59GNENGE0M9N03GTOE0');"
         with patch.object(Page, 'get_text', return_value=pixel):
             self.tt.process()
-            self.assertEqual(self.tt.result_text, 'C59GNENGE0M9N03GTOE0')
+            self.assertEqual(self.tt.result_value['pixel'], 'C59GNENGE0M9N03GTOE0')
 
     def test_not_pixel_found(self):
         pixel = " xx  xx ttq.loadxx('C4TM1C7PECQ6U88FAJ20'); xx "
