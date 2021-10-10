@@ -45,7 +45,8 @@
 
 <a class="btn btn-dark" role="button" href="{% url 'office:checker' site.id 1 %}">Обновить <i class="fas fa-cloud-download-alt"></i></a>
 <br> {{ is_check_start }}
-    <table class="table">
+
+    <table class="table" style="margin-top: 10px;">
         <thead class="table-light">
         <tr>
             <!-- <th>Класс проверочник</th> -->
@@ -74,8 +75,10 @@
                 {{ error }}<br>
                 {% endfor %}
             </td>
-            
-            <td>{{ checker.result_text }}</td>
+            <td>{% if checker.result_value %}
+                {{ checker.result_value }}
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

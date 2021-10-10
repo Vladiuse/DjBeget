@@ -129,16 +129,32 @@ class PageFile:
         self.connector = connector
         self.text = None
         self.soup = None
+        self.file_data = None
+
+    # def connect(self):
+    #     file = self.connector.`cat_comm`(self.file_name)
+    #     text = str(file.read())
+    #     if text:
+    #         self.text = text
+    #         self.soup = BeautifulSoup(self.text, 'lxml')
 
     def connect(self):
-        file = self.connector.cat_comm(self.file_name)
-        text = str(file.read())
-        if text:
-            self.text = text
-            self.soup = BeautifulSoup(self.text, 'lxml')
+        self.file_data = self.connector.cat_comm(self.file_name)
 
-    def get_text(self):
-        return self.text
+    # def get_text(self):
+    #     print(self.text)
+    #     print(type(self.text))
+    #     return self.text.decode('utf-8')
+
+    def get_file_lines(self, count=0):
+        lines = []
+        if count:
+            for _ in range(count):
+                line = self.file_data.readline()
+                lines.append(line)
+        else:
+            lines = self.file_data.readlines()
+        return lines
 
     @staticmethod
     def get_variable_value(line):
@@ -165,8 +181,8 @@ class Site:
     SPAS = '/spas.html'
     TERM = '/terms.html'
     # if clo
-    WHITE = '/white.html'
-    BLACK = '/black.html'
+    WHITE = 'white.html'
+    BLACK = 'black.html'
     # files
     CLOAC_FILE = 'index.php'
     ORDER = 'api.php'
@@ -181,8 +197,8 @@ class Site:
         self.policy = Page(url + Site.POLICY)
         self.terms = Page(url + Site.TERM)
         self.success = Page(url + Site.SUCCESS_PAGE)
-        self.black = Page(url + Site.BLACK)
-        self.white = Page(url + Site.WHITE)
+        self.black = Page(url + '/' + Site.BLACK)
+        self.white = Page(url + '/' + Site.WHITE)
         # site_files
         self.dir_name = dir_name
         self.files = set()
@@ -237,7 +253,7 @@ class LinkChecker:
                 'name': self.get_class_name(),
                 'description': self.description,
                 'info': list(self.info),
-                'errors': self.errors,
+                'errors': list(self.errors),
                 'result_code': self.result_code,
                 'result_value': self.result_value,
                 'status_html': StatusHTML.get_checker_status_html(self.result_code),
@@ -718,8 +734,9 @@ class LinkChecker:
                 self.add_errors()
 
         def find_variables_value(self):
-            file_text = self.site.api_php.get_text()
-            file_lines = file_text.split('\n')
+            # file_text = self.site.api_php.get_text()
+            # file_lines = file_text.split('\n')
+            file_lines = self.site.api_php.get_file_lines()
             for line in file_lines:
                 for param, data in self.VARIABLES.items():
                     variable = data['variable']
@@ -728,13 +745,24 @@ class LinkChecker:
                         self.result_value.update({param: value})
                         break
 
+        # def add_errors(self):
+        #     for param in self.VARIABLES.keys():
+        #         if param not in self.result_value:
+        #             error = self.VARIABLES[param]['not_found']
+        #             self.info.add(error)
         def add_errors(self):
-            for param, data in self.VARIABLES.items():
-                if not self.result_value[param]:
-                    error = data['not_found']
+            # TODO - переделать
+            for param in self.VARIABLES.keys():
+                try:
+                    if not self.result_value[param]:
+                        error = self.VARIABLES[param]['not_found']
+                        self.info.add(error)
+                except KeyError:
+                    error = self.VARIABLES[param]['not_found']
                     self.info.add(error)
 
     class HideClick(Check):
+
         DESCRIPTION = 'HideClick файл клоаки'
         KEY_NAME = 'hide_click'
         # variables
@@ -744,8 +772,11 @@ class LinkChecker:
         GEO_LIST_VARIABLE = "$CLOAKING['ALLOW_GEO']"
         # errors
         CLO_NOT_ACTIVE = 'Сайт не заклоачен'
-        # variables not found
+        # variables FILE not found
         FILE_NOT_FOUND = 'Файл клоаки не найден в папке сайта'
+        FILE_WHITE_NOT_FOUND = 'white.html не найден'
+        FILE_BLACK_NOT_FOUND = 'black.html не найден'
+        # TODO - <!DOCTYPE html> - предусмотреть этот вариант
         NO_WHITE = 'white не установлен'
         NO_BLACK = 'black не установлен'
         NO_DEBUG_MODE = 'Дебаг переменная не найдена'
@@ -794,6 +825,8 @@ class LinkChecker:
             GEO_LEN_ERROR: 'error',
             GEO_CHAR_ERROR: 'error',
             GEO_INCORRECT_NAME: 'error',
+            FILE_WHITE_NOT_FOUND: 'error',
+            FILE_BLACK_NOT_FOUND: 'error',
         }
 
         def process(self):
@@ -803,6 +836,7 @@ class LinkChecker:
             if Site.CLOAC_FILE not in self.site.files:
                 self.info.add(self.FILE_NOT_FOUND)
                 return
+            self.find_html_pages()
             self.find_variables_value()
             self.add_errors()
             self.check_geo()
@@ -810,9 +844,16 @@ class LinkChecker:
             self.check_debug_mode()
             self.check_white_name()
 
+        def find_html_pages(self):
+            if Site.BLACK not in self.site.files:
+                self.info.add(self.FILE_BLACK_NOT_FOUND)
+            if Site.WHITE not in self.site.files:
+                self.info.add(self.FILE_WHITE_NOT_FOUND)
+
         def find_variables_value(self):
-            file_text = self.site.index_php.get_text()
-            file_lines = file_text.split('\n')[:50]  # обрезка файла
+            # file_text = self.site.index_php.get_text()
+            # file_lines = file_text.split('\n')[:20]  # обрезка файла
+            file_lines = self.site.index_php.get_file_lines(20)
             for line in file_lines:
                 for param, data in self.VARIABLES.items():
                     variable = data['variable']
@@ -871,10 +912,13 @@ class LinkChecker:
                 pass
 
         def add_errors(self):
-            """"""
-            for param, data in self.VARIABLES.items():
-                if not self.result_value[param]:
-                    error = data['not_found']
+            for param in self.VARIABLES.keys():
+                try:
+                    if not self.result_value[param]:
+                        error = self.VARIABLES[param]['not_found']
+                        self.info.add(error)
+                except KeyError:
+                    error = self.VARIABLES[param]['not_found']
                     self.info.add(error)
 
     # тело Главного чекера
@@ -891,6 +935,8 @@ class LinkChecker:
             self.Req,
             self.FaceBookPixel,
             self.TtPixel,
+            self.ApiOrderTT,
+            self.HideClick,
         ]
         self.results_from_checkers = []
         self.result = set()
@@ -907,6 +953,7 @@ class LinkChecker:
         # print(self.result, 'general')
 
     def get_general_result(self):
+        # TODO - если есть только disabled - должен быть статус goog
         if 'error' in self.result:
             result_code = 'error'
         elif 'reprimand' in self.result:

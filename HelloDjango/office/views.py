@@ -136,7 +136,8 @@ def checker(request, site_id, mode):
     if not (mode == 0 and site_model.check_status != 'Не проверен'):
         # с главной страницы
         url = site_model.get_http_site()
-        site = SiteMap(url=url, is_cloac=site_model.is_cloac)
+        site_dir = site_model.site_name + '/public_html'
+        site = SiteMap(url=url, is_cloac=site_model.is_cloac, dir_name=site_dir)
         checker = NewLinkChecker(site=site)
         checker.process()
         site_model.check_status = checker.result['result_text']

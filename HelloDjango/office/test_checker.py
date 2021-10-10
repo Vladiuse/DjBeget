@@ -517,7 +517,8 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["offer"] = 25;\n
                     $data["comm"] = 'комментарий';\n
                     $data["flow"] = 90;\n"""
-        with patch.object(PageFile, 'get_text', return_value=file_text):
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
             self.checker.find_variables_value()
             self.checker.add_errors()
             self.assertEqual(self.checker.result_value['base'], '55euro')
@@ -533,7 +534,8 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["offer"] = ;\n
                     $data["comm"] = 'комментарий';\n
                     $data["flow"] = 90;\n"""
-        with patch.object(PageFile, 'get_text', return_value=file_text):
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
             self.checker.process()
             self.assertTrue(self.checker.NO_OFFER in self.checker.info)
             self.assertTrue(len(self.checker.info) == 1)
@@ -544,7 +546,8 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["offer"] = 1;\n
                     $data["comm"] = '';\n
                     $data["flow"] = ;\n"""
-        with patch.object(PageFile, 'get_text', return_value=file_text):
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
             self.checker.process()
             self.assertTrue(self.checker.NO_FLOW in self.checker.info)
             self.assertTrue(self.checker.NO_COMM in self.checker.info)
@@ -561,7 +564,7 @@ class HideClickTest(unittest.TestCase):
     def test_disable_checker(self):
         self.site = Site('1', dir_name='some_name')
         self.checker = LinkChecker.HideClick(site=self.site)
-        with patch.object(Page, 'get_text', return_value='123'):
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=['123']):
             self.checker.process()
             self.assertTrue(self.checker.CLO_NOT_ACTIVE in self.checker.info)
             self.assertTrue(len(self.checker.info) == 1)
@@ -569,7 +572,7 @@ class HideClickTest(unittest.TestCase):
     def test_file_not_found(self):
         """Файл клоаки не найден"""
         self.site.files.clear()
-        with patch.object(Page, 'get_text', return_value='123'):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=['123']):
             self.checker.process()
             self.assertTrue(self.checker.FILE_NOT_FOUND in self.checker.info)
             self.assertTrue(len(self.checker.info) == 1)
@@ -585,8 +588,8 @@ class HideClickTest(unittest.TestCase):
                 /* Geo filter: Displ.  */\n
                 /* For example, if you enter 'RU,UA' inrs froraine */\n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.process()
             self.assertEqual(self.checker.result_value['black'], 'black.html')
             self.assertEqual(self.checker.result_value['white'], 'white.html')
@@ -599,18 +602,20 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.add_errors()
             self.assertTrue(self.checker.NO_WHITE in self.checker.info)
 
     def test_no_black_variable(self):
-        text = """/* Required settings     */
+        text = """/* Required settings     */\n
                 $CLOAKING['WHITE_PAGE'] = 'www';//PHP/\n
                 $CLOAKING['OFFER_PAGE'] = '';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.add_errors()
             self.assertTrue(self.checker.NO_BLACK in self.checker.info)
@@ -622,7 +627,8 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black1.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.check_black_name()
             self.assertTrue(self.checker.BLACK_INCORRECT in self.checker.info)
@@ -634,7 +640,8 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off1';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_debug_mode()
             self.assertTrue(self.checker.DEBUG_INCORRECT in self.checker.info)
@@ -646,7 +653,8 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'on';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.check_debug_mode()
             self.assertTrue(self.checker.DEBUG_MODE_ON in self.checker.info)
@@ -657,19 +665,21 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.check_white_name()
             self.assertTrue(self.checker.WHITE_INCORRECT in self.checker.info)
             self.assertTrue(self.checker.errors == {'whiteX.html'})
 
     def test_incorrect_geo_len(self):
-        text = """/* Required settings     */
+        text = """/* Required settings     */\n
                 $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BYY,PLL';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
@@ -681,7 +691,8 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY1,PL*';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
@@ -693,12 +704,12 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'XX,AA';"""
-        with patch.object(PageFile, 'get_text', return_value=text):
+        text = text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_INCORRECT_NAME in self.checker.info)
             self.assertTrue(self.checker.errors == {'aa', 'xx'})
-
 
 
 if __name__ == '__main__':
