@@ -11,7 +11,7 @@ class DomainAdmin(admin.ModelAdmin):
 
 class SiteAdmin(admin.ModelAdmin):
     list_display = ['id', 'beget_id', 'site_name',
-                    'is_domain_link', 'domain_count',
+                    'is_domain_link', 'domain_count', 'check_status',
                     ]
 
 

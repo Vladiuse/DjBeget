@@ -28,7 +28,7 @@
 .navbar-brand{
   padding-bottom: 0;
 }
-.bg-success{
+.bg-success, .bg-secondary{
   color: white;
 }
 .nav-item{
@@ -105,24 +105,6 @@
 
   }
 /* Flags */
-/* .flag-icon-ru {
-  background-image: url("/static/office/4x3/ru.svg");
-}
-.flag-icon-by {
-  background-image: url("/static/office/4x3/by.svg");
-}
-.flag-icon-lt {
-  background-image: url("/static/office/4x3/lt.svg");
-}
-.flag-icon-lv {
-  background-image: url("/static/office/4x3/lv.svg");
-}
-.flag-icon-pl {
-  background-image: url("/static/office/4x3/pl.svg");
-}
-.flag-icon-ee {
-  background-image: url("/static/office/4x3/ee.svg");
-} */
 .flag-icon.flag-icon-squared{
   /* width: 1.5em !important;
   width: 30px !important; */
@@ -132,27 +114,3 @@
   box-shadow: 0 0 10px rgba(0,0,0,0.4);
   /* filter: brightness(90%); */
 }
-/* .flag-icon-ru {
-  background-image: url("/static/office/1x1/ru.svg");
-}
-.flag-icon-by {
-  background-image: url("/static/office/1x1/by.svg");
-}
-.flag-icon-lt {
-  background-image: url("/static/office/1x1/lt.svg");
-}
-.flag-icon-lv {
-  background-image: url("/static/office/1x1/lv.svg");
-}
-.flag-icon-pl {
-  background-image: url("/static/office/1x1/pl.svg");
-}
-.flag-icon-ee {
-  background-image: url("/static/office/1x1/ee.svg");
-}
-.flag-icon-ro {
-  background-image: url("/static/office/1x1/ro.svg");
-}
-.flag-icon-bg {
-  background-image: url("/static/office/1x1/bg.svg");
-} */

@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from new_checker import LinkChecker, Page, Site
+from new_checker import LinkChecker, Page, Site, PageFile
 
 
 class TestReq(unittest.TestCase):
@@ -439,6 +439,53 @@ class CheckTest(unittest.TestCase):
         self.assertEqual(self.checker.result_code, 'reprimand')
 
 
+class PageFileTest(unittest.TestCase):
+
+    def test_find_variable(self):
+        line = """$data["country"] = 'pl';\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, 'pl')
+
+    def test_find_variable_double_bracket(self):
+        line = """$data["country"] = "123some-text";\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123some-text')
+
+    def test_find_variable_no_equal(self):
+        line = """$data["country"]  'pl';\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, None)
+
+    def test_find_variable_int(self):
+        line = """$data["country"] = "123";\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123')
+
+    def test_find_variable_float(self):
+        line = """$data["country"] = "123.123";\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123.123')
+
+    def test_find_variable_no_end_php(self):
+        line = """$data["country"] = "123.123"\n"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123.123')
+
+    def test_find_variable_no_end_line(self):
+        line = """$data["country"] = '123.123'"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123.123')
+
+    def test_find_variable_no_value_str(self):
+        line = """$data["country"] = ''"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '')
+
+    def test_find_variable_variable(self):
+        #TODO - хз че делать с этим
+        line = """$data["country"] = POST"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, 'POST')
 
 
 if __name__ == '__main__':

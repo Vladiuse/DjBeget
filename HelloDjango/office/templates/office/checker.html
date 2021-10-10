@@ -22,8 +22,18 @@
 <!--            </tr>-->
 <!--        {% endfor %}-->
 <!--    </table>-->
+<!-- <style>
+    #update {
+        color: green;
+    }
+</style> -->
 <div class="main-wrapper">
-<h3>{{ data.main.result_text }}: {{ site.title| slice:":30" }}</h3>
+<h3>
+    <!-- <span class="mb-2 bg-{{data.main.result_html}}"> -->
+        {{ data.main.result_text }}
+    <!-- </span> -->
+    : {{ site.title| slice:":30" }}
+</h3>
 <div class="icon-block">
     Проверяемый сайт: <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
     <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
@@ -32,8 +42,9 @@
                     {% endif %}
 </div>
 
-<br>
-<a href="{% url 'office:checker' site.id 1 %}">Check Again</a>
+
+<a class="btn btn-dark" role="button" href="{% url 'office:checker' site.id 1 %}">Обновить <i class="fas fa-cloud-download-alt"></i></a>
+<br> {{ is_check_start }}
     <table class="table">
         <thead class="table-light">
         <tr>

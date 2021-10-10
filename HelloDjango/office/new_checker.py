@@ -1,22 +1,22 @@
+import paramiko
 import requests as req
 from bs4 import BeautifulSoup
 
 
 class StatusHTML:
-    # GREY = 'btn btn-secondary'
-    # RED = 'btn btn-danger'
-    # YELLOW = 'btn btn-warning'
-    # GREEN = 'btn btn-success'
-
+    # HTML
     GREY = 'secondary'
     RED = 'danger'
     YELLOW = 'warning'
     GREEN = 'success'
-
+    # Text
     GOOD = 'Все ок'
     REPRIMAND = 'Замечание'
     ERROR = 'Ошибка'
+    DISABLED = 'Отключен'
     NONE = 'Не проверен'
+
+    # result_code
 
     @staticmethod
     def get_checker_status_html(status):
@@ -24,12 +24,13 @@ class StatusHTML:
             'good': StatusHTML.GREEN,
             'reprimand': StatusHTML.YELLOW,
             'error': StatusHTML.RED,
+            'disabled': StatusHTML.GREY,
             'none': StatusHTML.GREY,
         }
         try:
             html_status = dic[status]
         except KeyError:
-            html_status = ''
+            html_status = 'html-key-error'
         return html_status
 
     @staticmethod
@@ -38,26 +39,13 @@ class StatusHTML:
             'good': StatusHTML.GOOD,
             'reprimand': StatusHTML.REPRIMAND,
             'error': StatusHTML.ERROR,
+            'disabled': StatusHTML.DISABLED,
             'none': StatusHTML.NONE,
         }
         try:
             html_status = dic[status]
         except KeyError:
-            html_status = ''
-        return html_status
-
-    @staticmethod
-    def get_checker_status_bg(status):
-        dic = {
-            'good': StatusHTML.GOOD,
-            'reprimand': StatusHTML.REPRIMAND,
-            'error': StatusHTML.ERROR,
-            'none': StatusHTML.NONE,
-        }
-        try:
-            html_status = dic[status]
-        except KeyError:
-            html_status = ''
+            html_status = 'text_key_error'
         return html_status
 
 
@@ -107,6 +95,60 @@ class Page:
         if start_pos != -1 and end_pos != -1:
             return text[start_pos + len(start):end_pos]
 
+class SHHConnector:
+
+    def __init__(self):
+        self.host = 'vladiuse.beget.tech'
+        self.username = 'vladiuse'
+        self.password = '20003000Ab%'
+        self.port = 22
+        self.connection = None
+        # подключение
+        self.connect()
+
+    def connect(self):
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(self.host, self.port, self.username, self.password)
+        self.connection = ssh
+
+    def ls_comm(self, command):
+        stdin, stdout, stderr = self.connection.exec_command(f'ls {command}')
+        return stdout
+
+    def cat_comm(self, command):
+        stdin, stdout, stderr = self.connection.exec_command(f'cat {command}')
+        return stdout
+
+
+class PageFile:
+
+    def __init__(self, file_name, connector):
+        self.file_name = file_name
+        self.connector = connector
+        self.text = None
+        self.soup = None
+
+    def connect(self):
+        file = self.connector.cat_comm(self.file_name)
+        text = str(file.read())
+        if text:
+            self.text = text
+            self.soup = BeautifulSoup(self.text, 'lxml')
+
+    @staticmethod
+    def get_variable_value(line):
+        if '=' not in line:
+            return None
+        variable, value = line.split('=')
+        value = value.strip()
+        if value.endswith(';'):
+            value = value[:-1]
+        if value.startswith('"') and value.endswith('"'):
+            return value.strip('"')
+        if value.startswith("'") and value.endswith("'"):
+            return value.strip("'")
+        return value
 
 class Site:
     SUCCESS_PAGE = '/success/success.html'
@@ -116,8 +158,12 @@ class Site:
     # if clo
     WHITE = '/white.html'
     BLACK = '/black.html'
+    # files
+    CLOAC = 'index.php'
+    ORDER = 'api.php'
+    SSH_CONNECTOR = SHHConnector()
 
-    def __init__(self, url, is_cloac=False):
+    def __init__(self, url, is_cloac=False, dir_name=None):
         self.cloac = is_cloac
         # sitemap
         self.main = Page(url) if not is_cloac else Page(url + Site.BLACK)
@@ -127,10 +173,27 @@ class Site:
         self.success = Page(url + Site.SUCCESS_PAGE)
         self.black = Page(url + Site.BLACK)
         self.white = Page(url + Site.WHITE)
+        # site_files
+        self.dir_name = dir_name
+        self.files = set()
+        self.index_php = PageFile(dir_name + '/' + Site.CLOAC, connector=Site.SSH_CONNECTOR) if self.dir_name else None
+        self.api_php = PageFile(dir_name + '/' + Site.ORDER, connector=Site.SSH_CONNECTOR) if self.dir_name else None
 
     def check_pages_conn(self):
         for page in self.main, self.success, self.policy, self.terms, self.spas:
             page.connect()
+        if self.dir_name:
+            for page_file in self.index_php, self.api_php:
+                page_file.connect()
+            self.get_site_files()
+
+    def get_site_files(self):
+        data = self.SSH_CONNECTOR.ls_comm(self.dir_name)
+        for file_name in data.readlines():
+            if file_name.endswith('\n'):
+                file_name = file_name[:-1]
+            if '.' in file_name:
+                self.files.add(file_name)
 
 
 class LinkChecker:
@@ -186,24 +249,27 @@ class LinkChecker:
                     return
                 if 'reprimand' in res:
                     self.result_code = 'reprimand'
-
+                    return
                 if 'good' in res:
                     self.result_code = 'good'
+                    return
+                if 'disabled' in res:
+                    self.result_code = 'disabled'
 
-        def set_checked(self):
-            self.is_check = True
-
-        def set_reprimand(self):
-            self.result_text = self.REPRIMAND
-
-        def set_all_good(self):
-            self.result_text = self.GOOD
-
-        def set_error(self):
-            self.result_text = self.ERROR
-
-        def set_none(self):
-            self.result_text = self.NONE
+        # def set_checked(self):
+        #     self.is_check = True
+        #
+        # def set_reprimand(self):
+        #     self.result_text = self.REPRIMAND
+        #
+        # def set_all_good(self):
+        #     self.result_text = self.GOOD
+        #
+        # def set_error(self):
+        #     self.result_text = self.ERROR
+        #
+        # def set_none(self):
+        #     self.result_text = self.NONE
 
     class Req(Check):
         DESCRIPTION = 'Реквизиты'
@@ -281,7 +347,6 @@ class LinkChecker:
                         self.info.add(self.COMM_ON_PAGE_BLACK)
                     self.errors.append(self.SAVED_FROM)
                     break
-
 
     class PolicyPage(Check):
         DESCRIPTION = 'Страница политики конфиденциальности'
@@ -366,7 +431,6 @@ class LinkChecker:
             if not self.site.spas.is_work():
                 self.info.add(self.PAGE_NOT_WORK)
 
-
         def find_redirect_url(self):
             if self.FIND not in self.site.spas.get_text():
                 self.info.add(self.INCORRECT_REDIRECT)
@@ -404,16 +468,12 @@ class LinkChecker:
         ONE_NOT_CORRECT = 'Один из пикселей некоректен'
 
         STATUS_SET = {
-            PIXEL_NOT_FOUND: 'reprimand',
-            ONE_NOT_CORRECT: 'reprimand',
+            PIXEL_NOT_FOUND: 'disabled',
+            ONE_NOT_CORRECT: 'error',
         }
 
         def process(self):
             self.find_pixel()
-            # if not self.info:
-            #     self.set_reprimand()
-            # else:
-            #     self.set_all_good()
 
         def find_pixel(self):
             pixel_block = Page.find_text_block(self.site.success.get_text(),
@@ -436,7 +496,8 @@ class LinkChecker:
         PIXEL_NOT_FOUND = 'Пиксель не найден'
 
         STATUS_SET = {
-            PIXEL_NOT_FOUND: 'reprimand',
+            # PIXEL_NOT_FOUND: 'reprimand',
+            PIXEL_NOT_FOUND: 'disabled',
         }
 
         def process(self):
@@ -583,20 +644,80 @@ class LinkChecker:
                 if not form.phone_minlength:
                     self.info.add(self.NO_MIN_LEN)
 
+    class ApiOrderTT(Check):
+        """Проверка файла обработки заказа"""
+
+        FLOW = '$data["flow"]'
+        OFFER = '$data["offer"]'
+        PRICE = '$data["base"]'
+        COUNTRY = '$data["country"]'
+        COMM = '$data["comm"]'
+
+        # text errors info
+        FILE_NOT_FOUND = 'Файл не найден в папке сайта'
+        NO_OFFER = 'Оффер не найден'
+        NO_FLOW = 'Поток не найден'
+        NO_COUNTRY = 'Страна не найдена'
+        NO_PRICE = 'Цена не найдена'
+        NO_COMM = 'Комментарий не найден'
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.file_lines = None
+            self.price = None
+            self.flow = None
+            self.offer = None
+            self.country = None
+            self.comm = None
+
+        def process(self):
+            if Site.ORDER not in self.site.files:
+                self.info.add(self.FILE_NOT_FOUND)
+                return
+            file_text = self.site.api_php.get_text()
+            self.file_lines = file_text.split('\n')
+
+
+        def find_params(self, param, func):
+            pass
+
+        def find_price(self):
+            for line in self.file_lines:
+                if self.PRICE in line:
+                    self.find_price()
+                    break
+
+        def find_flow(self):
+            for line in self.file_lines:
+                if self.FLOW in line:
+                    self.find_price()
+                    break
+
+        def find_offer(self):
+            pass
+
+        def find_country(self):
+            pass
+
+        def find_comm(self):
+            pass
+
+
+
     # тело Главного чекера
     def __init__(self, site):
         self.site = site
         self.checkers = [
-            self.Req,
-            self.OrderForms,
             self.SaveComment,
+            self.OrderForms,
+            self.PageLink,
+            self.SpasPage,
             self.PolicyPage,
             self.TermsPage,
-            self.SpasPage,
             self.SuccessPage,
+            self.Req,
             self.FaceBookPixel,
             self.TtPixel,
-            self.PageLink,
         ]
         self.results_from_checkers = []
         self.result = set()
@@ -619,6 +740,8 @@ class LinkChecker:
             result_code = 'reprimand'
         elif 'good' in self.result:
             result_code = 'good'
+        elif 'disabled' in self.result:
+            result_code = 'disabled'
         else:
             result_code = 'none'
         dic = {
@@ -629,9 +752,10 @@ class LinkChecker:
         self.result = dic
 
 
-
-
 if __name__ == '__main__':
-    site = Site(url='https://spaces-market.store/', is_cloac=True)
-    main_ckecker = LinkChecker(site=site)
-    main_ckecker.process()
+    site = Site(url='https://spaces-market.store/', is_cloac=True, dir_name='spaces-market.store/public_html')
+    site.get_site_files()
+    print(site.files)
+
+    # main_ckecker = LinkChecker(site=site)
+    # main_ckecker.process()

@@ -18,7 +18,7 @@ class Site(models.Model):
     GREY = 'Не проверен'
     RED = 'Ошибка'
     YELLOW = 'Замечание'
-    GREEN = 'Все ОК'
+    GREEN = 'Все ок'
 
     STATUS_HTML = {
         GREY: 'btn btn-secondary',
@@ -56,7 +56,11 @@ class Site(models.Model):
         return f'https://{self.site_name}/'
 
     def get_status_html(self):
-        return self.STATUS_HTML[str(self.check_status)]
+        try:
+            return self.STATUS_HTML[str(self.check_status)]
+        except KeyError:
+            return 'No status key error'
+
 
     def unpin_status(self):
         """Установить дефолтный статус"""
