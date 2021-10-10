@@ -137,12 +137,19 @@ class PageFile:
             self.text = text
             self.soup = BeautifulSoup(self.text, 'lxml')
 
+    def get_text(self):
+        return self.text
+
     @staticmethod
     def get_variable_value(line):
         if '=' not in line:
             return None
         variable, value = line.split('=')
         value = value.strip()
+        is_php_comm_in_line = value.rfind('//')
+        if is_php_comm_in_line != -1:
+            value = value[:is_php_comm_in_line]
+            value = value.strip()
         if value.endswith(';'):
             value = value[:-1]
         if value.startswith('"') and value.endswith('"'):
@@ -161,8 +168,9 @@ class Site:
     WHITE = '/white.html'
     BLACK = '/black.html'
     # files
-    CLOAC = 'index.php'
+    CLOAC_FILE = 'index.php'
     ORDER = 'api.php'
+    ALLOWED_GEO_LIST = ['by', 'ru', 'ee', 'lt', 'lv', 'pl']
     SSH_CONNECTOR = SHHConnector()
 
     def __init__(self, url, is_cloac=False, dir_name=None):
@@ -178,7 +186,8 @@ class Site:
         # site_files
         self.dir_name = dir_name
         self.files = set()
-        self.index_php = PageFile(dir_name + '/' + Site.CLOAC, connector=Site.SSH_CONNECTOR) if self.dir_name else None
+        self.index_php = PageFile(dir_name + '/' + Site.CLOAC_FILE,
+                                  connector=Site.SSH_CONNECTOR) if self.dir_name else None
         self.api_php = PageFile(dir_name + '/' + Site.ORDER, connector=Site.SSH_CONNECTOR) if self.dir_name else None
 
     def check_pages_conn(self):
@@ -257,7 +266,6 @@ class LinkChecker:
                     return
                 if 'disabled' in res:
                     self.result_code = 'disabled'
-
 
     class Req(Check):
         DESCRIPTION = 'Реквизиты'
@@ -478,7 +486,7 @@ class LinkChecker:
                 if fbp_1 != fbp_2:
                     self.info.add(self.ONE_NOT_CORRECT)
                 else:
-                    self.result_value.update({'pixel' :fbp_1})
+                    self.result_value.update({'pixel': fbp_1})
             else:
                 self.info.add(self.PIXEL_NOT_FOUND)
 
@@ -507,7 +515,7 @@ class LinkChecker:
             if not tt_pixel:
                 self.info.add(self.PIXEL_NOT_FOUND)
             else:
-                self.result_value.update({'pixel' :tt_pixel})
+                self.result_value.update({'pixel': tt_pixel})
 
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""
@@ -646,25 +654,56 @@ class LinkChecker:
         DESCRIPTION = 'Trirazat API'
         KEY_NAME = 'trirazat_api'
 
-        VARIABLES = {
-            'flow': '$data["flow"]',
-            'offer': '$data["offer"]',
-            'base': '$data["base"]',
-            'country': '$data["country"]',
-            'comm': '$data["comm"]',
-        }
-
+        # VARIABLES = {
+        #     'flow': '$data["flow"]',
+        #     'offer': '$data["offer"]',
+        #     'base': '$data["base"]',
+        #     'country': '$data["country"]',
+        #     'comm': '$data["comm"]',
+        # }
         # text errors info
         FILE_NOT_FOUND = 'Файл не найден в папке сайта'
+
         NO_OFFER = 'Оффер не найден'
         NO_FLOW = 'Поток не найден'
         NO_COUNTRY = 'Страна не найдена'
         NO_PRICE = 'Цена не найдена'
         NO_COMM = 'Комментарий не найден'
 
+        VARIABLES = {
+            'flow': {
+                'variable': '$data["flow"]',
+                'not_found': NO_FLOW
+            },
+            'offer': {
+                'variable': '$data["offer"]',
+                'not_found': NO_OFFER
+            },
+            'base': {
+                'variable': '$data["base"]',
+                'not_found': NO_PRICE
+            },
+            'country': {
+                'variable': '$data["country"]',
+                'not_found': NO_COUNTRY
+            },
+            'comm': {
+                'variable': '$data["comm"]',
+                'not_found': NO_COMM
+            },
+        }
+
+        STATUS_SET = {
+            FILE_NOT_FOUND: 'error',
+            NO_OFFER: 'error',
+            NO_FLOW: 'error',
+            NO_COUNTRY: 'reprimand',
+            NO_PRICE: 'reprimand',
+            NO_COMM: 'disabled',
+        }
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.file_lines = None
             self.price = None
             self.flow = None
             self.offer = None
@@ -675,16 +714,168 @@ class LinkChecker:
             if Site.ORDER not in self.site.files:
                 self.info.add(self.FILE_NOT_FOUND)
             else:
-                file_text = self.site.api_php.get_text()
-                self.file_lines = file_text.split('\n')
-                self.find_params()
+                self.find_variables_value()
+                self.add_errors()
 
-        def find_params(self):
-            for line in self.file_lines:
-                for param, variable in self.VARIABLES:
+        def find_variables_value(self):
+            file_text = self.site.api_php.get_text()
+            file_lines = file_text.split('\n')
+            for line in file_lines:
+                for param, data in self.VARIABLES.items():
+                    variable = data['variable']
                     if variable in line:
                         value = PageFile.get_variable_value(line)
+                        self.result_value.update({param: value})
+                        break
 
+        def add_errors(self):
+            for param, data in self.VARIABLES.items():
+                if not self.result_value[param]:
+                    error = data['not_found']
+                    self.info.add(error)
+
+    class HideClick(Check):
+        DESCRIPTION = 'HideClick файл клоаки'
+        KEY_NAME = 'hide_click'
+        # variables
+        WHITE_PAGE_VARIABLE = "$CLOAKING['WHITE_PAGE']"
+        BLACK_PAGE_VARIABLE = "$CLOAKING['OFFER_PAGE']"
+        DEBUG_MODE_VARIABLE = "$CLOAKING['DEBUG_MODE']"
+        GEO_LIST_VARIABLE = "$CLOAKING['ALLOW_GEO']"
+        # errors
+        CLO_NOT_ACTIVE = 'Сайт не заклоачен'
+        # variables not found
+        FILE_NOT_FOUND = 'Файл клоаки не найден в папке сайта'
+        NO_WHITE = 'white не установлен'
+        NO_BLACK = 'black не установлен'
+        NO_DEBUG_MODE = 'Дебаг переменная не найдена'
+        NO_GEO = 'Переменная гео не установлены'
+        # не коректные значения
+        BLACK_INCORRECT = 'Некоректное название black_page'
+        WHITE_INCORRECT = 'Некоректное название white_page'
+        DEBUG_INCORRECT = 'Не коректное значение debug'
+        DEBUG_MODE_ON = 'Дебаг включен'
+
+        GEO_LEN_ERROR = 'Неверная длина значения гео'
+        GEO_CHAR_ERROR = 'Цифра или небуква в гео'
+        GEO_INCORRECT_NAME = 'Не правильное название гео(нет в списке)'
+
+        VARIABLES = {
+            'white': {
+                'variable': WHITE_PAGE_VARIABLE,
+                'not_found': NO_WHITE,
+            },
+            'black': {
+                'variable': BLACK_PAGE_VARIABLE,
+                'not_found': NO_BLACK,
+            },
+            'debug': {
+                'variable': DEBUG_MODE_VARIABLE,
+                'not_found': NO_DEBUG_MODE,
+            },
+            'geo': {
+                'variable': GEO_LIST_VARIABLE,
+                'not_found': NO_GEO,
+            },
+
+        }
+
+        STATUS_SET = {
+            CLO_NOT_ACTIVE: 'disabled',
+            FILE_NOT_FOUND: 'error',
+            NO_WHITE: 'error',
+            NO_BLACK: 'error',
+            NO_GEO: 'error',
+            NO_DEBUG_MODE: 'error',
+            BLACK_INCORRECT: 'error',
+            WHITE_INCORRECT: 'error',
+            DEBUG_INCORRECT: 'error',
+            DEBUG_MODE_ON: 'reprimand',
+            GEO_LEN_ERROR: 'error',
+            GEO_CHAR_ERROR: 'error',
+            GEO_INCORRECT_NAME: 'error',
+        }
+
+        def process(self):
+            if not self.site.cloac:
+                self.info.add(self.CLO_NOT_ACTIVE)
+                return
+            if Site.CLOAC_FILE not in self.site.files:
+                self.info.add(self.FILE_NOT_FOUND)
+                return
+            self.find_variables_value()
+            self.add_errors()
+            self.check_geo()
+            self.check_black_name()
+            self.check_debug_mode()
+            self.check_white_name()
+
+        def find_variables_value(self):
+            file_text = self.site.index_php.get_text()
+            file_lines = file_text.split('\n')[:50]  # обрезка файла
+            for line in file_lines:
+                for param, data in self.VARIABLES.items():
+                    variable = data['variable']
+                    if variable in line:
+                        value = PageFile.get_variable_value(line)
+                        self.result_value.update({param: value})
+                        break
+
+        def check_debug_mode(self):
+            try:
+                debug = self.result_value['debug']
+                if debug not in ('on', 'off'):
+                    self.info.add(self.DEBUG_INCORRECT)
+                    self.errors.add(debug)
+                else:
+                    if debug == 'on':
+                        self.info.add(self.DEBUG_MODE_ON)
+            except KeyError:
+                pass
+
+        def check_white_name(self):
+            try:
+                white = self.result_value['white']
+                if white != Site.WHITE:
+                    self.info.add(self.WHITE_INCORRECT)
+                    self.errors.add(white)
+            except KeyError:
+                pass
+
+        def check_black_name(self):
+            try:
+                black = self.result_value['black']
+                if black != Site.BLACK:
+                    self.info.add(self.BLACK_INCORRECT)
+                    self.errors.add(black)
+            except KeyError:
+                pass
+
+        def check_geo(self):
+            try:
+                geo = self.result_value['geo']
+                geo = geo.lower()
+                geo_list = geo.split(',')
+                for geo in geo_list:
+                    if geo not in Site.ALLOWED_GEO_LIST:
+                        self.info.add(self.GEO_INCORRECT_NAME)
+                        self.errors.add(geo)
+                    if len(geo) != 2:
+                        self.info.add(self.GEO_LEN_ERROR)
+                        self.errors.add(geo)
+                    for char in geo:
+                        if not char.isalpha():
+                            self.info.add(self.GEO_CHAR_ERROR)
+                            self.errors.add(geo)
+            except KeyError:
+                pass
+
+        def add_errors(self):
+            """"""
+            for param, data in self.VARIABLES.items():
+                if not self.result_value[param]:
+                    error = data['not_found']
+                    self.info.add(error)
 
     # тело Главного чекера
     def __init__(self, site):
@@ -729,7 +920,7 @@ class LinkChecker:
         dic = {
             'result_code': result_code,
             'result_html': StatusHTML.get_checker_status_html(result_code),
-            # 'result_text': StatusHTML.get_checker_status_text(result_code),
+            'result_text': StatusHTML.get_checker_status_text(result_code),
         }
         self.result = dic
 

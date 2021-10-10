@@ -100,7 +100,7 @@ class PolicyTest(unittest.TestCase):
         self.NO_TEXT = '<p class="conf-link doclinks">' \
                        '<a class="nav-link" href="policy.html">Политика конxxxxфиденциальности </a></p>'
         self.SLASH_LINK = '<p class="conf-link doclinks">' \
-                       '<a class="nav-link" href="/policy.html">Политика конфиденциальности </a></p>'
+                          '<a class="nav-link" href="/policy.html">Политика конфиденциальности </a></p>'
 
     def test_all_good(self):
         soup = BeautifulSoup(self.LINK_CORRECT, 'lxml')
@@ -152,7 +152,7 @@ class TermsTest(unittest.TestCase):
                        '<a class="nav-link" href="terms.html">Пользоватxxxxxxxельское соглашение </a></p>'
 
         self.LINK_CORRECT_SLASH = '<p class="conf-link doclinks">' \
-                            '<a class="nav-link" href="terms.html">Пользовательское соглашение </a></p>'
+                                  '<a class="nav-link" href="terms.html">Пользовательское соглашение </a></p>'
 
     def test_all_good(self):
         soup = BeautifulSoup(self.LINK_CORRECT, 'lxml')
@@ -222,7 +222,6 @@ class SpasPageTest(unittest.TestCase):
         self.site.spas.status_code = 404
         self.spas.check_page()
         self.assertTrue(self.spas.PAGE_NOT_WORK in self.spas.info)
-
 
 
 class FbPixelText(unittest.TestCase):
@@ -416,6 +415,7 @@ class OrderFormsTest(unittest.TestCase):
             self.forms.process()
             self.assertTrue(self.forms.NO_FORMS in self.forms.info)
 
+
 class CheckTest(unittest.TestCase):
 
     def setUp(self):
@@ -440,6 +440,7 @@ class CheckTest(unittest.TestCase):
 
 
 class PageFileTest(unittest.TestCase):
+    """тест функции поиска значения переменных(php)"""
 
     def test_find_variable(self):
         line = """$data["country"] = 'pl';\n"""
@@ -457,7 +458,7 @@ class PageFileTest(unittest.TestCase):
         self.assertEqual(result, None)
 
     def test_find_variable_int(self):
-        line = """$data["country"] = "123";\n"""
+        line = """$data["country"] = "123"; // some text\n"""
         result = PageFile.get_variable_value(line)
         self.assertEqual(result, '123')
 
@@ -482,10 +483,222 @@ class PageFileTest(unittest.TestCase):
         self.assertEqual(result, '')
 
     def test_find_variable_variable(self):
-        #TODO - хз че делать с этим
+        # TODO - хз че делать с этим
         line = """$data["country"] = POST"""
         result = PageFile.get_variable_value(line)
         self.assertEqual(result, 'POST')
+
+    def test_php_comm_in_line(self):
+        # TODO - дописать для других коментрариев
+        line = """$data["country"] = 123 //some text"""
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, '123')
+
+    def test_some(self):
+        line = "$CLOAKING['ALLOW_GEO'] = 'BY,PL'"
+        result = PageFile.get_variable_value(line)
+        self.assertEqual(result, 'BY,PL')
+
+class ApiOrderTTTest(unittest.TestCase):
+
+    def setUp(self):
+        self.site = Site('1', dir_name='some_name')
+        self.site.files.add(Site.ORDER)
+        self.checker = LinkChecker.ApiOrderTT(site=self.site)
+
+    def test_file_not_found(self):
+        self.site.files.clear()
+        self.checker.process()
+        self.assertEqual(self.checker.info, {self.checker.FILE_NOT_FOUND})
+
+    def test_all_good(self):
+        file_text = """$data["base"] = "55euro";\n
+                    $data["country"] = 'pl';\n
+                    $data["offer"] = 25;\n
+                    $data["comm"] = 'комментарий';\n
+                    $data["flow"] = 90;\n"""
+        with patch.object(PageFile, 'get_text', return_value=file_text):
+            self.checker.find_variables_value()
+            self.checker.add_errors()
+            self.assertEqual(self.checker.result_value['base'], '55euro')
+            self.assertEqual(self.checker.result_value['country'], 'pl')
+            self.assertEqual(self.checker.result_value['offer'], '25')
+            self.assertEqual(self.checker.result_value['comm'], 'комментарий')
+            self.assertEqual(self.checker.result_value['flow'], '90')
+            self.assertEqual(self.checker.info, set())
+
+    def test_offer_not_found(self):
+        file_text = """$data["base"] = "55euro";\n
+                    $data["country"] = 'pl';\n
+                    $data["offer"] = ;\n
+                    $data["comm"] = 'комментарий';\n
+                    $data["flow"] = 90;\n"""
+        with patch.object(PageFile, 'get_text', return_value=file_text):
+            self.checker.process()
+            self.assertTrue(self.checker.NO_OFFER in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+    def test_comm_flow_not_found(self):
+        file_text = """$data["base"] = "55euro";\n
+                    $data["country"] = 'pl';\n
+                    $data["offer"] = 1;\n
+                    $data["comm"] = '';\n
+                    $data["flow"] = ;\n"""
+        with patch.object(PageFile, 'get_text', return_value=file_text):
+            self.checker.process()
+            self.assertTrue(self.checker.NO_FLOW in self.checker.info)
+            self.assertTrue(self.checker.NO_COMM in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 2)
+
+
+class HideClickTest(unittest.TestCase):
+
+    def setUp(self):
+        self.site = Site('1', dir_name='some_name', is_cloac=True)
+        self.site.files.add(Site.CLOAC_FILE)
+        self.checker = LinkChecker.HideClick(site=self.site)
+
+    def test_disable_checker(self):
+        self.site = Site('1', dir_name='some_name')
+        self.checker = LinkChecker.HideClick(site=self.site)
+        with patch.object(Page, 'get_text', return_value='123'):
+            self.checker.process()
+            self.assertTrue(self.checker.CLO_NOT_ACTIVE in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+    def test_file_not_found(self):
+        """Файл клоаки не найден"""
+        self.site.files.clear()
+        with patch.object(Page, 'get_text', return_value='123'):
+            self.checker.process()
+            self.assertTrue(self.checker.FILE_NOT_FOUND in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+    def test_all_good(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['STEALTH'] = 'off';// replace\n
+                /*********************************************/\n
+                /* Available additional settings  */\n
+                /* Geo filter: Displ.  */\n
+                /* For example, if you enter 'RU,UA' inrs froraine */\n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.process()
+            self.assertEqual(self.checker.result_value['black'], 'black.html')
+            self.assertEqual(self.checker.result_value['white'], 'white.html')
+            self.assertEqual(self.checker.result_value['geo'], 'BY,PL')
+            self.assertEqual(self.checker.result_value['debug'], 'off')
+
+    def test_no_white_variable(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = '';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.add_errors()
+            self.assertTrue(self.checker.NO_WHITE in self.checker.info)
+
+    def test_no_black_variable(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'www';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = '';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.add_errors()
+            self.assertTrue(self.checker.NO_BLACK in self.checker.info)
+
+
+    def test_incorrect_black(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black1.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_black_name()
+            self.assertTrue(self.checker.BLACK_INCORRECT in self.checker.info)
+            self.assertTrue(self.checker.errors == {'black1.html'})
+
+    def test_incorrect_debug(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off1';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_debug_mode()
+            self.assertTrue(self.checker.DEBUG_INCORRECT in self.checker.info)
+            self.assertTrue(self.checker.errors == {'off1'})
+
+    def test_debug_ON(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'on';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_debug_mode()
+            self.assertTrue(self.checker.DEBUG_MODE_ON in self.checker.info)
+
+    def test_incorrect_white(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'whiteX.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_white_name()
+            self.assertTrue(self.checker.WHITE_INCORRECT in self.checker.info)
+            self.assertTrue(self.checker.errors == {'whiteX.html'})
+
+    def test_incorrect_geo_len(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BYY,PLL';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_geo()
+            self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
+            self.assertTrue(self.checker.errors == {'byy', 'pll'})
+
+    def test_incorrect_char_geo(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'BY1,PL*';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_geo()
+            self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
+            self.assertTrue(self.checker.errors == {'by1', 'pl*'})
+
+    def test_incorrect_geo(self):
+        text = """/* Required settings     */
+                $CLOAKING['WHITE_PAGE'] = 'white.html';//PHP/\n
+                $CLOAKING['OFFER_PAGE'] = 'black.html';//PHP/H\n
+                $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
+                $CLOAKING['ALLOW_GEO'] = 'XX,AA';"""
+        with patch.object(PageFile, 'get_text', return_value=text):
+            self.checker.find_variables_value()
+            self.checker.check_geo()
+            self.assertTrue(self.checker.GEO_INCORRECT_NAME in self.checker.info)
+            self.assertTrue(self.checker.errors == {'aa', 'xx'})
+
 
 
 if __name__ == '__main__':
