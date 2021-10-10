@@ -70,7 +70,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          Удалить cool-market.store Какоето названние сайта?
+          Удалить какойто линк Какоето названние сайта?
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -132,7 +132,7 @@
 
                         <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
                     <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
-                   <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a>
+                   <!-- <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a> -->
                         {% if site.is_cloac %}
                     <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
                     {% endif %}
@@ -162,12 +162,12 @@
                         <!-- <ul class="dropdown-menu">
                             <li style="font-size: 10px;"> -->
                                 <table class="table dropdown-menu" style="font-size: 13px; padding: 0;">
-                                    <thead class="table-light">
+                                    <!-- <thead class="table-light">
                                     <tr>
                                         <th>Name</th>
                                         <th>Code</th>
                                     </tr>
-                                    </thead>
+                                    </thead> -->
                                     <tbody>
                                     {% for checker in site.check_data.checkers %}
                                     {% if checker.result_code != 'good' %}
@@ -197,6 +197,7 @@
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><a class="dropdown-item" href="#">Отправить лид</a></li>
                         <li><a class="dropdown-item" href="#">Архивировать</a></li>
+                        <li><a class="dropdown-item" href="{{ site.get_log_url }}" target="_blank">Лог сайта</a></li>
                         <li><hr class="dropdown-divider"></li>
                         {% if site.is_camp_run %}
                         <li><a class="dropdown-item disabled" href="#" data-bs-toggle="modal" data-bs-target="#dell-site">Удалить</a></li>

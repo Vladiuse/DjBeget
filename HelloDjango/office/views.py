@@ -132,11 +132,12 @@ def requisites(request):
 def checker(request, site_id, mode):
     """Проверочник сайтов"""
     site_model = Site.objects.get(pk=site_id)
+    is_check_start = ''
     if not (mode == 0 and site_model.check_status != 'Не проверен'):
-        print('LOAD xxxxxxxxxxxxxxxx')
         # с главной страницы
         url = site_model.get_http_site()
-        site = SiteMap(url=url, is_cloac=site_model.is_cloac)
+        site_dir = site_model.site_name + '/public_html'
+        site = SiteMap(url=url, is_cloac=site_model.is_cloac, dir_name=site_dir)
         checker = NewLinkChecker(site=site)
         checker.process()
         site_model.check_status = checker.result['result_text']
@@ -144,17 +145,13 @@ def checker(request, site_id, mode):
                           'checkers': checker.results_from_checkers,}
         site_model.check_data = new_check_data
         site_model.save()
-    content = {'site': site_model, 'data': site_model.check_data}
-    # print(checker.result)
-    # print(checker.results_from_checkers)
+        is_check_start = 'Выполнена загрузка'
+    content = {
+        'site': site_model,
+        'data': site_model.check_data,
+        'is_check_start': is_check_start,
+    }
     return render(request, 'office/checker.html', content)
-    # link_manager = LinkCheckerManager(url=url)
-    # link_manager.process()
-    # result = link_manager.result
-    # site.set_status(link_manager.get_general_result())
-    # content = {'content': result, 'site': site}
-    # return render(request, 'office/checker.html', content)
-
 
 @login_required
 def domains(request):

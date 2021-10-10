@@ -22,17 +22,31 @@
 <!--            </tr>-->
 <!--        {% endfor %}-->
 <!--    </table>-->
+<!-- <style>
+    #update {
+        color: green;
+    }
+</style> -->
 <div class="main-wrapper">
-<h1>Status: {{ data.main.result_text }}</h1>
+<h3>
+    <!-- <span class="mb-2 bg-{{data.main.result_html}}"> -->
+        {{ data.main.result_text }}
+    <!-- </span> -->
+    : {{ site.title| slice:":30" }}
+</h3>
 <div class="icon-block">
     Проверяемый сайт: <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
+    <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
     {% if site.is_cloac %}
                     <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
                     {% endif %}
 </div>
-<br>
-<a href="{% url 'office:checker' site.id 1 %}">Check Again</a>
-    <table class="table">
+
+
+<a class="btn btn-dark" role="button" href="{% url 'office:checker' site.id 1 %}">Обновить <i class="fas fa-cloud-download-alt"></i></a>
+<br> {{ is_check_start }}
+
+    <table class="table" style="margin-top: 10px;">
         <thead class="table-light">
         <tr>
             <!-- <th>Класс проверочник</th> -->
@@ -61,8 +75,10 @@
                 {{ error }}<br>
                 {% endfor %}
             </td>
-            
-            <td>{{ checker.result_text }}</td>
+            <td>{% if checker.result_value %}
+                {{ checker.result_value }}
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

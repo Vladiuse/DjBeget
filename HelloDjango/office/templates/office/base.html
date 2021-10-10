@@ -47,6 +47,9 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'office:requisites' %}">Реквизиты</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'office:campanings' %}">Кампании</a>
+              </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Обновить
@@ -57,9 +60,9 @@
                   <li><a class="dropdown-item" href="{% url 'office:get_site_title' 1 %}">Заголовки сайтов(все)</a></li>
                 </ul>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link" href="{% url 'office:old_lands' %}">Архив прокл</a>
-              </li>
+              </li> -->
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink1" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Ссылки
@@ -67,11 +70,9 @@
                 <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                   <li><a class="dropdown-item" href="https://cp.beget.com/sites" target="_blank">Сайты</a></li>
                   <li><a class="dropdown-item" href="https://cp.beget.com/domains" target="_blank">Домены</a></li>
+                  <li><a class="dropdown-item" href="{% url 'office:old_lands' %}" target="_blank">Архив прокл</a></li>
                   <li><a class="dropdown-item" href="/admin">Admin</a></li>
                 </ul>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'office:campanings' %}">Кампании</a>
               </li>
               <li class="nav-item dropdown login" >
                 <a class="nav-link dropdown-toggle" ata-bs-display="static" href="#" id="" role="button" data-bs-toggle="dropdown" aria-expanded="false">
