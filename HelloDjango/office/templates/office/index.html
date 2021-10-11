@@ -44,7 +44,8 @@
 
 </style>
 <div class="main-wrapper">
-<h1>Сайты</h1>
+<!-- <h1>Сайты</h1> -->
+<h3>Сайтов: {{ sites|length|add:"2"}} </h3>
 <br>
 
 
@@ -80,18 +81,24 @@
     </div>
   </div>
 
-<div class="find-div">
+<div class="find-div" style="justify-content: space-between;">
     <div class="show-new">
         <button type="button" class="btn btn-success" id="show-new">Только Новые</button>
         <!-- <a class="show-new"><span class="bg-success ">Только Новые</span></a> -->
     </div>
-    <input type="text" placeholder="поиск сайта..." id="find-site" style="height: 100%;"> 
+    <div style="display: flex;">
+        <input type="text" placeholder="поиск сайта..." id="find-site" style="height: 100%;"> 
     <button type="submit" class="searchButton">
         <i class="fa fa-search"></i>
         <i class="fas fa-times" style="display: none;"></i>
      </button>
+    </div>
+    
 
-     <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5>
+     <!-- <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5> -->
+     <div>
+        <a href="{% url 'office:old_lands' %}"  type="button" class="btn btn-light" >Архив <i class="fas fa-archive"></i></a>
+     </div>
 </div>
 
 

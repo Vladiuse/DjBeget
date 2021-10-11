@@ -715,8 +715,8 @@ class LinkChecker:
             FILE_NOT_FOUND: 'error',
             NO_OFFER: 'error',
             NO_FLOW: 'error',
-            NO_COUNTRY: 'reprimand',
-            NO_PRICE: 'reprimand',
+            NO_COUNTRY: 'disabled',
+            NO_PRICE: 'disabled',
             NO_COMM: 'disabled',
         }
 
