@@ -1,7 +1,7 @@
 import paramiko
 import requests as req
 from bs4 import BeautifulSoup
-
+from pprint import pprint
 
 class StatusHTML:
     # HTML
@@ -183,6 +183,8 @@ class Site:
     # if clo
     WHITE = 'white.html'
     BLACK = 'black.html'
+    S_API = 's_api.php'
+    S_LOG = 's_log.txt'
     # files
     CLOAC_FILE = 'index.php'
     ORDER = 'api.php'
@@ -973,9 +975,12 @@ class LinkChecker:
 
 
 if __name__ == '__main__':
-    site = Site(url='https://spaces-market.store/', is_cloac=True, dir_name='spaces-market.store/public_html')
+    site = Site(url='https://fito-blog.ru/', is_cloac=True, dir_name='fito-blog.ru/public_html')
     site.get_site_files()
-    print(site.files)
 
-    # main_ckecker = LinkChecker(site=site)
-    # main_ckecker.process()
+
+    main_ckecker = LinkChecker(site=site)
+    main_ckecker.process()
+    # for checker in main_ckecker.checkers:
+    #     pprint(checker.results_from_checkers())
+    pprint(site.files)

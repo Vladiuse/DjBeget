@@ -344,7 +344,9 @@ class Cabinet(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     pixel = models.CharField(verbose_name='Пиксель акаунта', blank=True, null=True, max_length=99)
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
-    domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
+    # domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
+    #                               verbose_name='Закрепленный домен')
+    domain = models.ForeignKey(Domain, on_delete=models.SET_NULL,blank=True, null=True,
                                   verbose_name='Закрепленный домен')
 
     def __str__(self):
