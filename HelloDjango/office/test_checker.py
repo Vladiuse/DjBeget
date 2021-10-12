@@ -206,22 +206,35 @@ class SpasPageTest(unittest.TestCase):
             self.spas.check_form()
             self.assertEqual(self.spas.info, set())
 
-    def test_no_redirect(self):
-        self.site.spas.status_code = 200
-        with patch.object(Page, 'get_text', return_value='123'):
-            self.spas.find_redirect_url()
-            self.assertTrue(self.spas.INCORRECT_REDIRECT in self.spas.info)
-
     def test_no_form(self):
         soup = BeautifulSoup('123', 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
             self.spas.check_form()
             self.assertTrue(self.spas.NO_SPAS_FORM in self.spas.info)
 
-    def test_page_not_work(self):
-        self.site.spas.status_code = 404
-        self.spas.check_page()
-        self.assertTrue(self.spas.PAGE_NOT_WORK in self.spas.info)
+    def test_css_font_found(self):
+        self.site.files.add('modal.js')
+        self.spas.check_files()
+        self.assertTrue(self.spas.NO_CSS_FILE in self.spas.info)
+
+    def test_js_font_found(self):
+        self.site.files.add('modal.css')
+        self.spas.check_files()
+        self.assertTrue(self.spas.NO_JS_FILE in self.spas.info)
+
+
+    # def test_no_redirect(self):
+    #     self.site.spas.status_code = 200
+    #     with patch.object(Page, 'get_text', return_value='123'):
+    #         self.spas.find_redirect_url()
+    #         self.assertTrue(self.spas.INCORRECT_REDIRECT in self.spas.info)
+
+
+
+    # def test_page_not_work(self):
+    #     self.site.spas.status_code = 404
+    #     self.spas.check_page()
+    #     self.assertTrue(self.spas.PAGE_NOT_WORK in self.spas.info)
 
 
 class FbPixelText(unittest.TestCase):
