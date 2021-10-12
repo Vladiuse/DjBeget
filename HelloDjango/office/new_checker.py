@@ -176,18 +176,21 @@ class PageFile:
 
 
 class Site:
+    #pages
     SUCCESS_PAGE = '/success/success.html'
     POLICY = '/policy.html'
     SPAS = '/spas.html'
     TERM = '/terms.html'
-    # if clo
+    # files
     WHITE = 'white.html'
     BLACK = 'black.html'
     S_API = 's_api.php'
     S_LOG = 's_log.txt'
-    # files
     CLOAC_FILE = 'index.php'
     ORDER = 'api.php'
+    MODAL_CSS = 'modal.css'
+    MODAL_JS = 'modal.js'
+    # geo list
     ALLOWED_GEO_LIST = ['by', 'ru', 'ee', 'lt', 'lv', 'pl']
     SSH_CONNECTOR = SHHConnector()
 
@@ -413,29 +416,22 @@ class LinkChecker:
         """
         Обработчик страницы отзыва
         """
-        DESCRIPTION = 'Страница отзыва'
-        CORRECT = 'Редирект натроен'
+        DESCRIPTION = 'Окно отзыва'
         ACTION = 'spas.html'
-        FIND = """eval(self.location = "https://" + location.hostname + '/');"""
 
-        INCORRECT_REDIRECT = 'Ошибка - не корректный url для редиректа'
-        PAGE_NOT_WORK = 'Страница отзыва НЕ работает'
         NO_SPAS_FORM = 'Нет формы отзыва'
+        NO_CSS_FILE = 'modal.css не найден'
+        NO_JS_FILE = 'modal.js не найден'
 
         STATUS_SET = {
-            INCORRECT_REDIRECT: 'error',
-            PAGE_NOT_WORK: 'reprimand',
+            NO_CSS_FILE: 'error',
+            NO_JS_FILE: 'error',
             NO_SPAS_FORM: 'reprimand',
         }
 
         def process(self):
-            self.check_page()
             self.check_form()
-            self.find_redirect_url()
-            # if self.info:
-            #     self.set_reprimand()
-            # else:
-            #     self.set_all_good()
+            self.check_files()
 
         def check_form(self):
             soup = self.site.main.get_soup()
@@ -443,15 +439,22 @@ class LinkChecker:
             if not form:
                 self.info.add(self.NO_SPAS_FORM)
 
-        def check_page(self):
-            # if self.site.spas.get_page_status_code() != 200:
-            #     self.info.add(self.PAGE_NOT_WORK)
-            if not self.site.spas.is_work():
-                self.info.add(self.PAGE_NOT_WORK)
+        def check_files(self):
+            if Site.MODAL_JS not in self.site.files:
+                self.info.add(self.NO_JS_FILE)
+            if Site.MODAL_CSS not in self.site.files:
+                self.info.add(self.NO_CSS_FILE)
 
-        def find_redirect_url(self):
-            if self.FIND not in self.site.spas.get_text():
-                self.info.add(self.INCORRECT_REDIRECT)
+
+        # def check_page(self):
+        #     # if self.site.spas.get_page_status_code() != 200:
+        #     #     self.info.add(self.PAGE_NOT_WORK)
+        #     if not self.site.spas.is_work():
+        #         self.info.add(self.PAGE_NOT_WORK)
+        #
+        # def find_redirect_url(self):
+        #     if self.FIND not in self.site.spas.get_text():
+        #         self.info.add(self.INCORRECT_REDIRECT)
 
     class SuccessPage(Check):
         DESCRIPTION = 'Итоговая страница'
@@ -550,7 +553,7 @@ class LinkChecker:
         STATUS_SET = {
             FIND_ALIEN: 'error',
             INCORRECT_INNER: 'reprimand',
-            NO_HREF: 'reprimand',
+            NO_HREF: 'disabled',
         }
 
         def process(self):
@@ -776,8 +779,8 @@ class LinkChecker:
         CLO_NOT_ACTIVE = 'Сайт не заклоачен'
         # variables FILE not found
         FILE_NOT_FOUND = 'Файл клоаки не найден в папке сайта'
-        FILE_WHITE_NOT_FOUND = 'white.html не найден'
-        FILE_BLACK_NOT_FOUND = 'black.html не найден'
+        FILE_WHITE_NOT_FOUND = 'файл white.html не найден'
+        FILE_BLACK_NOT_FOUND = 'файл black.html не найден'
         # TODO - <!DOCTYPE html> - предусмотреть этот вариант
         NO_WHITE = 'white не установлен'
         NO_BLACK = 'black не установлен'
@@ -960,12 +963,14 @@ class LinkChecker:
             result_code = 'error'
         elif 'reprimand' in self.result:
             result_code = 'reprimand'
-        elif 'good' in self.result:
-            result_code = 'good'
-        elif 'disabled' in self.result:
-            result_code = 'disabled'
         else:
-            result_code = 'none'
+            result_code = 'good'
+        # elif 'good' in self.result:
+        #     result_code = 'good'
+        # elif 'disabled' in self.result:
+        #     result_code = 'disabled'
+        # else:
+        #     result_code = 'none'
         dic = {
             'result_code': result_code,
             'result_html': StatusHTML.get_checker_status_html(result_code),
