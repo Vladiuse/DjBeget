@@ -292,6 +292,7 @@ class TtPixelText(unittest.TestCase):
 
 
 class LinksTest(unittest.TestCase):
+    # TODO - чекер был изменет - переделать
 
     def setUp(self):
         self.site = Site('1')
