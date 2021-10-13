@@ -192,7 +192,17 @@ class Site:
     MODAL_JS = 'modal.js'
     # geo list
     ALLOWED_GEO_LIST = ['by', 'ru', 'ee', 'lt', 'lv', 'pl']
+    ALLOWED_INNER_LINKS = [
+        'https://instagram.com/amanitaashop',
+        'https://vk.com/amanita.shop',
+        'https://facebook.com/amanitaa.shop',
+        'https://t.me/amanitaa_shop',
+        'policy.html', 'terms.html',
+        '/policy.html', '/terms.html',
+        'spas.html'
+    ]
     SSH_CONNECTOR = SHHConnector()
+
 
     def __init__(self, url, is_cloac=False, dir_name=None):
         self.cloac = is_cloac
@@ -426,12 +436,13 @@ class LinkChecker:
         STATUS_SET = {
             NO_CSS_FILE: 'error',
             NO_JS_FILE: 'error',
-            NO_SPAS_FORM: 'reprimand',
+            NO_SPAS_FORM: 'disabled',
         }
 
         def process(self):
             self.check_form()
-            self.check_files()
+            if self.NO_SPAS_FORM not in self.info:
+                self.check_files()
 
         def check_form(self):
             soup = self.site.main.get_soup()
@@ -565,13 +576,14 @@ class LinkChecker:
             for link in links:
                 try:
                     href = link['href']
-                    if not (href.startswith('#') or href in self.DO_NOT_CHECK):
+                    if not (href.startswith('#') or href in Site.ALLOWED_INNER_LINKS):
                         if href.startswith('http'):
                             self.info.add(self.FIND_ALIEN)
                             self.errors.add(href)
                         else:
-                            self.info.add(self.INCORRECT_INNER)
-                            self.errors.add(href)
+                            if href:
+                                self.info.add(self.INCORRECT_INNER)
+                                self.errors.add(href)
                 except KeyError:
                     self.info.add(self.NO_HREF)
 
