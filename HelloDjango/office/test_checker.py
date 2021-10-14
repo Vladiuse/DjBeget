@@ -192,12 +192,19 @@ class TermsTest(unittest.TestCase):
 
 
 class SpasPageTest(unittest.TestCase):
-    # TODO дописать тесты на удачное завершение
-
     def setUp(self):
         self.site = Site('1')
         self.spas = LinkChecker.SpasPage(self.site)
         # self.site.spas.status_code = 200
+
+    def test_all_good(self):
+        self.site.files.add(Site.MODAL_CSS)
+        self.site.files.add(Site.MODAL_JS)
+        html = ' <form class="form" action="spas.html" method="post" id="register"></form>'
+        soup = BeautifulSoup(html, 'lxml')
+        with patch.object(Page, 'get_soup', return_value=soup):
+            self.spas.process()
+            self.assertTrue(bool(self.spas.info) is False)
 
     def test_form_find(self):
         html = ' <form class="form" action="spas.html" method="post" id="register"></form>'
@@ -211,6 +218,7 @@ class SpasPageTest(unittest.TestCase):
         with patch.object(Page, 'get_soup', return_value=soup):
             self.spas.check_form()
             self.assertTrue(self.spas.NO_SPAS_FORM in self.spas.info)
+            self.assertTrue(len(self.spas.info) == 1)
 
     def test_css_font_found(self):
         self.site.files.add('modal.js')
@@ -299,12 +307,10 @@ class LinksTest(unittest.TestCase):
         self.link_check = LinkChecker.PageLink(self.site)
 
     def test_all_good(self):
-        text = '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
-               '<a href="policy.html" class="button-m">Оставить отзыв</a>' \
+        text = '<a href="policy.html" class="button-m">Оставить отзыв</a>' \
                '<a href="/policy.html" class="button-m">Оставить отзыв</a>' \
                '<a href="terms.html" class="button-m">Оставить отзыв</a>' \
                '<a href="/terms.html" class="button-m">Оставить отзыв</a>' \
-               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="#order" class="button-m">Оставить отзыв</a>'
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -314,7 +320,6 @@ class LinksTest(unittest.TestCase):
     def test_alien_http(self):
         text = '<a href="http://spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="https://policy.html" class="button-m">Оставить отзыв</a>' \
-               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="#order" class="button-m">Оставить отзыв</a>'
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -325,7 +330,6 @@ class LinksTest(unittest.TestCase):
     def test_incorrect(self):
         text = '<a href="123#spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="pp#policy.html" class="button-m">Оставить отзыв</a>' \
-               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="#order" class="button-m">Оставить отзыв</a>'
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -336,7 +340,6 @@ class LinksTest(unittest.TestCase):
     def test_no_href(self):
         text = '<a href="" class="button-m">Оставить отзыв</a>' \
                '<a href="pp#policy.html" class="button-m">Оставить отзыв</a>' \
-               '<a href="spas.html" class="button-m">Оставить отзыв</a>' \
                '<a href="#order" class="button-m">Оставить отзыв</a>'
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -497,7 +500,7 @@ class PageFileTest(unittest.TestCase):
         self.assertEqual(result, '')
 
     def test_find_variable_variable(self):
-        # TODO - хз че делать с этим
+        # TODO - хз че делать с этим(с переменными вместо значения)
         line = """$data["country"] = POST"""
         result = PageFile.get_variable_value(line)
         self.assertEqual(result, 'POST')

@@ -2,6 +2,7 @@ import paramiko
 import requests as req
 from bs4 import BeautifulSoup
 from pprint import pprint
+import beget_api_keys
 
 class StatusHTML:
     # HTML
@@ -100,8 +101,8 @@ class SHHConnector:
 
     def __init__(self):
         self.host = 'vladiuse.beget.tech'
-        self.username = 'vladiuse'
-        self.password = '20003000Ab%'
+        self.username = beget_api_keys.ssh_begget_login
+        self.password = beget_api_keys.ssh_begget_pass
         self.port = 22
         self.connection = None
         # подключение
@@ -158,6 +159,7 @@ class PageFile:
 
     @staticmethod
     def get_variable_value(line):
+        """получить значение переменной в строке - PHP"""
         if '=' not in line:
             return None
         variable, value = line.split('=')
@@ -199,10 +201,9 @@ class Site:
         'https://t.me/amanitaa_shop',
         'policy.html', 'terms.html',
         '/policy.html', '/terms.html',
-        'spas.html'
+        # 'spas.html'
     ]
     SSH_CONNECTOR = SHHConnector()
-
 
     def __init__(self, url, is_cloac=False, dir_name=None):
         self.cloac = is_cloac
@@ -280,6 +281,7 @@ class LinkChecker:
             pass
 
         def get_result_status(self):
+            """Получть статус проверки чекера"""
             if not self.info:
                 self.result_code = 'good'
             else:
@@ -292,11 +294,13 @@ class LinkChecker:
                 if 'reprimand' in res:
                     self.result_code = 'reprimand'
                     return
-                if 'good' in res:
-                    self.result_code = 'good'
-                    return
+                # if 'good' in res:
+                #     self.result_code = 'good'
+                #     return
                 if 'disabled' in res:
                     self.result_code = 'disabled'
+                else:
+                    self.result_code = 'none'
 
     class Req(Check):
         DESCRIPTION = 'Реквизиты'
@@ -332,7 +336,6 @@ class LinkChecker:
             self.find_reqs(TT_REQ)
 
         def find_reqs(self, reqs):
-            # errors = []
             page_text = self.site.main.get_text_no_spaces_soup()
             for req in reqs:
                 req_text = self.REQUISITES[req].replace(' ', '')
@@ -343,11 +346,6 @@ class LinkChecker:
                 self.info = set()
                 self.errors.clear()
                 self.info.add(self.NO_REQS)
-            # if not self.info:
-            #     self.set_all_good()
-            # else:
-            #     # self.info = ','.join(errors)
-            #     self.set_reprimand()
 
     class SaveComment(Check):
         """Поиск коментария от google chrome"""
@@ -396,10 +394,6 @@ class LinkChecker:
         def process(self):
             self.find_link()
             self.check_page()
-            # if not self.info:
-            #     self.set_reprimand()
-            # else:
-            #     self.set_all_good()
 
         def find_link(self):
             soup = self.site.main.get_soup()
@@ -434,8 +428,8 @@ class LinkChecker:
         NO_JS_FILE = 'modal.js не найден'
 
         STATUS_SET = {
-            NO_CSS_FILE: 'error',
-            NO_JS_FILE: 'error',
+            NO_CSS_FILE: 'reprimand',
+            NO_JS_FILE: 'reprimand',
             NO_SPAS_FORM: 'disabled',
         }
 
@@ -456,17 +450,6 @@ class LinkChecker:
             if Site.MODAL_CSS not in self.site.files:
                 self.info.add(self.NO_CSS_FILE)
 
-
-        # def check_page(self):
-        #     # if self.site.spas.get_page_status_code() != 200:
-        #     #     self.info.add(self.PAGE_NOT_WORK)
-        #     if not self.site.spas.is_work():
-        #         self.info.add(self.PAGE_NOT_WORK)
-        #
-        # def find_redirect_url(self):
-        #     if self.FIND not in self.site.spas.get_text():
-        #         self.info.add(self.INCORRECT_REDIRECT)
-
     class SuccessPage(Check):
         DESCRIPTION = 'Итоговая страница'
         KEY_NAME = 'success'
@@ -479,10 +462,6 @@ class LinkChecker:
 
         def process(self):
             self.check_page()
-            # if not self.info:
-            #     self.set_reprimand()
-            # else:
-            #     self.set_all_good()
 
         def check_page(self):
             if not self.site.success.is_work():
@@ -531,16 +510,11 @@ class LinkChecker:
         PIXEL_NOT_FOUND = 'Пиксель не найден'
 
         STATUS_SET = {
-            # PIXEL_NOT_FOUND: 'reprimand',
             PIXEL_NOT_FOUND: 'disabled',
         }
 
         def process(self):
             self.find_pixel()
-            # if not self.info:
-            #     self.set_reprimand()
-            # else:
-            #     self.set_all_good()
 
         def find_pixel(self):
             tt_pixel = Page.find_text_block(self.site.success.get_text(), self.TT['start'], self.TT['end'])
@@ -553,9 +527,9 @@ class LinkChecker:
         """Поиск некоректных внутрених ссылок"""
         DESCRIPTION = 'Внутрение сслыки'
         KEY_NAME = 'links'
-        DO_NOT_CHECK = {'policy.html', 'terms.html',
-                        '/policy.html', '/terms.html',
-                        'spas.html'}
+        # DO_NOT_CHECK = {'policy.html', 'terms.html',
+        #                 '/policy.html', '/terms.html',
+        #                 'spas.html'}
 
         FIND_ALIEN = 'Есть ссылки на чужой лэнд'
         INCORRECT_INNER = 'Некоректные внутриние ссылки'
@@ -588,6 +562,7 @@ class LinkChecker:
                     self.info.add(self.NO_HREF)
 
     class HTMLForm:
+        # TODO получение атрибута maxlength
         """html форма"""
 
         def __init__(self, form_soup):
@@ -632,6 +607,7 @@ class LinkChecker:
             pass
 
     class OrderForms(Check):
+        # TODO - вывод данных по каждой форме в отдельности
         DESCRIPTION = 'Order формы'
         KEY_NAME = 'order_forms'
 
@@ -687,14 +663,6 @@ class LinkChecker:
         DESCRIPTION = 'Trirazat API'
         KEY_NAME = 'trirazat_api'
 
-        # VARIABLES = {
-        #     'flow': '$data["flow"]',
-        #     'offer': '$data["offer"]',
-        #     'base': '$data["base"]',
-        #     'country': '$data["country"]',
-        #     'comm': '$data["comm"]',
-        # }
-        # text errors info
         FILE_NOT_FOUND = 'Файл не найден в папке сайта'
 
         NO_OFFER = 'Оффер не найден'
@@ -702,7 +670,7 @@ class LinkChecker:
         NO_COUNTRY = 'Страна не найдена'
         NO_PRICE = 'Цена не найдена'
         NO_COMM = 'Комментарий не найден'
-
+        # TODO - add currency
         VARIABLES = {
             'flow': {
                 'variable': '$data["flow"]',
@@ -768,7 +736,7 @@ class LinkChecker:
         #             error = self.VARIABLES[param]['not_found']
         #             self.info.add(error)
         def add_errors(self):
-            # TODO - переделать
+            # TODO - переделать. + функция дублируеться
             for param in self.VARIABLES.keys():
                 try:
                     if not self.result_value[param]:
@@ -970,7 +938,7 @@ class LinkChecker:
         # print(self.result, 'general')
 
     def get_general_result(self):
-        # TODO - если есть только disabled - должен быть статус goog
+        """Получить общий статус проверки сайта"""
         if 'error' in self.result:
             result_code = 'error'
         elif 'reprimand' in self.result:
