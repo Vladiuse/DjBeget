@@ -16,7 +16,7 @@ class SiteAdmin(admin.ModelAdmin):
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'cab', 'get_account', 'get_geo', 'get_sites', 'status']
+    list_display = ['id', 'name', 'cab', 'get_account', 'daily', 'get_geo', 'get_sites', 'status']
 
     # autocomplete_fields = ['land']
 

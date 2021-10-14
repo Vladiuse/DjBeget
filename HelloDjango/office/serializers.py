@@ -55,7 +55,7 @@ class CompanySerializer(ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ['id', 'name', 'status','cab','geo',  'land', 'published', 'edited']
+        fields = ['id', 'name', 'status','cab','geo',  'land', 'published', 'edited', 'daily']
         # read_only_fields = []
         # extra_kwargs = {'cab': {'required': False},'land': {'required': False}}
 

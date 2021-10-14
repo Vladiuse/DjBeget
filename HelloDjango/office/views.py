@@ -264,11 +264,13 @@ def campaning_detail(request, pk):
 @renderer_classes([JSONRenderer])
 def create_capmaning(request):
     """Создание новой кампании"""
+    # TODO - при создании кампании сайт - не становиться запущеным!
     data = json.loads(request.POST['data'])
     name = data['text']
+    daily = data['daily']
     cab = Cabinet.objects.get(pk=data['cab_id'])
     status = CampaignStatus.objects.get(pk=5)
-    new_camp = Company(name=name, cab=cab, status=status)
+    new_camp = Company(name=name, cab=cab, status=status, daily=daily)
     new_camp.save()
     for geo_id in data['geos_id']:
         country = Country.objects.get(pk=geo_id)

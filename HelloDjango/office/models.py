@@ -317,6 +317,7 @@ class Company(models.Model):
     status = models.ForeignKey(CampaignStatus, on_delete=models.SET_NULL, null=True, blank=True)
     published = models.DateTimeField(auto_now_add=True, )
     edited = models.DateTimeField(auto_now=True, )
+    daily = models.CharField(max_length=12, verbose_name='Дневной бюджет', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Кампания'

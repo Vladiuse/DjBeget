@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from new_checker import LinkChecker, Page, Site, PageFile
+from HelloDjango.office.new_checker import LinkChecker, Page, Site, PageFile
 
 
 class TestReq(unittest.TestCase):
