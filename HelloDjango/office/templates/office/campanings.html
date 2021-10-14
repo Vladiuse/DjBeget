@@ -38,6 +38,7 @@
         <th scope="col">Кабинет</th>
         <th scope="col">Домены</th>
         <th scope="col">Название</th>
+        <th scope="col">Daily</th>
         <th scope="col">Гео</th>
         <!-- <th scope="col">Статус</th> -->
       </tr>
@@ -71,6 +72,9 @@
         <td>
         <textarea id="camp-text"></textarea>
         </td>
+        <td>
+          <input id="camp-daily" type="text" style="width: 60px;">
+          </td>
         <td>
           <div class="btn-group" role="group">
             <button id="geo" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -144,11 +148,13 @@
                 <th>Акк-Каб</th>
                 <!-- <th>Кабинет</th> -->
                 <th>Гео</th>
+                <th>Бюджет</th>
                 <th>Название</th>
                 <th>Ссылки</th>
                 <th>Статус</th>
+                <th>Прочее</th>
                 <!-- <th>Описание</th> -->
-                <th>Дата Р</th>
+                <!-- <th>Дата Р</th> -->
             </tr>
         </thead>
         <tbody style="vertical-align: middle;">
@@ -169,6 +175,7 @@
                 <!-- {{ geo.short_name}} -->
                 {% endfor %}
             </td>
+            <td>{% if comp.daily %}{{comp.daily}}{% endif %}</td>
             <td>{{ comp.name }}</td>
             <td>
                 {% for land in comp.land.all %}
@@ -190,11 +197,24 @@
                   </div>
                  <!-- status -->
             </td>
+            <td>
+              <!-- Прочее -->
+              <div class="dropdown">
+                <button type="button" class="btn btn-light dropdown-toggle icon-block"  data-bs-toggle="dropdown" data-bs-target="#exampleModal">
+                    <i class="fas fa-cogs "></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/admin/office/company/{{comp.id}}/change/" target="_blank">Редактировать</a></li>
+                    <!-- <li><a class="dropdown-item" href="" target="_blank">---</a></li> -->
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item disabled" href="#" data-bs-toggle="modal" data-bs-target="#">Удалить</a></li>                      
+                  </ul>
+                </div>
+                <!-- Прочее -->
+            </td>
             <!-- <td> --- </td>  -->
-            <td>{{ comp.edited|date:" G:i - d.m" }}</td> 
+            <!-- <td>{{ comp.edited|date:" G:i - d.m" }}</td>  -->
         </tr>
-
-        
         {% endfor %}
       </tbody>
     </table>
@@ -418,7 +438,7 @@ function updateApiStatus(campId, newStatusId){
               }
           })
           curCab = curCab[neww]
-          console.log(curCab.domain.name)
+          //console.log(curCab.domain.name)
           // включение кнопок фильтров доменов
           $('.for-ch-domains button').removeClass('disabled')
           $('#linked-doms').trigger('click')
@@ -571,6 +591,7 @@ function updateApiStatus(campId, newStatusId){
       var domainsIds = []
       var geosIds = []
       var textCamp = $('#camp-text').val()
+      var campDaily = $('#camp-daily').val()
       var cabId = curCab.id
       csrfmiddlewaretoken = '{{ csrf_token }}'
       $('.list-group.domains button').each(function(){
@@ -586,6 +607,7 @@ function updateApiStatus(campId, newStatusId){
           'geos_id': geosIds,
           'text': textCamp,
           'cab_id': cabId,
+          'daily': campDaily,
           
       }
       var newCampData = JSON.stringify(newCampData);
@@ -598,7 +620,7 @@ function updateApiStatus(campId, newStatusId){
       console.log(geosIds, domainsIds, 'geo-doms')
       console.log(newCampData, 'это запрос')
       var host = window.location.protocol + "//" + window.location.host;
-      // отправка данных для создания запуска
+      // отправка данных для создания запуска(кампании)
       URL = host + '/api/create_capmaning/'
       $.post(URL,{'data': newCampData, 'csrfmiddlewaretoken': csrfmiddlewaretoken,}, function(data){
       $('.table-camps thead').after(data) // вставка строки в таблицу
@@ -610,793 +632,13 @@ function updateApiStatus(campId, newStatusId){
       $('.list-group.cab').empty()
       $('.list-group.acc').empty()
       $('#camp-text').val('')
+      $('#camp-daily').val('')
       curCab = null;
       updateAllButtons()
       })
       
   })
   
-  // var API_ANSWER = {
-  //   "source": [
-  //     {
-  //       "id": 1,
-  //       "name": "Google",
-  //       "short_name": "gg"
-  //     },
-  //     {
-  //       "id": 2,
-  //       "name": "TickTick",
-  //       "short_name": "tt"
-  //     },
-  //     {
-  //       "id": 3,
-  //       "name": "FaceBook",
-  //       "short_name": "fb"
-  //     }
-  //   ],
-  //   "accounts": [
-  //     {
-  //       "id": 1,
-  //       "name": "Fb acc",
-  //       "source": {
-  //         "id": 3,
-  //         "name": "FaceBook",
-  //         "short_name": "fb"
-  //       },
-  //       "description": "fsdfsdfsd"
-  //     },
-  //     {
-  //       "id": 2,
-  //       "name": "FB acc 1",
-  //       "source": {
-  //         "id": 3,
-  //         "name": "FaceBook",
-  //         "short_name": "fb"
-  //       },
-  //       "description": "vdsvsd"
-  //     },
-  //     {
-  //       "id": 3,
-  //       "name": "Tick One",
-  //       "source": {
-  //         "id": 2,
-  //         "name": "TickTick",
-  //         "short_name": "tt"
-  //       },
-  //       "description": "первый тикток"
-  //     },
-  //     {
-  //       "id": 4,
-  //       "name": "GG ONE",
-  //       "source": {
-  //         "id": 1,
-  //         "name": "Google",
-  //         "short_name": "gg"
-  //       },
-  //       "description": "первый гугле"
-  //     }
-  //   ],
-  //   "cabs": [
-  //     {
-  //       "id": 1,
-  //       "name": "Cab 1",
-  //       "account": {
-  //         "id": 1,
-  //         "name": "Fb acc",
-  //         "source": {
-  //           "id": 3,
-  //           "name": "FaceBook",
-  //           "short_name": "fb"
-  //         },
-  //         "description": "fsdfsdfsd"
-  //       },
-  //       "description": "f e eef",
-  //       "pixel": 12312312,
-  //       "domain": {
-  //         "id": 216,
-  //         "beget_id": 8433949,
-  //         "name": "feel-market.ru",
-  //         "site": 307,
-  //         "description": "fefwefew",
-  //         "get_http": "http://feel-market.ru/",
-  //         "facebook": "NEW",
-  //         "tiktok": "NEW",
-  //         "google": "NEW",
-  //         "get_root_domain": "feel-market.ru"
-  //       }
-  //     },
-  //     {
-  //       "id": 2,
-  //       "name": "Cab 2",
-  //       "account": {
-  //         "id": 1,
-  //         "name": "Fb acc",
-  //         "source": {
-  //           "id": 3,
-  //           "name": "FaceBook",
-  //           "short_name": "fb"
-  //         },
-  //         "description": "fsdfsdfsd"
-  //       },
-  //       "description": "dvwevwebwe",
-  //       "pixel": 23312312,
-  //       "domain": {
-  //         "id": 234,
-  //         "beget_id": 8525995,
-  //         "name": "vim-store.ru",
-  //         "site": 334,
-  //         "description": "",
-  //         "get_http": "http://vim-store.ru/",
-  //         "facebook": "NEW",
-  //         "tiktok": "NEW",
-  //         "google": "NEW",
-  //         "get_root_domain": "vim-store.ru"
-  //       }
-  //     },
-  //     {
-  //       "id": 3,
-  //       "name": "Тик КАББ",
-  //       "account": {
-  //         "id": 3,
-  //         "name": "Tick One",
-  //         "source": {
-  //           "id": 2,
-  //           "name": "TickTick",
-  //           "short_name": "tt"
-  //         },
-  //         "description": "первый тикток"
-  //       },
-  //       "description": "мывивыиыв",
-  //       "pixel": 353432412,
-  //       "domain": {
-  //         "id": 222,
-  //         "beget_id": 8488704,
-  //         "name": "sales-markets.ru",
-  //         "site": 329,
-  //         "description": "",
-  //         "get_http": "http://sales-markets.ru/",
-  //         "facebook": "NEW",
-  //         "tiktok": "NEW",
-  //         "google": "NEW",
-  //         "get_root_domain": "sales-markets.ru"
-  //       }
-  //     },
-  //     {
-  //       "id": 4,
-  //       "name": "каб 1",
-  //       "account": {
-  //         "id": 4,
-  //         "name": "GG ONE",
-  //         "source": {
-  //           "id": 1,
-  //           "name": "Google",
-  //           "short_name": "gg"
-  //         },
-  //         "description": "первый гугле"
-  //       },
-  //       "description": "Новая",
-  //       "pixel": 3234343,
-  //       "domain": {
-  //         "id": 232,
-  //         "beget_id": 8525993,
-  //         "name": "great-markets.ru",
-  //         "site": 312,
-  //         "description": "",
-  //         "get_http": "http://great-markets.ru/",
-  //         "facebook": "NEW",
-  //         "tiktok": "NEW",
-  //         "google": "NEW",
-  //         "get_root_domain": "great-markets.ru"
-  //       }
-  //     }
-  //   ],
-  //   "domains": [
-  //     {
-  //       "id": 207,
-  //       "beget_id": 8360490,
-  //       "name": "vladiuse.beget.tech",
-  //       "site": 322,
-  //       "description": "vdvdscsdcsdcsd",
-  //       "get_http": "http://vladiuse.beget.tech/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "beget.tech"
-  //     },
-  //     {
-  //       "id": 214,
-  //       "beget_id": 8432746,
-  //       "name": "main-prosale.ru",
-  //       "site": 319,
-  //       "description": "иаиваива",
-  //       "get_http": "http://main-prosale.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "main-prosale.ru"
-  //     },
-  //     {
-  //       "id": 215,
-  //       "beget_id": 8432747,
-  //       "name": "main-prosale.store",
-  //       "site": 306,
-  //       "description": "dffsdfwe",
-  //       "get_http": "http://main-prosale.store/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "main-prosale.store"
-  //     },
-  //     {
-  //       "id": 216,
-  //       "beget_id": 8433949,
-  //       "name": "feel-market.ru",
-  //       "site": 307,
-  //       "description": "fefwefew",
-  //       "get_http": "http://feel-market.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "feel-market.ru"
-  //     },
-  //     {
-  //       "id": 222,
-  //       "beget_id": 8488704,
-  //       "name": "sales-markets.ru",
-  //       "site": 329,
-  //       "description": "",
-  //       "get_http": "http://sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 225,
-  //       "beget_id": 8496023,
-  //       "name": "spaces-market.store",
-  //       "site": 331,
-  //       "description": "",
-  //       "get_http": "http://spaces-market.store/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "spaces-market.store"
-  //     },
-  //     {
-  //       "id": 228,
-  //       "beget_id": 8500574,
-  //       "name": "fur-markets.ru",
-  //       "site": 310,
-  //       "description": "",
-  //       "get_http": "http://fur-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "fur-markets.ru"
-  //     },
-  //     {
-  //       "id": 231,
-  //       "beget_id": 8517412,
-  //       "name": "cool-markets.store",
-  //       "site": 304,
-  //       "description": "",
-  //       "get_http": "http://cool-markets.store/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "cool-markets.store"
-  //     },
-  //     {
-  //       "id": 232,
-  //       "beget_id": 8525993,
-  //       "name": "great-markets.ru",
-  //       "site": 312,
-  //       "description": "",
-  //       "get_http": "http://great-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "great-markets.ru"
-  //     },
-  //     {
-  //       "id": 234,
-  //       "beget_id": 8525995,
-  //       "name": "vim-store.ru",
-  //       "site": 334,
-  //       "description": "",
-  //       "get_http": "http://vim-store.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "vim-store.ru"
-  //     },
-  //     {
-  //       "id": 236,
-  //       "beget_id": 8583059,
-  //       "name": "fito-blog.ru",
-  //       "site": 308,
-  //       "description": "",
-  //       "get_http": "http://fito-blog.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "fito-blog.ru"
-  //     },
-  //     {
-  //       "id": 237,
-  //       "beget_id": 8583060,
-  //       "name": "fito-blog.store",
-  //       "site": 309,
-  //       "description": "",
-  //       "get_http": "http://fito-blog.store/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "fito-blog.store"
-  //     },
-  //     {
-  //       "id": 241,
-  //       "beget_id": 8520967,
-  //       "name": "pro.cool-markets.store",
-  //       "site": 325,
-  //       "description": "",
-  //       "get_http": "http://pro.cool-markets.store/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "cool-markets.store"
-  //     },
-  //     {
-  //       "id": 242,
-  //       "beget_id": 8569776,
-  //       "name": "puzzle.feel-market.ru",
-  //       "site": 327,
-  //       "description": "",
-  //       "get_http": "http://puzzle.feel-market.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "feel-market.ru"
-  //     },
-  //     {
-  //       "id": 245,
-  //       "beget_id": 8542165,
-  //       "name": "cool.great-markets.ru",
-  //       "site": 305,
-  //       "description": "",
-  //       "get_http": "http://cool.great-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "great-markets.ru"
-  //     },
-  //     {
-  //       "id": 247,
-  //       "beget_id": 8531049,
-  //       "name": "ro.great-markets.ru",
-  //       "site": 328,
-  //       "description": "",
-  //       "get_http": "http://ro.great-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "great-markets.ru"
-  //     },
-  //     {
-  //       "id": 253,
-  //       "beget_id": 8582932,
-  //       "name": "aqua-t.sales-markets.ru",
-  //       "site": 298,
-  //       "description": "",
-  //       "get_http": "http://aqua-t.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 254,
-  //       "beget_id": 8582933,
-  //       "name": "aqua-tt.sales-markets.ru",
-  //       "site": 299,
-  //       "description": "",
-  //       "get_http": "http://aqua-tt.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 255,
-  //       "beget_id": 8581655,
-  //       "name": "braws.sales-markets.ru",
-  //       "site": 301,
-  //       "description": "",
-  //       "get_http": "http://braws.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 256,
-  //       "beget_id": 8578582,
-  //       "name": "byheat.sales-markets.ru",
-  //       "site": 302,
-  //       "description": "",
-  //       "get_http": "http://byheat.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 259,
-  //       "beget_id": 8566637,
-  //       "name": "heat.sales-markets.ru",
-  //       "site": 316,
-  //       "description": "",
-  //       "get_http": "http://heat.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 261,
-  //       "beget_id": 8582931,
-  //       "name": "heat-t.sales-markets.ru",
-  //       "site": 314,
-  //       "description": "",
-  //       "get_http": "http://heat-t.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 262,
-  //       "beget_id": 8582930,
-  //       "name": "heat-tt.sales-markets.ru",
-  //       "site": 315,
-  //       "description": "",
-  //       "get_http": "http://heat-tt.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 263,
-  //       "beget_id": 8572180,
-  //       "name": "laser.sales-markets.ru",
-  //       "site": 295,
-  //       "description": "",
-  //       "get_http": "http://laser.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 276,
-  //       "beget_id": 8578581,
-  //       "name": "waqua.sales-markets.ru",
-  //       "site": 335,
-  //       "description": "",
-  //       "get_http": "http://waqua.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 277,
-  //       "beget_id": 8575578,
-  //       "name": "water.sales-markets.ru",
-  //       "site": 336,
-  //       "description": "",
-  //       "get_http": "http://water.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 281,
-  //       "beget_id": 8553160,
-  //       "name": "heat.vim-store.ru",
-  //       "site": 317,
-  //       "description": "",
-  //       "get_http": "http://heat.vim-store.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "vim-store.ru"
-  //     },
-  //     {
-  //       "id": 287,
-  //       "beget_id": 8369315,
-  //       "name": "top-salepro.com",
-  //       "site": 333,
-  //       "description": "рукркурку",
-  //       "get_http": "http://top-salepro.com/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "top-salepro.com"
-  //     },
-  //     {
-  //       "id": 289,
-  //       "beget_id": 8594246,
-  //       "name": "aqua.feel-market.ru",
-  //       "site": 291,
-  //       "description": "",
-  //       "get_http": "http://aqua.feel-market.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "feel-market.ru"
-  //     },
-  //     {
-  //       "id": 290,
-  //       "beget_id": 8595658,
-  //       "name": "cat.sales-markets.ru",
-  //       "site": 290,
-  //       "description": "",
-  //       "get_http": "http://cat.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 292,
-  //       "beget_id": 8595497,
-  //       "name": "magic.sales-markets.ru",
-  //       "site": 297,
-  //       "description": "",
-  //       "get_http": "http://magic.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 295,
-  //       "beget_id": 8594257,
-  //       "name": "heat-rb.vim-store.ru",
-  //       "site": 294,
-  //       "description": "",
-  //       "get_http": "http://heat-rb.vim-store.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "vim-store.ru"
-  //     },
-  //     {
-  //       "id": 298,
-  //       "beget_id": 8609168,
-  //       "name": "amulet.feel-market.ru",
-  //       "site": 340,
-  //       "description": "",
-  //       "get_http": "http://amulet.feel-market.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "feel-market.ru"
-  //     },
-  //     {
-  //       "id": 299,
-  //       "beget_id": 8618933,
-  //       "name": "amulet.fur-markets.ru",
-  //       "site": 341,
-  //       "description": "",
-  //       "get_http": "http://amulet.fur-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "fur-markets.ru"
-  //     },
-  //     {
-  //       "id": 300,
-  //       "beget_id": 8610484,
-  //       "name": "bras.sales-markets.ru",
-  //       "site": 343,
-  //       "description": "",
-  //       "get_http": "http://bras.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 301,
-  //       "beget_id": 8609910,
-  //       "name": "coll.sales-markets.ru",
-  //       "site": 344,
-  //       "description": "",
-  //       "get_http": "http://coll.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 302,
-  //       "beget_id": 8610220,
-  //       "name": "watch.sales-markets.ru",
-  //       "site": 346,
-  //       "description": "",
-  //       "get_http": "http://watch.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 303,
-  //       "beget_id": 8609515,
-  //       "name": "aqua.vim-store.ru",
-  //       "site": 342,
-  //       "description": "",
-  //       "get_http": "http://aqua.vim-store.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "vim-store.ru"
-  //     },
-  //     {
-  //       "id": 304,
-  //       "beget_id": 8608921,
-  //       "name": "keto.vim-store.ru",
-  //       "site": 345,
-  //       "description": "",
-  //       "get_http": "http://keto.vim-store.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "vim-store.ru"
-  //     },
-  //     {
-  //       "id": 305,
-  //       "beget_id": 8619286,
-  //       "name": "kulon.sales-markets.ru",
-  //       "site": 348,
-  //       "description": "",
-  //       "get_http": "http://kulon.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 306,
-  //       "beget_id": 8619485,
-  //       "name": "kulon-full.sales-markets.ru",
-  //       "site": 347,
-  //       "description": "",
-  //       "get_http": "http://kulon-full.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 307,
-  //       "beget_id": 8626555,
-  //       "name": "watchs.sales-markets.ru",
-  //       "site": 349,
-  //       "description": "",
-  //       "get_http": "http://watchs.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 308,
-  //       "beget_id": 8632438,
-  //       "name": "fen.sales-markets.ru",
-  //       "site": 351,
-  //       "description": "",
-  //       "get_http": "http://fen.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 309,
-  //       "beget_id": 8632551,
-  //       "name": "fen-pro.sales-markets.ru",
-  //       "site": 350,
-  //       "description": "",
-  //       "get_http": "http://fen-pro.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     },
-  //     {
-  //       "id": 310,
-  //       "beget_id": 8637479,
-  //       "name": "moto.feel-market.ru",
-  //       "site": 352,
-  //       "description": "",
-  //       "get_http": "http://moto.feel-market.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "feel-market.ru"
-  //     },
-  //     {
-  //       "id": 311,
-  //       "beget_id": 8637468,
-  //       "name": "moto.sales-markets.ru",
-  //       "site": 352,
-  //       "description": "",
-  //       "get_http": "http://moto.sales-markets.ru/",
-  //       "facebook": "NEW",
-  //       "tiktok": "NEW",
-  //       "google": "NEW",
-  //       "get_root_domain": "sales-markets.ru"
-  //     }
-  //   ],
-  //   "geos": [
-  //     {
-  //       "id": 1,
-  //       "name_ru": "Беларусь",
-  //       "name_eng": null,
-  //       "short_name": "by",
-  //       "phone_code": 375
-  //     },
-  //     {
-  //       "id": 2,
-  //       "name_ru": "Россия",
-  //       "name_eng": null,
-  //       "short_name": "ru",
-  //       "phone_code": 7
-  //     },
-  //     {
-  //       "id": 3,
-  //       "name_ru": "Литва",
-  //       "name_eng": null,
-  //       "short_name": "lt",
-  //       "phone_code": 370
-  //     },
-  //     {
-  //       "id": 4,
-  //       "name_ru": "Латвия",
-  //       "name_eng": null,
-  //       "short_name": "lv",
-  //       "phone_code": 371
-  //     },
-  //     {
-  //       "id": 5,
-  //       "name_ru": "Польша",
-  //       "name_eng": null,
-  //       "short_name": "pl",
-  //       "phone_code": 48
-  //     },
-  //     {
-  //       "id": 6,
-  //       "name_ru": "Болгария",
-  //       "name_eng": null,
-  //       "short_name": "bg",
-  //       "phone_code": 359
-  //     },
-  //     {
-  //       "id": 7,
-  //       "name_ru": "Румыния",
-  //       "name_eng": null,
-  //       "short_name": "ro",
-  //       "phone_code": 40
-  //     }
-  //   ]
-  // }
- 
   </script>
 
 {% endblock %}

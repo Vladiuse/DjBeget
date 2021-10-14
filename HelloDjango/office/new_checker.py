@@ -558,6 +558,9 @@ class LinkChecker:
                             if href:
                                 self.info.add(self.INCORRECT_INNER)
                                 self.errors.add(href)
+                            else:
+                                self.info.add(self.NO_HREF)
+                                # TODO - добавлять ли в errors?
                 except KeyError:
                     self.info.add(self.NO_HREF)
 
