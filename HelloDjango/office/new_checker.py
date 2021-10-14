@@ -2,7 +2,7 @@ import paramiko
 import requests as req
 from bs4 import BeautifulSoup
 from pprint import pprint
-import beget_api_keys
+from .beget_api_keys import ssh_begget_login, ssh_begget_pass
 
 class StatusHTML:
     # HTML
@@ -101,8 +101,8 @@ class SHHConnector:
 
     def __init__(self):
         self.host = 'vladiuse.beget.tech'
-        self.username = beget_api_keys.ssh_begget_login
-        self.password = beget_api_keys.ssh_begget_pass
+        self.username = ssh_begget_login
+        self.password = ssh_begget_pass
         self.port = 22
         self.connection = None
         # подключение
