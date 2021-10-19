@@ -3,14 +3,14 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from new_checker import LinkChecker, Page, Site, PageFile
+from new_checker import LinkChecker, Page, SiteMap, PageFile
 
 
 class TestReq(unittest.TestCase):
     """Тест проверки реквизитов"""
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.reqALL = '<p>ИПГребенщиков,УНП19345252</p>' \
                       '<p>г.Минск,ул.Радиальная,д.40</p>' \
                       '<p>E-mail:zenitcotrade@gmail.com</p>' \
@@ -63,7 +63,7 @@ class TestReq(unittest.TestCase):
 class FindCommTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.NO_COMM = ''
         self.COMM_IN = 'iweernb2bmo2mo2-\n<!-- saved from\nwqmfqwofqw'
 
@@ -91,7 +91,7 @@ class FindCommTest(unittest.TestCase):
 class PolicyTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.site.main.status_code = 200
         self.LINK_CORRECT = '<p class="conf-link doclinks">' \
                             '<a class="nav-link" href="policy.html">Политика конфиденциальности </a></p>'
@@ -142,7 +142,7 @@ class PolicyTest(unittest.TestCase):
 class TermsTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.site.main.status_code = 200
         self.LINK_CORRECT = '<p class="conf-link doclinks">' \
                             '<a class="nav-link" href="terms.html">Пользовательское соглашение </a></p>'
@@ -193,13 +193,13 @@ class TermsTest(unittest.TestCase):
 
 class SpasPageTest(unittest.TestCase):
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.spas = LinkChecker.SpasPage(self.site)
         # self.site.spas.status_code = 200
 
     def test_all_good(self):
-        self.site.files.add(Site.MODAL_CSS)
-        self.site.files.add(Site.MODAL_JS)
+        self.site.files.add(SiteMap.MODAL_CSS)
+        self.site.files.add(SiteMap.MODAL_JS)
         html = ' <form class="form" action="spas.html" method="post" id="register"></form>'
         soup = BeautifulSoup(html, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -230,14 +230,11 @@ class SpasPageTest(unittest.TestCase):
         self.spas.check_files()
         self.assertTrue(self.spas.NO_JS_FILE in self.spas.info)
 
-
     # def test_no_redirect(self):
     #     self.site.spas.status_code = 200
     #     with patch.object(Page, 'get_text', return_value='123'):
     #         self.spas.find_redirect_url()
     #         self.assertTrue(self.spas.INCORRECT_REDIRECT in self.spas.info)
-
-
 
     # def test_page_not_work(self):
     #     self.site.spas.status_code = 404
@@ -248,7 +245,7 @@ class SpasPageTest(unittest.TestCase):
 class FbPixelText(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.fb = LinkChecker.FaceBookPixel(self.site)
 
     def test_pixel_find(self):
@@ -282,7 +279,7 @@ class FbPixelText(unittest.TestCase):
 class TtPixelText(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.tt = LinkChecker.TtPixel(self.site)
 
     def test_pixel_found(self):
@@ -303,7 +300,7 @@ class LinksTest(unittest.TestCase):
     # TODO - чекер был изменет - переделать
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.link_check = LinkChecker.PageLink(self.site)
 
     def test_all_good(self):
@@ -379,7 +376,7 @@ class HTMLFormTest(unittest.TestCase):
 class OrderFormsTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.forms = LinkChecker.OrderForms(self.site)
 
     def test_all_good(self):
@@ -436,7 +433,7 @@ class OrderFormsTest(unittest.TestCase):
 class CheckTest(unittest.TestCase):
 
     def setUp(self):
-        site = Site('1')
+        site = SiteMap('1')
         self.checker = LinkChecker.Check(site)
         self.checker.STATUS_SET.update({'error_1': 'error', 'error_2': 'reprimand'})
 
@@ -516,11 +513,12 @@ class PageFileTest(unittest.TestCase):
         result = PageFile.get_variable_value(line)
         self.assertEqual(result, 'BY,PL')
 
+
 class ApiOrderTTTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1', dir_name='some_name')
-        self.site.files.add(Site.ORDER)
+        self.site = SiteMap('1', dir_name='some_name')
+        self.site.files.add(SiteMap.ORDER)
         self.checker = LinkChecker.ApiOrderTT(site=self.site)
 
     def test_file_not_found(self):
@@ -574,14 +572,14 @@ class ApiOrderTTTest(unittest.TestCase):
 class HideClickTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1', dir_name='some_name', is_cloac=True)
-        self.site.files.add(Site.CLOAC_FILE)
+        self.site = SiteMap('1', dir_name='some_name', is_cloac=True)
+        self.site.files.add(SiteMap.CLOAC_FILE)
         self.checker = LinkChecker.HideClick(site=self.site)
 
     def test_disable_checker(self):
-        self.site = Site('1', dir_name='some_name')
+        self.site = SiteMap('1', dir_name='some_name')
         self.checker = LinkChecker.HideClick(site=self.site)
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=['123']):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=['123']):
             self.checker.process()
             self.assertTrue(self.checker.CLO_NOT_ACTIVE in self.checker.info)
             self.assertTrue(len(self.checker.info) == 1)
@@ -606,7 +604,7 @@ class HideClickTest(unittest.TestCase):
                 /* For example, if you enter 'RU,UA' inrs froraine */\n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.process()
             self.assertEqual(self.checker.result_value['black'], 'black.html')
             self.assertEqual(self.checker.result_value['white'], 'white.html')
@@ -620,7 +618,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.add_errors()
             self.assertTrue(self.checker.NO_WHITE in self.checker.info)
@@ -632,11 +630,10 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.add_errors()
             self.assertTrue(self.checker.NO_BLACK in self.checker.info)
-
 
     def test_incorrect_black(self):
         text = """/* Required settings     */
@@ -645,7 +642,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_black_name()
             self.assertTrue(self.checker.BLACK_INCORRECT in self.checker.info)
@@ -658,7 +655,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off1';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_debug_mode()
             self.assertTrue(self.checker.DEBUG_INCORRECT in self.checker.info)
@@ -671,7 +668,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'on';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_debug_mode()
             self.assertTrue(self.checker.DEBUG_MODE_ON in self.checker.info)
@@ -683,7 +680,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY,PL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_white_name()
             self.assertTrue(self.checker.WHITE_INCORRECT in self.checker.info)
@@ -696,7 +693,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BYY,PLL';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
@@ -709,7 +706,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'BY1,PL*';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines',count=20, return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_LEN_ERROR in self.checker.info)
@@ -722,7 +719,7 @@ class HideClickTest(unittest.TestCase):
                 $CLOAKING['DEBUG_MODE'] = 'off';// replace \n
                 $CLOAKING['ALLOW_GEO'] = 'XX,AA';"""
         text = text.split('\n')
-        with patch.object(PageFile, 'get_file_lines', count=20,return_value=text):
+        with patch.object(PageFile, 'get_file_lines', count=20, return_value=text):
             self.checker.find_variables_value()
             self.checker.check_geo()
             self.assertTrue(self.checker.GEO_INCORRECT_NAME in self.checker.info)
