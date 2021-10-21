@@ -148,7 +148,9 @@
                 <th>Акк-Каб</th>
                 <!-- <th>Кабинет</th> -->
                 <th>Гео</th>
-                <th>Бюджет</th>
+<!--                <th>Id</th>-->
+<!--                <th>Some</th>-->
+                <th>Daily</th>
                 <th>Название</th>
                 <th>Ссылки</th>
                 <th>Статус</th>
@@ -175,6 +177,8 @@
                 <!-- {{ geo.short_name}} -->
                 {% endfor %}
             </td>
+<!--            <td>{{comp.get_comp_id}}</td>-->
+<!--            <td>Some else</td>-->
             <td>{% if comp.daily %}{{comp.daily}}{% endif %}</td>
             <td>{{ comp.name }}</td>
             <td>

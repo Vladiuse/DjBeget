@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
+import random as r
 # Create your models here.
 from .api import MyError, Beget
 from .link_checker import Checker
@@ -322,6 +322,16 @@ class Company(models.Model):
     class Meta:
         verbose_name = 'Кампания'
         verbose_name_plural = 'Кампании'
+
+    def get_comp_id(self):
+        symbols = '1234567890qwertyuiopasdfghjklzxcvbnm'
+        res_id = ''
+        for i in range(8):
+            char = r.choice(symbols)
+            if r.randint(0, 1):
+                char = char.upper()
+            res_id += char
+        return res_id
 
     def __str__(self):
         return self.name

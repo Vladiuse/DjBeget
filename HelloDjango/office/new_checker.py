@@ -1,8 +1,11 @@
+from pprint import pprint
+
 import paramiko
 import requests as req
 from bs4 import BeautifulSoup
-from pprint import pprint
+
 from .beget_api_keys import ssh_begget_login, ssh_begget_pass
+
 
 class StatusHTML:
     # HTML
@@ -115,6 +118,7 @@ class SHHConnector:
         self.connection = ssh
 
     def ls_comm(self, command):
+        # TODO - что если папки не существует?
         stdin, stdout, stderr = self.connection.exec_command(f'ls {command}')
         return stdout
 
@@ -177,8 +181,9 @@ class PageFile:
         return value
 
 
-class Site:
-    #pages
+class SiteMap:
+    # pages
+    # TODO - определить лишь файлы и способы подступа к ним?
     SUCCESS_PAGE = '/success/success.html'
     POLICY = '/policy.html'
     SPAS = '/spas.html'
@@ -195,6 +200,7 @@ class Site:
     # geo list
     ALLOWED_GEO_LIST = ['by', 'ru', 'ee', 'lt', 'lv', 'pl']
     ALLOWED_INNER_LINKS = [
+        # TODO - разнести по смыслу
         'https://instagram.com/amanitaashop',
         'https://vk.com/amanita.shop',
         'https://facebook.com/amanitaa.shop',
@@ -208,19 +214,20 @@ class Site:
     def __init__(self, url, is_cloac=False, dir_name=None):
         self.cloac = is_cloac
         # sitemap
-        self.main = Page(url) if not is_cloac else Page(url + Site.BLACK)
-        self.spas = Page(url + Site.SPAS)
-        self.policy = Page(url + Site.POLICY)
-        self.terms = Page(url + Site.TERM)
-        self.success = Page(url + Site.SUCCESS_PAGE)
-        self.black = Page(url + '/' + Site.BLACK)
-        self.white = Page(url + '/' + Site.WHITE)
+        self.main = Page(url) if not is_cloac else Page(url + SiteMap.BLACK)
+        self.spas = Page(url + SiteMap.SPAS)
+        self.policy = Page(url + SiteMap.POLICY)
+        self.terms = Page(url + SiteMap.TERM)
+        self.success = Page(url + SiteMap.SUCCESS_PAGE)
+        self.black = Page(url + '/' + SiteMap.BLACK)
+        self.white = Page(url + '/' + SiteMap.WHITE)
         # site_files
         self.dir_name = dir_name
         self.files = set()
-        self.index_php = PageFile(dir_name + '/' + Site.CLOAC_FILE,
-                                  connector=Site.SSH_CONNECTOR) if self.dir_name else None
-        self.api_php = PageFile(dir_name + '/' + Site.ORDER, connector=Site.SSH_CONNECTOR) if self.dir_name else None
+        self.index_php = PageFile(dir_name + '/' + SiteMap.CLOAC_FILE,
+                                  connector=SiteMap.SSH_CONNECTOR) if self.dir_name else None
+        self.api_php = PageFile(dir_name + '/' + SiteMap.ORDER,
+                                connector=SiteMap.SSH_CONNECTOR) if self.dir_name else None
 
     def check_pages_conn(self):
         for page in self.main, self.success, self.policy, self.terms, self.spas:
@@ -243,11 +250,6 @@ class LinkChecker:
     class Check:
         DESCRIPTION = 'No'
         KEY_NAME = 'No'
-        # text_statuses
-        NONE = 'Не проверялся'
-        GOOD = 'Все ок'
-        REPRIMAND = 'Замечание'
-        ERROR = 'Ошибка'
 
         STATUS_SET = {}
 
@@ -445,16 +447,18 @@ class LinkChecker:
                 self.info.add(self.NO_SPAS_FORM)
 
         def check_files(self):
-            if Site.MODAL_JS not in self.site.files:
+            if SiteMap.MODAL_JS not in self.site.files:
                 self.info.add(self.NO_JS_FILE)
-            if Site.MODAL_CSS not in self.site.files:
+            if SiteMap.MODAL_CSS not in self.site.files:
                 self.info.add(self.NO_CSS_FILE)
 
     class SuccessPage(Check):
+        # TODO - добавить провкрку наличия формы
         DESCRIPTION = 'Итоговая страница'
         KEY_NAME = 'success'
 
         PAGE_NOT_WORK = 'Страница не работает'
+        NO_AGAIN_FROM = 'Форма повторного заказа не найдена'
 
         STATUS_SET = {
             PAGE_NOT_WORK: 'error',
@@ -466,6 +470,15 @@ class LinkChecker:
         def check_page(self):
             if not self.site.success.is_work():
                 self.info.add(self.PAGE_NOT_WORK)
+
+        def check_again_form(self):
+            # TODO - хз как сделать
+            soup = self.site.success.get_soup()
+            form = soup.find('form', action='../' + SiteMap.ORDER)
+            if not form:
+                self.info.add(self.NO_AGAIN_FROM)
+            else:
+                form = LinkChecker.HTMLForm(form_soup=form)
 
     class FaceBookPixel(Check):
         """Пиклесль ФБ"""
@@ -523,13 +536,18 @@ class LinkChecker:
             else:
                 self.result_value.update({'pixel': tt_pixel})
 
+    class GoogleTag(Check):
+        pass
+
+    # TODO - сделать
+
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""
         DESCRIPTION = 'Внутрение сслыки'
         KEY_NAME = 'links'
         # DO_NOT_CHECK = {'policy.html', 'terms.html',
         #                 '/policy.html', '/terms.html',
-        #                 'spas.html'}
+        #                 'spas.html'} # перенес SiteMap
 
         FIND_ALIEN = 'Есть ссылки на чужой лэнд'
         INCORRECT_INNER = 'Некоректные внутриние ссылки'
@@ -550,7 +568,7 @@ class LinkChecker:
             for link in links:
                 try:
                     href = link['href']
-                    if not (href.startswith('#') or href in Site.ALLOWED_INNER_LINKS):
+                    if not (href.startswith('#') or href in SiteMap.ALLOWED_INNER_LINKS):
                         if href.startswith('http'):
                             self.info.add(self.FIND_ALIEN)
                             self.errors.add(href)
@@ -565,7 +583,7 @@ class LinkChecker:
                     self.info.add(self.NO_HREF)
 
     class HTMLForm:
-        # TODO получение атрибута maxlength
+        # TODO получение атрибута max_length, required
         """html форма"""
 
         def __init__(self, form_soup):
@@ -609,8 +627,13 @@ class LinkChecker:
         def check_i_agree_input(self):
             pass
 
+    class OrderForm(HTMLForm):
+
+        def is_order_form(self):
+            pass
+
     class OrderForms(Check):
-        # TODO - вывод данных по каждой форме в отдельности
+        # TODO - вывод данных по каждой формы в отдельности
         DESCRIPTION = 'Order формы'
         KEY_NAME = 'order_forms'
 
@@ -662,6 +685,7 @@ class LinkChecker:
                     self.info.add(self.NO_MIN_LEN)
 
     class ApiOrderTT(Check):
+        # TODo - success.php!
         """Проверка файла обработки заказа Trirazat API"""
         DESCRIPTION = 'Trirazat API'
         KEY_NAME = 'trirazat_api'
@@ -715,7 +739,7 @@ class LinkChecker:
             self.comm = None
 
         def process(self):
-            if Site.ORDER not in self.site.files:
+            if SiteMap.ORDER not in self.site.files:
                 self.info.add(self.FILE_NOT_FOUND)
             else:
                 self.find_variables_value()
@@ -821,7 +845,7 @@ class LinkChecker:
             if not self.site.cloac:
                 self.info.add(self.CLO_NOT_ACTIVE)
                 return
-            if Site.CLOAC_FILE not in self.site.files:
+            if SiteMap.CLOAC_FILE not in self.site.files:
                 self.info.add(self.FILE_NOT_FOUND)
                 return
             self.find_html_pages()
@@ -833,9 +857,9 @@ class LinkChecker:
             self.check_white_name()
 
         def find_html_pages(self):
-            if Site.BLACK not in self.site.files:
+            if SiteMap.BLACK not in self.site.files:
                 self.info.add(self.FILE_BLACK_NOT_FOUND)
-            if Site.WHITE not in self.site.files:
+            if SiteMap.WHITE not in self.site.files:
                 self.info.add(self.FILE_WHITE_NOT_FOUND)
 
         def find_variables_value(self):
@@ -865,7 +889,7 @@ class LinkChecker:
         def check_white_name(self):
             try:
                 white = self.result_value['white']
-                if white != Site.WHITE:
+                if white != SiteMap.WHITE:
                     self.info.add(self.WHITE_INCORRECT)
                     self.errors.add(white)
             except KeyError:
@@ -874,7 +898,7 @@ class LinkChecker:
         def check_black_name(self):
             try:
                 black = self.result_value['black']
-                if black != Site.BLACK:
+                if black != SiteMap.BLACK:
                     self.info.add(self.BLACK_INCORRECT)
                     self.errors.add(black)
             except KeyError:
@@ -886,7 +910,7 @@ class LinkChecker:
                 geo = geo.lower()
                 geo_list = geo.split(',')
                 for geo in geo_list:
-                    if geo not in Site.ALLOWED_GEO_LIST:
+                    if geo not in SiteMap.ALLOWED_GEO_LIST:
                         self.info.add(self.GEO_INCORRECT_NAME)
                         self.errors.add(geo)
                     if len(geo) != 2:
@@ -908,6 +932,10 @@ class LinkChecker:
                 except KeyError:
                     error = self.VARIABLES[param]['not_found']
                     self.info.add(error)
+
+    class WhitePage(Check):
+        DESCRIPTION = 'Белая страница'
+        KEY_NAME = 'white_page'
 
     # тело Главного чекера
     def __init__(self, site):
@@ -963,9 +991,8 @@ class LinkChecker:
 
 
 if __name__ == '__main__':
-    site = Site(url='https://fito-blog.ru/', is_cloac=True, dir_name='fito-blog.ru/public_html')
+    site = SiteMap(url='https://fito-blog.ru/', is_cloac=True, dir_name='fito-blog.ru/public_html')
     site.get_site_files()
-
 
     main_ckecker = LinkChecker(site=site)
     main_ckecker.process()

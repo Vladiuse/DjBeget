@@ -3,14 +3,14 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from HelloDjango.office.new_checker import LinkChecker, Page, Site, PageFile
+from HelloDjango.office.new_checker import LinkChecker, Page, SiteMap, PageFile
 
 
 class TestReq(unittest.TestCase):
     """Тест проверки реквизитов"""
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.reqALL = '<p>ИПГребенщиков,УНП19345252</p>' \
                       '<p>г.Минск,ул.Радиальная,д.40</p>' \
                       '<p>E-mail:zenitcotrade@gmail.com</p>' \
@@ -63,7 +63,7 @@ class TestReq(unittest.TestCase):
 class FindCommTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.NO_COMM = ''
         self.COMM_IN = 'iweernb2bmo2mo2-\n<!-- saved from\nwqmfqwofqw'
 
@@ -91,7 +91,7 @@ class FindCommTest(unittest.TestCase):
 class PolicyTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.site.main.status_code = 200
         self.LINK_CORRECT = '<p class="conf-link doclinks">' \
                             '<a class="nav-link" href="policy.html">Политика конфиденциальности </a></p>'
@@ -142,7 +142,7 @@ class PolicyTest(unittest.TestCase):
 class TermsTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('no url')
+        self.site = SiteMap('no url')
         self.site.main.status_code = 200
         self.LINK_CORRECT = '<p class="conf-link doclinks">' \
                             '<a class="nav-link" href="terms.html">Пользовательское соглашение </a></p>'
@@ -193,13 +193,13 @@ class TermsTest(unittest.TestCase):
 
 class SpasPageTest(unittest.TestCase):
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.spas = LinkChecker.SpasPage(self.site)
         # self.site.spas.status_code = 200
 
     def test_all_good(self):
-        self.site.files.add(Site.MODAL_CSS)
-        self.site.files.add(Site.MODAL_JS)
+        self.site.files.add(SiteMap.MODAL_CSS)
+        self.site.files.add(SiteMap.MODAL_JS)
         html = ' <form class="form" action="spas.html" method="post" id="register"></form>'
         soup = BeautifulSoup(html, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
@@ -248,7 +248,7 @@ class SpasPageTest(unittest.TestCase):
 class FbPixelText(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.fb = LinkChecker.FaceBookPixel(self.site)
 
     def test_pixel_find(self):
@@ -282,7 +282,7 @@ class FbPixelText(unittest.TestCase):
 class TtPixelText(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.tt = LinkChecker.TtPixel(self.site)
 
     def test_pixel_found(self):
@@ -303,7 +303,7 @@ class LinksTest(unittest.TestCase):
     # TODO - чекер был изменет - переделать
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.link_check = LinkChecker.PageLink(self.site)
 
     def test_all_good(self):
@@ -379,7 +379,7 @@ class HTMLFormTest(unittest.TestCase):
 class OrderFormsTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1')
+        self.site = SiteMap('1')
         self.forms = LinkChecker.OrderForms(self.site)
 
     def test_all_good(self):
@@ -436,7 +436,7 @@ class OrderFormsTest(unittest.TestCase):
 class CheckTest(unittest.TestCase):
 
     def setUp(self):
-        site = Site('1')
+        site = SiteMap('1')
         self.checker = LinkChecker.Check(site)
         self.checker.STATUS_SET.update({'error_1': 'error', 'error_2': 'reprimand'})
 
@@ -519,8 +519,8 @@ class PageFileTest(unittest.TestCase):
 class ApiOrderTTTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1', dir_name='some_name')
-        self.site.files.add(Site.ORDER)
+        self.site = SiteMap('1', dir_name='some_name')
+        self.site.files.add(SiteMap.ORDER)
         self.checker = LinkChecker.ApiOrderTT(site=self.site)
 
     def test_file_not_found(self):
@@ -574,12 +574,12 @@ class ApiOrderTTTest(unittest.TestCase):
 class HideClickTest(unittest.TestCase):
 
     def setUp(self):
-        self.site = Site('1', dir_name='some_name', is_cloac=True)
-        self.site.files.add(Site.CLOAC_FILE)
+        self.site = SiteMap('1', dir_name='some_name', is_cloac=True)
+        self.site.files.add(SiteMap.CLOAC_FILE)
         self.checker = LinkChecker.HideClick(site=self.site)
 
     def test_disable_checker(self):
-        self.site = Site('1', dir_name='some_name')
+        self.site = SiteMap('1', dir_name='some_name')
         self.checker = LinkChecker.HideClick(site=self.site)
         with patch.object(PageFile, 'get_file_lines', count=20,return_value=['123']):
             self.checker.process()

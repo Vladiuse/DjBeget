@@ -17,7 +17,7 @@ from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
 from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
     CabinetSerializer, CountrySerializer
-from .new_checker import Site as SiteMap, LinkChecker as NewLinkChecker
+from .new_checker import SiteMap as SiteMap, LinkChecker as NewLinkChecker
 
 
 DJANGO_SITE = 'https://main-prosale.store/'
