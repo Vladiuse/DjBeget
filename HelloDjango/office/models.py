@@ -267,6 +267,14 @@ class Domain(models.Model):
     def get_https_site(self):
         return f'https://{self.name}/'
 
+    def is_sub(self):
+        if self.name.count('.') >= 2:
+            return True
+
+    def is_root(self):
+        if self.name.count('.') == 1:
+            return True
+
     def __str__(self):
         return self.name
 
@@ -353,7 +361,7 @@ class Account(models.Model):
 class Cabinet(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название кабинета')
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    pixel = models.CharField(verbose_name='Пиксель акаунта', blank=True, null=True, max_length=99)
+    pixel = models.CharField(verbose_name='Пиксель кабинета', blank=True, null=True, max_length=99)
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
     # domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
     #                               verbose_name='Закрепленный домен')

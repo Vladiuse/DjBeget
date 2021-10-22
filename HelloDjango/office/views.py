@@ -158,6 +158,9 @@ def domains(request):
     """Список доменов"""
     Beget().update_domains()
     domains_bd = Domain.objects.all().order_by('name')
+    domains_bd = [domain for domain in domains_bd if domain.is_root() is True]
+    # for dom in domains_bd:
+    #     print(dom.name, dom.is_root())
     free_doms = Domain.objects.filter(site__isnull=True)
     content = {'domains': domains_bd,
                'free_doms': free_doms,
@@ -202,6 +205,7 @@ def delete_site(request, site_id):
 def domains_list_api(request):
     if request.method == 'GET':
         domains = Domain.objects.all()
+        domains = [domain for domain in domains if domain.is_root() is True]
         serializer = DomainSerializer(domains, many=True)
         return Response(serializer.data)
 

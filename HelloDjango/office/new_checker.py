@@ -184,7 +184,7 @@ class PageFile:
 class SiteMap:
     # pages
     # TODO - определить лишь файлы и способы подступа к ним?
-    SUCCESS_PAGE = '/success/success.html'
+    SUCCESS_PAGE = '/success/success.php'
     POLICY = '/policy.html'
     SPAS = '/spas.html'
     TERM = '/terms.html'
