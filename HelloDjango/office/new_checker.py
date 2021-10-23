@@ -276,6 +276,7 @@ class LinkChecker:
                 'result_value': self.result_value,
                 'status_html': StatusHTML.get_checker_status_html(self.result_code),
                 'status_text': StatusHTML.get_checker_status_text(self.result_code),
+                'key_name': self.KEY_NAME,
             }
             return result
 

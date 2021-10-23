@@ -183,6 +183,17 @@ class Site(models.Model):
         self.save()
         print(self.is_camp_run)
 
+    def get_pixel_fb(self):
+        try:
+            for checker_data in self.check_data['checkers']:
+                if checker_data['key_name'] == 'fb_pixel':
+                    pixel = checker_data['result_value']['pixel']
+                    print(pixel, 'pixel from site')
+                    return pixel
+        except KeyError:
+            print('KEY ERROR')
+            pass
+
     # def is_camp_run(self):
     #     """Запущена ли кампания с этим сайтом"""
     #     domains = self.domain_set.all()
@@ -281,7 +292,7 @@ class Domain(models.Model):
 
 class TrafficSource(models.Model):
     name = models.CharField(max_length=200, verbose_name='Источник трафика')
-    short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
+    short_name = models.CharField(max_length=10, verbose_name='краткое название eng', unique=True, blank=True, null=True)
     icon_html = models.CharField(max_length=100, verbose_name='Код иконки html', blank=True, null=True)
 
     def __str__(self):
@@ -330,6 +341,20 @@ class Company(models.Model):
     class Meta:
         verbose_name = 'Кампания'
         verbose_name_plural = 'Кампании'
+
+    def is_pixel_correct(self):
+        site_pixels = set()
+        if self.cab:
+            pixel = self.cab.pixel
+            if self.cab.account.source.short_name == 'fb':
+                # print(pixel, 'cab_pixel')
+                for dom in self.land.all():
+                    if dom.site:
+                        site_pixel = dom.site.get_pixel_fb()
+                        site_pixels.add(site_pixel)
+                # print(site_pixels, 'site_pixels from FUNC')
+                if len(site_pixels) == 1 and pixel and pixel in site_pixels:
+                    return True
 
     def get_comp_id(self):
         symbols = '1234567890qwertyuiopasdfghjklzxcvbnm'
