@@ -740,7 +740,7 @@ class LinkChecker:
             NO_PRICE: 'disabled',
             NO_COMM: 'disabled',
             REDIRECT_LINE_NOT_FOUND: 'error',
-            REDIRECT_LINE_OLD: 'reprimand',
+            REDIRECT_LINE_OLD: 'error',
             INCORRECT_REDIRECT_LINE: 'error',
         }
 

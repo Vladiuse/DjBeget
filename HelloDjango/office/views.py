@@ -33,6 +33,7 @@ def sites(request):
     sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))  # исключаються тех сайты
     sites.sort(key=Site.get_sort_name)
     content = {'sites': sites,
+               'page_title': 'Сайты',
                }
     return render(request, 'office/index.html', content)
 
@@ -114,6 +115,7 @@ def old_lands(request):
         'domain': DOMAIN,
         'old_lands': old_lands,
         'info': info,
+        'page_title': 'Архив',
     }
     return render(request, 'office/old_lands.html', content)
 
@@ -124,6 +126,7 @@ def requisites(request):
     examples = CodeExample.objects.all()
     content = {
         'examples': examples,
+        'page_title': 'Реквизиты',
     }
     return render(request, 'office/requisites.html', content)
 
@@ -150,6 +153,7 @@ def checker(request, site_id, mode):
         'site': site_model,
         'data': site_model.check_data,
         'is_check_start': is_check_start,
+        'page_title': 'Проверка',
     }
     return render(request, 'office/checker.html', content)
 
@@ -164,6 +168,7 @@ def domains(request):
     free_doms = Domain.objects.filter(site__isnull=True)
     content = {'domains': domains_bd,
                'free_doms': free_doms,
+               'page_title': 'Домены',
                }
     return render(request, 'office/domains.html', content)
 
@@ -297,7 +302,11 @@ def campanings(request):
     """ Текущие РК"""
     campamings = Company.objects.order_by('-published')
     statusys = CampaignStatus.objects.all()
-    content = {'campanings': campamings, 'statusys': statusys}
+    content = {
+        'campanings': campamings,
+        'statusys': statusys,
+        'page_title': 'Кампании',
+    }
     return render(request, 'office/campanings.html', content)
 
 
