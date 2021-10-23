@@ -135,6 +135,7 @@ class PageFile:
         self.text = None
         self.soup = None
         self.file_data = None
+        self.file_lines = []
 
     # def connect(self):
     #     file = self.connector.`cat_comm`(self.file_name)
@@ -152,6 +153,8 @@ class PageFile:
     #     return self.text.decode('utf-8')
 
     def get_file_lines(self, count=0):
+        if self.file_lines:
+            return self.file_lines
         lines = []
         if count:
             for _ in range(count):
@@ -159,6 +162,7 @@ class PageFile:
                 lines.append(line)
         else:
             lines = self.file_data.readlines()
+        self.file_lines = lines
         return lines
 
     @staticmethod
@@ -759,6 +763,7 @@ class LinkChecker:
         def find_variables_value(self):
             file_lines = self.site.api_php.get_file_lines()
             for line in file_lines:
+                print(line, 'xxxxxx')
                 for param, data in self.VARIABLES.items():
                     variable = data['variable']
                     if variable in line:
@@ -780,7 +785,9 @@ class LinkChecker:
         def find_redirect_page(self):
             file_lines = self.site.api_php.get_file_lines()
             redirect_line = None
+            print(len(file_lines), 'file_lines')
             for line in file_lines:
+                print(line)
                 if self.REDIRECT_PAGE in line:
                     redirect_line = line
                     break
