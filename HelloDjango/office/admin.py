@@ -21,12 +21,16 @@ class SiteAdmin(admin.ModelAdmin):
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'cab_link', 'daily', 'get_geo', 'get_sites', 'status' ]
+    list_display = ['traff_source', 'name', 'cab_link', 'daily', 'get_geo', 'get_sites', 'status' ]
     list_display_links = ['name', ]
-    list_filter = ['status']
-    # date_hierarchy = 'published'  # фильтр над списком модклий по дате
+    list_filter = ['status',]
+    # date_hierarchy = 'published'  # фильтр над списком моделей по дате
 
     autocomplete_fields = ['land']
+
+    def traff_source(self,obj):
+        if obj.cab:
+            return obj.cab.account.source.name
 
     def cab_link(self, obj):
         """Получить ссылку на обьект"""
@@ -51,9 +55,14 @@ class CompanyAdmin(admin.ModelAdmin):
 
 
 class CabinetAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'account', 'pixel', 'domain']
+    list_display = ['get_source', 'account','name', 'pixel', 'domain', ]
     list_display_links = ['name']
     autocomplete_fields = ['domain']
+
+    list_filter = ['account']
+
+    def get_source(self, obj):
+        return obj.account.source.name
 
 
 class CountryAdmin(admin.ModelAdmin):
