@@ -495,7 +495,7 @@ class LinkChecker:
         FBP_2 = {'start': "https://www.facebook.com/tr?id=",
                  'end': "&ev"}
 
-        PIXEL_NOT_FOUND = 'Пиксель не найден'
+        PIXEL_NOT_FOUND = 'Блок с пикселем не найден'
         ONE_NOT_CORRECT = 'Один из пикселей некоректен'
 
         STATUS_SET = {
@@ -542,9 +542,9 @@ class LinkChecker:
                 self.result_value.update({'pixel': tt_pixel})
 
     class GoogleTag(Check):
+        # TODO - сделать
         pass
 
-    # TODO - сделать
 
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""

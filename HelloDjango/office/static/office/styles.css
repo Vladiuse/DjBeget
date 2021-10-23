@@ -46,7 +46,9 @@
   align-items: center;
 
 }
-
+.pixel-block{
+  font-size: 12px;
+}
 /* Реквизиты */
 .coll-block {
   margin-top: 50px;
@@ -63,6 +65,11 @@
   margin-right: 5px;
 }
 /* ICONS */
+.fa-check-circle{
+  font-size: 20px;
+  color: green;
+}
+
 .fa-play-circle{
   font-size: 25px;
   color: green;

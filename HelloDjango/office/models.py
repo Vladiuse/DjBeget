@@ -183,25 +183,15 @@ class Site(models.Model):
         self.save()
         print(self.is_camp_run)
 
-    def get_pixel_fb(self):
+    def get_pixel(self, source):
         try:
             for checker_data in self.check_data['checkers']:
-                if checker_data['key_name'] == 'fb_pixel':
+                if checker_data['key_name'] == source + '_pixel':
                     pixel = checker_data['result_value']['pixel']
-                    print(pixel, 'pixel from site')
+                    # print(pixel, 'pixel from site')
                     return pixel
-        except KeyError:
-            print('KEY ERROR')
-            pass
-
-    # def is_camp_run(self):
-    #     """Запущена ли кампания с этим сайтом"""
-    #     domains = self.domain_set.all()
-    #     for dom in domains:
-    #         for camp in dom.company_set.all():
-    #             if camp.status.name == 'Запущено':
-    #                 return True
-    #     return False
+        except KeyError as error:
+            print('KEY ERROR', error)
 
     def __str__(self):
         return self.site_name
@@ -337,23 +327,27 @@ class Company(models.Model):
     published = models.DateTimeField(auto_now_add=True, )
     edited = models.DateTimeField(auto_now=True, )
     daily = models.CharField(max_length=12, verbose_name='Дневной бюджет', blank=True, null=True)
+    pixel = models.CharField(max_length=20, verbose_name='Пиксель кампании', blank=True, default='')
 
     class Meta:
         verbose_name = 'Кампания'
         verbose_name_plural = 'Кампании'
 
+    def is_comp_active(self):
+        if self.status.name in ['Запущено', 'На расмотрении']:
+            return True
+
     def is_pixel_correct(self):
         site_pixels = set()
-        if self.cab:
-            pixel = self.cab.pixel
-            if self.cab.account.source.short_name == 'fb':
-                # print(pixel, 'cab_pixel')
+        if self.pixel:
+            if self.cab:
                 for dom in self.land.all():
                     if dom.site:
-                        site_pixel = dom.site.get_pixel_fb()
+                        site_pixel = dom.site.get_pixel(self.cab.account.source.short_name)
+                        print(self.cab.account.source.short_name, 'source')
                         site_pixels.add(site_pixel)
                 # print(site_pixels, 'site_pixels from FUNC')
-                if len(site_pixels) == 1 and pixel and pixel in site_pixels:
+                if len(site_pixels) == 1 and self.pixel in site_pixels:
                     return True
 
     def get_comp_id(self):

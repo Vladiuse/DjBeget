@@ -276,10 +276,11 @@ def create_capmaning(request):
     # TODO - при создании кампании сайт - не становиться запущеным!
     data = json.loads(request.POST['data'])
     name = data['text']
+    pixel = data['pixel']
     daily = data['daily']
     cab = Cabinet.objects.get(pk=data['cab_id'])
     status = CampaignStatus.objects.get(pk=5)
-    new_camp = Company(name=name, cab=cab, status=status, daily=daily)
+    new_camp = Company(name=name, cab=cab, status=status, daily=daily, pixel=pixel)
     new_camp.save()
     for geo_id in data['geos_id']:
         country = Country.objects.get(pk=geo_id)
@@ -289,7 +290,10 @@ def create_capmaning(request):
         new_camp.land.add(domain)
     new_camp.save()
     statusys = CampaignStatus.objects.all()
-    content = {'comp': new_camp, 'statusys': statusys}
+    content = {
+        'comp': new_camp,
+        'statusys': statusys,
+    }
     # return Response(data, template_name='office/camp.html')
     # return render(request, 'office/camp.html', content)
     return render(request, 'office/camp.html', content)
