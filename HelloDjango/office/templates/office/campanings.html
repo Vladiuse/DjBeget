@@ -106,14 +106,19 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-modal">Close</button>
-        <button type="button" class="btn btn-primary disabled" id="save-comp">Создать кампанию</button>
+        <button type="button" class="btn btn-primary disabled" id="save-comp">
+          Создать кампанию
+          <div class="spinner-grow spinner-grow-sm text-light" role="status" style="display:none;" id="comp-spinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </button>
     </div>
 
     </div>
 </div>
 </div>
 <div class="main-wrapper">
-    <h3>Кампании</h3>
+<!--    <h3>Кампании</h3>-->
     <div class="btn-toolbar sn-block-filter" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group me-2" role="group" aria-label="First group">
           <button type="button" class="btn btn-primary active" id="sn-all">Все</button>
@@ -582,7 +587,7 @@ function updateApiStatus(campId, newStatusId){
   
 
   // блокировка.включение кпопки сохранения запуска
-  $('#exampleModal').click(function(){
+  $('#exampleModal .modal-body').click(function(){
     //   console.log($('.list-group.domains').children().length == 0, 'длинна выбранных доменов')
     //   console.log($('.list-group.geos').children().length == 0, 'длинна выбранных geo')
       if(curCab == null || $('.list-group.domains').children().length == 0 || $('.list-group.geos').children().length == 0)
@@ -593,6 +598,8 @@ function updateApiStatus(campId, newStatusId){
   })
   // получения данных запуска
   $('#save-comp').click(function(){
+      $('#save-comp').addClass('disabled')
+      $('#comp-spinner').show()
       var domainsIds = []
       var geosIds = []
       var textCamp = $('#camp-text').val()
@@ -622,7 +629,7 @@ function updateApiStatus(campId, newStatusId){
     //       'phone': "['123', '123']",
     //       'csrfmiddlewaretoken': csrfmiddlewaretoken,
     //   }
-
+      
       console.log(geosIds, domainsIds, 'geo-doms')
       console.log(newCampData, 'это запрос')
       var host = window.location.protocol + "//" + window.location.host;
@@ -630,6 +637,7 @@ function updateApiStatus(campId, newStatusId){
       URL = host + '/api/create_capmaning/'
       $.post(URL,{'data': newCampData, 'csrfmiddlewaretoken': csrfmiddlewaretoken,}, function(data){
       $('.table-camps thead').after(data) // вставка строки в таблицу
+      $('#comp-spinner').hide()
       console.log('ответ от сервера',data)
       $('#close-modal').trigger('click')
       $(".toast").toast("show");

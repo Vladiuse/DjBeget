@@ -172,16 +172,16 @@ class Site(models.Model):
         return bool(len(self.domain_set.all()))
 
     def set_site_run(self):
-        print('RUN')
+        # print('RUN')
         self.is_camp_run = True
         self.save()
-        print(self.is_camp_run)
+        # print(self.is_camp_run)
 
     def set_site_not_run(self):
-        print('RUN OFFF')
+        # print('RUN OFFF')
         self.is_camp_run = False
         self.save()
-        print(self.is_camp_run)
+        # print(self.is_camp_run)
 
     def get_pixel(self, source):
         try:
@@ -328,6 +328,13 @@ class Company(models.Model):
     edited = models.DateTimeField(auto_now=True, )
     daily = models.CharField(max_length=12, verbose_name='Дневной бюджет', blank=True, null=True)
     pixel = models.CharField(max_length=20, verbose_name='Пиксель кампании', blank=True, default='')
+
+    def delete(self):
+        # TODO - а что елси сайт запущен в другой РК?
+        # for land in self.land.all():
+        #     if land.site:
+        #         land.site.set_site_not_run()
+        super().delete()
 
     class Meta:
         verbose_name = 'Кампания'
