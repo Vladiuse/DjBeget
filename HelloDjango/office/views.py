@@ -14,10 +14,12 @@ from pprint import pprint
 from .api import Beget
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
-from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
+from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet,\
+    Country, Lead
 from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
-    CabinetSerializer, CountrySerializer
+    CabinetSerializer, CountrySerializer, LeadSerializer
 from .new_checker import SiteMap as SiteMap, LinkChecker as NewLinkChecker
+from django.views.decorators.csrf import csrf_exempt
 
 
 DJANGO_SITE = 'https://main-prosale.store/'
@@ -337,3 +339,22 @@ def zapusk_data(request):
         'domains': domains_serializer.data,
         'geos': country_serializer.data,
     })
+
+
+def all_leads(request):
+    leads = Lead.objects.all().order_by('-pk')
+    content = {'leads': leads}
+    return render(request, 'office/leads.html', content)
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+@csrf_exempt
+def add_lead(request):
+    if request.method == 'POST':
+        serializer = LeadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse({"error": "not valid"})
+    else:
+        return JsonResponse({"error": "error"})

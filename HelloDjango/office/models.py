@@ -1,6 +1,8 @@
+import random as r
+
 from django.db import models
 from django.utils import timezone
-import random as r
+
 # Create your models here.
 from .api import MyError, Beget
 from .link_checker import Checker
@@ -60,7 +62,6 @@ class Site(models.Model):
             return self.STATUS_HTML[str(self.check_status)]
         except KeyError:
             return 'No status key error'
-
 
     def unpin_status(self):
         """Установить дефолтный статус"""
@@ -282,7 +283,8 @@ class Domain(models.Model):
 
 class TrafficSource(models.Model):
     name = models.CharField(max_length=200, verbose_name='Источник трафика')
-    short_name = models.CharField(max_length=10, verbose_name='краткое название eng', unique=True, blank=True, null=True)
+    short_name = models.CharField(max_length=10, verbose_name='краткое название eng', unique=True, blank=True,
+                                  null=True)
     icon_html = models.CharField(max_length=100, verbose_name='Код иконки html', blank=True, null=True)
 
     def __str__(self):
@@ -391,8 +393,8 @@ class Cabinet(models.Model):
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
     # domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
     #                               verbose_name='Закрепленный домен')
-    domain = models.ForeignKey(Domain, on_delete=models.SET_NULL,blank=True, null=True,
-                                  verbose_name='Закрепленный домен')
+    domain = models.ForeignKey(Domain, on_delete=models.SET_NULL, blank=True, null=True,
+                               verbose_name='Закрепленный домен')
 
     def __str__(self):
         return self.name
@@ -413,6 +415,18 @@ class CodeExample(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Lead(models.Model):
+    name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
+    phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
+    country = models.CharField(max_length=2, verbose_name='Страна', blank=True, null=True)
+    comm = models.CharField(max_length=50, verbose_name='коментарий', blank=True, null=True)
+    price = models.CharField(max_length=50, verbose_name='цена', blank=True, null=True)
+    offer_id = models.CharField(max_length=10, verbose_name='id оффера', blank=True, null=True)
+    flow_id = models.CharField(max_length=10, verbose_name='id потока', blank=True, null=True)
+    domain = models.CharField(max_length=60, verbose_name='домен лида', blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления лида')
 
 
 class Test(models.Model):

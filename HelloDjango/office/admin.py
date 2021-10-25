@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from .models import Site, OldLand, Domain, CodeExample, \
-    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company, Test
+    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company, Test, Lead
 
 
 class DomainAdmin(admin.ModelAdmin):
@@ -57,7 +57,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class CabinetAdmin(admin.ModelAdmin):
     list_display = ['get_source', 'account','name', 'pixel', 'domain', ]
     list_display_links = ['name']
-    autocomplete_fields = ['domain']
+    autocomplete_fields = ['domain', 'account']
 
     list_filter = ['account']
 
@@ -73,7 +73,10 @@ class CountryAdmin(admin.ModelAdmin):
 class AccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'source']
     list_display_links = ['name']
+    search_fields = ['name']
 
+class LeadAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in Lead._meta.get_fields()]
 
 admin.site.register(Test)
 admin.site.register(Company, CompanyAdmin)
@@ -86,3 +89,4 @@ admin.site.register(CodeExample)
 admin.site.register(TrafficSource)
 admin.site.register(CampaignStatus)
 admin.site.register(Country, CountryAdmin)
+admin.site.register(Lead, LeadAdmin)

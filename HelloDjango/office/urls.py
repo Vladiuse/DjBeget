@@ -20,4 +20,6 @@ urlpatterns = [
     path('api/change_domain_desc/<int:pk>/', views.domains_detail),
     path('api/zapusk/', views.zapusk_data),
     path('api/create_capmaning/', views.create_capmaning),
+    path('api/add_lead/', views.add_lead),
+    path('leads/', views.all_leads, name='leads'),
     ]
