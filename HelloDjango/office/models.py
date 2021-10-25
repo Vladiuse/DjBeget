@@ -430,6 +430,7 @@ class Lead(models.Model):
     ip = models.CharField(max_length=30, verbose_name='ip address', blank=True, null=True,)
     pp_name = models.CharField(max_length=2, verbose_name='Код ПП', blank=True, null=True)
     pp_answer = models.JSONField(default=dict, blank=True)
+    lead_id = models.CharField(max_length=10, verbose_name='id лида', blank=True, null=True)
 
 
 class Test(models.Model):
