@@ -26,6 +26,10 @@ DJANGO_SITE = 'https://main-prosale.store/'
 NO_CONNECTION = 'Не удалось подключиться'
 
 
+def main(request):
+    return render(request, 'office/index_test.html')
+
+
 @login_required
 def sites(request):
     """Список сайтов, их статусов и тд"""

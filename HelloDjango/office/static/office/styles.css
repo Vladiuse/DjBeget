@@ -35,10 +35,20 @@
   margin-left: 15px;
 }
 .for-form{
+  position:absolute;
+  top: 40%;
+  left: 10%;
   width: 300px;
   display: block;
   margin: auto;
   /* padding: 20% 20%; */
+}
+.for-form p{
+  color: white;
+}
+#button-login{
+  padding-left: 20%;
+  text-align: center;
 }
 .form-login-wraper{
   margin-top: 25%;

@@ -1,0 +1,20 @@
+{% extends 'office/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+#pulp-wrapper {
+    text-align: center;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    background-color: black;
+}
+    #pulp {
+    width: 80%;
+    margin: auto;
+    }
+</style>
+<div id="pulp-wrapper">
+    <img src="{% static 'office/pulp.jpg' %}" alt="pulp" id="pulp">
+</div>
+{% endblock %}

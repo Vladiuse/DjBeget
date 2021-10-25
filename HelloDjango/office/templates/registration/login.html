@@ -1,15 +1,44 @@
 {% extends 'office/base.html' %}
+{% load static %}
 {% block content %}
-<div class="form-login-wraper">
-    <div class="for-form">
-    <form method="post">
-{% csrf_token %}
-<input type="hidden" name="next" value="{{ next }}">
-{% csrf_token %}
-{{ form.as_p }}
-<button type="submit" class="btn btn-primary btn-block">Log in</button>
-</form>
+<style>
+#pulp-wrapper {
+    text-align: right;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    background-color: black;
+}
+    #pulp {
+    width: 80%;
+    margin: auto;
+    }
+</style>
+<div id="pulp-wrapper">
+    <img src="{% static 'office/pulp.jpg' %}" alt="pulp" id="pulp">
+        <div class="for-form">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div id="button-login">
+                    <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                </div>
+                </form>
+        </div>
 </div>
-</div>
+
+<!--<div class="form-login-wraper">-->
+<!--    <div class="for-form">-->
+<!--    <form method="post">-->
+<!--{% csrf_token %}-->
+<!--<input type="hidden" name="next" value="{{ next }}">-->
+<!--{% csrf_token %}-->
+<!--{{ form.as_p }}-->
+<!--<button type="submit" class="btn btn-primary btn-block">Log in</button>-->
+<!--</form>-->
+<!--</div>-->
+<!--</div>-->
 
 {% endblock %}
