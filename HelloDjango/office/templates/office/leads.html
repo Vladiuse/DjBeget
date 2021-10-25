@@ -1,7 +1,13 @@
 {% extends 'office/base.html' %}
 {% block content %}
+<title>{{ page_title }}</title>
+<style>
+    .leads-table{
+        font-size: 14px;
+    }
+</style>
 <div class="main-wrapper">
-    <table class="table">
+    <table class="table leads-table">
         <thead class="table-light">
             <tr>
                 <!-- <th>Id</th> -->
@@ -15,7 +21,7 @@
                 <th>Поток</th>
                 <th>Id Лида</th>
                 <th>Домен</th>
-                <th>Ответ ПП</th>
+                <th>Ответ</th>
                 <th>Дата</th>
             </tr>
         </thead>
@@ -23,18 +29,18 @@
         {% for lead in leads %}
         <tr>
             <!-- <td>{{ lead.id }}</td> -->
-            <td>{{ lead.pp_name }}</td>
-            <td>{{ lead.name }}</td>
-            <td>{{ lead.phone }}</td>
-            <td>{{ lead.country }}</td>
-            <td>{{ lead.comm }}</td>
-            <td>{{ lead.price }}</td>
-            <td>{{ lead.offer_id }}</td>
-            <td>{{ lead.flow_id }}</td>
-            <td>{{ lead.lead_id }}</td>
-            <td>{{ lead.domain }}</td>
-            <td>{{ lead.pp_answer }}</td>
-            <td>{{ lead.created }}</td>
+            <td>{{ lead.pp_name|default_if_none:"" }}</td>
+            <td>{{ lead.name|default_if_none:"" }}</td>
+            <td>{{ lead.phone|default_if_none:"" }}</td>
+            <td>{{ lead.country|default_if_none:"" }}</td>
+            <td>{{ lead.comm|default_if_none:"" }}</td>
+            <td>{{ lead.price|default_if_none:"" }}</td>
+            <td>{{ lead.offer_id|default_if_none:"" }}</td>
+            <td>{{ lead.flow_id|default_if_none:"" }}</td>
+            <td>{{ lead.lead_id|default_if_none:"" }}</td>
+            <td>{{ lead.domain|default_if_none:"" }}</td>
+            <td>{{ lead.pp_answer|default_if_none:"" }}</td>
+            <td>{{ lead.created|date:'m.d H:i' }}</td>
         </tr>
          {% endfor %}
         </tbody>
