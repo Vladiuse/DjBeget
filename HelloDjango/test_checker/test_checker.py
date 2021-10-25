@@ -533,11 +533,13 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["country"] = 'pl';\n
                     $data["offer"] = 25;\n
                     $data["comm"] = 'комментарий';\n
-                    $data["flow"] = 90;\n"""
+                    $data["flow"] = 90;\n
+                    some code "Location: /success/success.php?name=$name&phone=$phone&" some code"""
         file_text = file_text.split('\n')
         with patch.object(PageFile, 'get_file_lines', return_value=file_text):
-            self.checker.find_variables_value()
-            self.checker.add_errors()
+            # self.checker.find_variables_value()
+            # self.checker.add_errors()
+            self.checker.process()
             self.assertEqual(self.checker.result_value['base'], '55euro')
             self.assertEqual(self.checker.result_value['country'], 'pl')
             self.assertEqual(self.checker.result_value['offer'], '25')
@@ -553,7 +555,8 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["flow"] = 90;\n"""
         file_text = file_text.split('\n')
         with patch.object(PageFile, 'get_file_lines', return_value=file_text):
-            self.checker.process()
+            self.checker.find_variables_value()
+            self.checker.add_errors()
             self.assertTrue(self.checker.NO_OFFER in self.checker.info)
             self.assertTrue(len(self.checker.info) == 1)
 
@@ -565,10 +568,52 @@ class ApiOrderTTTest(unittest.TestCase):
                     $data["flow"] = ;\n"""
         file_text = file_text.split('\n')
         with patch.object(PageFile, 'get_file_lines', return_value=file_text):
-            self.checker.process()
+            self.checker.find_variables_value()
+            self.checker.add_errors()
             self.assertTrue(self.checker.NO_FLOW in self.checker.info)
             self.assertTrue(self.checker.NO_COMM in self.checker.info)
             self.assertTrue(len(self.checker.info) == 2)
+
+    def test_redirect_line_not_found(self):
+        file_text = """$data["base"] = "55euro";\n
+                            $data["country"] = 'pl';\n
+                            $data["offer"] = 25;\n
+                            $data["comm"] = 'комментарий';\n
+                            $data["flow"] = 90;\n
+                            some code "Location: /suc"""
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
+            self.checker.find_redirect_page()
+            self.assertTrue(self.checker.REDIRECT_LINE_NOT_FOUND in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+    def test_redirect_line_old(self):
+        file_text = """$data["base"] = "55euro";\n
+                            $data["country"] = 'pl';\n
+                            $data["offer"] = 25;\n
+                            $data["comm"] = 'комментарий';\n
+                            $data["flow"] = 90;\n
+                            some code "Location: /success/success.html?" some code"""
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
+            self.checker.find_redirect_page()
+            self.assertTrue(self.checker.REDIRECT_LINE_OLD in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+    def test_redirect_incorrect(self):
+        file_text = """$data["base"] = "55euro";\n
+                            $data["country"] = 'pl';\n
+                            $data["offer"] = 25;\n
+                            $data["comm"] = 'комментарий';\n
+                            $data["flow"] = 90;\n
+                            some code ""Location: /success/success.phpx?name=$namephone=$phone&"" some code"""
+        file_text = file_text.split('\n')
+        with patch.object(PageFile, 'get_file_lines', return_value=file_text):
+            self.checker.find_redirect_page()
+            self.assertTrue(self.checker.INCORRECT_REDIRECT_LINE in self.checker.info)
+            self.assertTrue(len(self.checker.info) == 1)
+
+
 
 
 class HideClickTest(unittest.TestCase):

@@ -46,7 +46,9 @@
   align-items: center;
 
 }
-
+.pixel-block{
+  font-size: 12px;
+}
 /* Реквизиты */
 .coll-block {
   margin-top: 50px;
@@ -62,7 +64,19 @@
 .buttons a{
   margin-right: 5px;
 }
+/* Статус кампании*/
+#main-table .camp-status button{
+  font-size: 0.8rem;
+}
 /* ICONS */
+.fa-check-circle{
+  font-size: 13px;
+  color: green;
+}
+#main-table .fa-cogs{
+  margin: 0;
+}
+
 .fa-play-circle{
   font-size: 25px;
   color: green;
@@ -113,4 +127,9 @@
   font-size: 22px;
   box-shadow: 0 0 10px rgba(0,0,0,0.4);
   /* filter: brightness(90%); */
+}
+/* Спиннер запуска кампании */
+#save-comp .spinner-border{
+  width: 1rem;
+  height: 1rem;
 }

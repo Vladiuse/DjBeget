@@ -1,6 +1,8 @@
+import random as r
+
 from django.db import models
 from django.utils import timezone
-import random as r
+
 # Create your models here.
 from .api import MyError, Beget
 from .link_checker import Checker
@@ -60,7 +62,6 @@ class Site(models.Model):
             return self.STATUS_HTML[str(self.check_status)]
         except KeyError:
             return 'No status key error'
-
 
     def unpin_status(self):
         """Установить дефолтный статус"""
@@ -172,25 +173,26 @@ class Site(models.Model):
         return bool(len(self.domain_set.all()))
 
     def set_site_run(self):
-        print('RUN')
+        # print('RUN')
         self.is_camp_run = True
         self.save()
-        print(self.is_camp_run)
+        # print(self.is_camp_run)
 
     def set_site_not_run(self):
-        print('RUN OFFF')
+        # print('RUN OFFF')
         self.is_camp_run = False
         self.save()
-        print(self.is_camp_run)
+        # print(self.is_camp_run)
 
-    # def is_camp_run(self):
-    #     """Запущена ли кампания с этим сайтом"""
-    #     domains = self.domain_set.all()
-    #     for dom in domains:
-    #         for camp in dom.company_set.all():
-    #             if camp.status.name == 'Запущено':
-    #                 return True
-    #     return False
+    def get_pixel(self, source):
+        try:
+            for checker_data in self.check_data['checkers']:
+                if checker_data['key_name'] == source + '_pixel':
+                    pixel = checker_data['result_value']['pixel']
+                    # print(pixel, 'pixel from site')
+                    return pixel
+        except KeyError as error:
+            print('KEY ERROR', error)
 
     def __str__(self):
         return self.site_name
@@ -267,13 +269,22 @@ class Domain(models.Model):
     def get_https_site(self):
         return f'https://{self.name}/'
 
+    def is_sub(self):
+        if self.name.count('.') >= 2:
+            return True
+
+    def is_root(self):
+        if self.name.count('.') == 1:
+            return True
+
     def __str__(self):
         return self.name
 
 
 class TrafficSource(models.Model):
     name = models.CharField(max_length=200, verbose_name='Источник трафика')
-    short_name = models.CharField(max_length=10, verbose_name='краткое название', unique=True, blank=True, null=True)
+    short_name = models.CharField(max_length=10, verbose_name='краткое название eng', unique=True, blank=True,
+                                  null=True)
     icon_html = models.CharField(max_length=100, verbose_name='Код иконки html', blank=True, null=True)
 
     def __str__(self):
@@ -318,10 +329,35 @@ class Company(models.Model):
     published = models.DateTimeField(auto_now_add=True, )
     edited = models.DateTimeField(auto_now=True, )
     daily = models.CharField(max_length=12, verbose_name='Дневной бюджет', blank=True, null=True)
+    pixel = models.CharField(max_length=20, verbose_name='Пиксель кампании', blank=True, default='')
+
+    def delete(self):
+        # TODO - а что елси сайт запущен в другой РК?
+        # for land in self.land.all():
+        #     if land.site:
+        #         land.site.set_site_not_run()
+        super().delete()
 
     class Meta:
         verbose_name = 'Кампания'
         verbose_name_plural = 'Кампании'
+
+    def is_comp_active(self):
+        if self.status.name in ['Запущено', 'На расмотрении']:
+            return True
+
+    def is_pixel_correct(self):
+        site_pixels = set()
+        if self.pixel:
+            if self.cab:
+                for dom in self.land.all():
+                    if dom.site:
+                        site_pixel = dom.site.get_pixel(self.cab.account.source.short_name)
+                        print(self.cab.account.source.short_name, 'source')
+                        site_pixels.add(site_pixel)
+                # print(site_pixels, 'site_pixels from FUNC')
+                if len(site_pixels) == 1 and self.pixel in site_pixels:
+                    return True
 
     def get_comp_id(self):
         symbols = '1234567890qwertyuiopasdfghjklzxcvbnm'
@@ -353,12 +389,12 @@ class Account(models.Model):
 class Cabinet(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название кабинета')
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    pixel = models.CharField(verbose_name='Пиксель акаунта', blank=True, null=True, max_length=99)
+    pixel = models.CharField(verbose_name='Пиксель кабинета', blank=True, null=True, max_length=99)
     description = models.CharField(max_length=300, blank=True, null=True, verbose_name='описание')
     # domain = models.OneToOneField(Domain, on_delete=models.SET_NULL, blank=True, null=True,
     #                               verbose_name='Закрепленный домен')
-    domain = models.ForeignKey(Domain, on_delete=models.SET_NULL,blank=True, null=True,
-                                  verbose_name='Закрепленный домен')
+    domain = models.ForeignKey(Domain, on_delete=models.SET_NULL, blank=True, null=True,
+                               verbose_name='Закрепленный домен')
 
     def __str__(self):
         return self.name
@@ -379,6 +415,18 @@ class CodeExample(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Lead(models.Model):
+    name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
+    phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
+    country = models.CharField(max_length=2, verbose_name='Страна', blank=True, null=True)
+    comm = models.CharField(max_length=50, verbose_name='коментарий', blank=True, null=True)
+    price = models.CharField(max_length=50, verbose_name='цена', blank=True, null=True)
+    offer_id = models.CharField(max_length=10, verbose_name='id оффера', blank=True, null=True)
+    flow_id = models.CharField(max_length=10, verbose_name='id потока', blank=True, null=True)
+    domain = models.CharField(max_length=60, verbose_name='домен лида', blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления лида')
 
 
 class Test(models.Model):

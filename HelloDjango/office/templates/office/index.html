@@ -1,5 +1,7 @@
 {% extends 'office/base.html' %}
 {% block content %}
+<title>{{ page_title }}</title>
+
 <style>
 .find-div{
     text-align: left;
@@ -238,7 +240,7 @@
         // Кнопка показать/скрыть не новые сайты
         var butn = $('#show-new')
         CountSpan = ''
-        if (rowsSiteNewCount > 0) {var CountSpan =  ' <span class="badge bg-danger">'+ rowsSiteNewCount +'</span>'}
+        if (rowsSiteNewCount > 0) {var CountSpan =  ' <span class="badge bg-danger">'+ rowsSiteNewCount +'</span>'} else butn.addClass('disabled')
         butn.html('Только Новые' + CountSpan)
         var newSiteTo = 'hide'
         $(butn).click(function(){

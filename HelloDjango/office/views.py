@@ -14,10 +14,12 @@ from pprint import pprint
 from .api import Beget
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
-from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet, Country
+from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet,\
+    Country, Lead
 from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
-    CabinetSerializer, CountrySerializer
+    CabinetSerializer, CountrySerializer, LeadSerializer
 from .new_checker import SiteMap as SiteMap, LinkChecker as NewLinkChecker
+from django.views.decorators.csrf import csrf_exempt
 
 
 DJANGO_SITE = 'https://main-prosale.store/'
@@ -33,6 +35,7 @@ def sites(request):
     sites = list(Site.objects.exclude(site_name__in=Site.DONT_CHECK))  # исключаються тех сайты
     sites.sort(key=Site.get_sort_name)
     content = {'sites': sites,
+               'page_title': 'Сайты',
                }
     return render(request, 'office/index.html', content)
 
@@ -114,6 +117,7 @@ def old_lands(request):
         'domain': DOMAIN,
         'old_lands': old_lands,
         'info': info,
+        'page_title': 'Архив',
     }
     return render(request, 'office/old_lands.html', content)
 
@@ -124,6 +128,7 @@ def requisites(request):
     examples = CodeExample.objects.all()
     content = {
         'examples': examples,
+        'page_title': 'Реквизиты',
     }
     return render(request, 'office/requisites.html', content)
 
@@ -150,6 +155,7 @@ def checker(request, site_id, mode):
         'site': site_model,
         'data': site_model.check_data,
         'is_check_start': is_check_start,
+        'page_title': 'Проверка',
     }
     return render(request, 'office/checker.html', content)
 
@@ -158,9 +164,13 @@ def domains(request):
     """Список доменов"""
     Beget().update_domains()
     domains_bd = Domain.objects.all().order_by('name')
+    domains_bd = [domain for domain in domains_bd if domain.is_root() is True]
+    # for dom in domains_bd:
+    #     print(dom.name, dom.is_root())
     free_doms = Domain.objects.filter(site__isnull=True)
     content = {'domains': domains_bd,
                'free_doms': free_doms,
+               'page_title': 'Домены',
                }
     return render(request, 'office/domains.html', content)
 
@@ -202,6 +212,7 @@ def delete_site(request, site_id):
 def domains_list_api(request):
     if request.method == 'GET':
         domains = Domain.objects.all()
+        domains = [domain for domain in domains if domain.is_root() is True]
         serializer = DomainSerializer(domains, many=True)
         return Response(serializer.data)
 
@@ -267,10 +278,11 @@ def create_capmaning(request):
     # TODO - при создании кампании сайт - не становиться запущеным!
     data = json.loads(request.POST['data'])
     name = data['text']
+    pixel = data['pixel']
     daily = data['daily']
     cab = Cabinet.objects.get(pk=data['cab_id'])
     status = CampaignStatus.objects.get(pk=5)
-    new_camp = Company(name=name, cab=cab, status=status, daily=daily)
+    new_camp = Company(name=name, cab=cab, status=status, daily=daily, pixel=pixel)
     new_camp.save()
     for geo_id in data['geos_id']:
         country = Country.objects.get(pk=geo_id)
@@ -280,7 +292,10 @@ def create_capmaning(request):
         new_camp.land.add(domain)
     new_camp.save()
     statusys = CampaignStatus.objects.all()
-    content = {'comp': new_camp, 'statusys': statusys}
+    content = {
+        'comp': new_camp,
+        'statusys': statusys,
+    }
     # return Response(data, template_name='office/camp.html')
     # return render(request, 'office/camp.html', content)
     return render(request, 'office/camp.html', content)
@@ -293,7 +308,11 @@ def campanings(request):
     """ Текущие РК"""
     campamings = Company.objects.order_by('-published')
     statusys = CampaignStatus.objects.all()
-    content = {'campanings': campamings, 'statusys': statusys}
+    content = {
+        'campanings': campamings,
+        'statusys': statusys,
+        'page_title': 'Кампании',
+    }
     return render(request, 'office/campanings.html', content)
 
 
@@ -320,3 +339,22 @@ def zapusk_data(request):
         'domains': domains_serializer.data,
         'geos': country_serializer.data,
     })
+
+
+def all_leads(request):
+    leads = Lead.objects.all().order_by('-pk')
+    content = {'leads': leads}
+    return render(request, 'office/leads.html', content)
+
+@api_view(['GET', 'POST'])
+@renderer_classes([JSONRenderer])
+@csrf_exempt
+def add_lead(request):
+    if request.method == 'POST':
+        serializer = LeadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse({"error": "not valid"})
+    else:
+        return JsonResponse({"error": "error"})

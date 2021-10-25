@@ -1,0 +1,38 @@
+{% extends 'office/base.html' %}
+{% block content %}
+<div class="main-wrapper">
+    <table class="table">
+        <thead class="table-light">
+            <tr>
+                <th>Id</th>
+                 <th>Name</th>
+                 <th>Phone</th>
+                 <th>country</th>
+                 <th>comm</th>
+                 <th>price</th>
+                 <th>offer_id</th>
+                <th>flow_id</th>
+                <th>domain</th>
+                <th>created</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for lead in leads %}
+        <tr>
+            <td>{{ lead.id }}</td>
+            <td>{{ lead.name }}</td>
+            <td>{{ lead.phone }}</td>
+            <td>{{ lead.country }}</td>
+            <td>{{ lead.comm }}</td>
+            <td>{{ lead.price }}</td>
+            <td>{{ lead.offer_id }}</td>
+            <td>{{ lead.flow_id }}</td>
+            <td>{{ lead.domain }}</td>
+            <td>{{ lead.created }}</td>
+
+        </tr>
+         {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

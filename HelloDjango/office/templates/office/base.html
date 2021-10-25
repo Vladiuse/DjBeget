@@ -18,7 +18,7 @@
 
 <!-- НАчало сайта -->
 <head>
-<title>Django</title>
+<!-- <title>Django</title> -->
 
 <!--  <link rel="shortcut icon" href="{% static 'office/favicon.svg' %}" type="image/svg">-->
 </head>
@@ -35,7 +35,7 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <div class="collapse navbar-collapse clearfix" id="navbarNavDropdown">
             <ul class="navbar-nav">
               {% if user.is_authenticated %}
               <li class="nav-item">
@@ -85,7 +85,12 @@
                    
               </li>
               {% else %}
-              <li class="nav-item">
+              <style>
+                #navbarNavDropdown{
+                  flex-grow: 0;
+                }
+              </style>
+              <li class="nav-item ">
                 <a class="nav-link" href="{% url 'login' %}">Войти</a>
               </li>
               {% endif %}

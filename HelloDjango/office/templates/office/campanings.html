@@ -1,6 +1,6 @@
 {% extends 'office/base.html' %}
 {% block content %}
-
+<title>{{ page_title }}</title>
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-fullscreen">
@@ -36,6 +36,7 @@
       <tr>
         <th scope="col">Аккаунт</th>
         <th scope="col">Кабинет</th>
+        <th scope="col">Пиксель</th>
         <th scope="col">Домены</th>
         <th scope="col">Название</th>
         <th scope="col">Daily</th>
@@ -47,6 +48,7 @@
       <tr>
         <td><div class="list-group acc"></div></td>
         <td><div class="list-group cab"></div></td>
+        <td><input type="text" value="" id="pixel"></td>
         <td>
           <div class="for-ch-domains">
             <div class="btn-group dom-filter" role="group" aria-label="Button group with nested dropdown">
@@ -104,14 +106,19 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-modal">Close</button>
-        <button type="button" class="btn btn-primary disabled" id="save-comp">Создать кампанию</button>
+        <button type="button" class="btn btn-primary disabled" id="save-comp">
+          Создать кампанию
+          <div class="spinner-grow spinner-grow-sm text-light" role="status" style="display:none;" id="comp-spinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </button>
     </div>
 
     </div>
 </div>
 </div>
 <div class="main-wrapper">
-    <h3>Кампании</h3>
+<!--    <h3>Кампании</h3>-->
     <div class="btn-toolbar sn-block-filter" role="toolbar" aria-label="Toolbar with button groups">
         <div class="btn-group me-2" role="group" aria-label="First group">
           <button type="button" class="btn btn-primary active" id="sn-all">Все</button>
@@ -133,13 +140,6 @@
           {% endfor %}
       </ul>
     </div>
-
-    
-          
-
-
-
-
 <div class="table-camps">
     <table class="table" id="main-table">
         <thead class="table-light">
@@ -149,7 +149,7 @@
                 <!-- <th>Кабинет</th> -->
                 <th>Гео</th>
 <!--                <th>Id</th>-->
-<!--                <th>Some</th>-->
+               <th>Pixel</th>
                 <th>Daily</th>
                 <th>Название</th>
                 <th>Ссылки</th>
@@ -178,7 +178,15 @@
                 {% endfor %}
             </td>
 <!--            <td>{{comp.get_comp_id}}</td>-->
-<!--            <td>Some else</td>-->
+            <td class="pixel-block">
+             <!-- Pxilex -->
+             {% if comp.is_comp_active %}
+             {% if comp.is_pixel_correct %}
+             <i class="fas fa-check-circle"></i>
+             {% endif %}
+             {% endif %}
+             {{ comp.pixel }}
+            </td>
             <td>{% if comp.daily %}{{comp.daily}}{% endif %}</td>
             <td>{{ comp.name }}</td>
             <td>
@@ -214,10 +222,7 @@
                     <li><a class="dropdown-item disabled" href="#" data-bs-toggle="modal" data-bs-target="#">Удалить</a></li>                      
                   </ul>
                 </div>
-                <!-- Прочее -->
             </td>
-            <!-- <td> --- </td>  -->
-            <!-- <td>{{ comp.edited|date:" G:i - d.m" }}</td>  -->
         </tr>
         {% endfor %}
       </tbody>
@@ -382,20 +387,11 @@ function updateApiStatus(campId, newStatusId){
 
 <script>
     // скрипт для модального окна создания запуска
-  
-  // показать уведомнление
-  // $(document).ready(function(){
-  //   console.log('ready')
-  //     $("h3").click(function(){
-  //       console.log('clock h3')
-  //         $(".toast").toast("show");
-  //     });
-  // });
-  
-    var curSource = null
-    var curAcc = null
-    var curCab
-    var neww
+    pixelInput = $('#pixel')
+    var curSource = null;
+    var curAcc = null;
+    var curCab = null;
+    var neww = null;
    API_ANSWER = null;
   var host = window.location.protocol + "//" + window.location.host;
     URL = host + '/api/zapusk/'
@@ -428,6 +424,9 @@ function updateApiStatus(campId, newStatusId){
         $(this).addClass('active')
         // disable кнопок выбора домена
         $('.for-ch-domains button').addClass('disabled')
+        // сброс инпута пикселя
+        pixelInput.removeAttr('disabled')
+          pixelInput.val('')
       })
       // список Кабы выделение
       $('.list-group.cab').on('click','button',function(){
@@ -442,10 +441,22 @@ function updateApiStatus(campId, newStatusId){
               }
           })
           curCab = curCab[neww]
+          console.log(curCab, 'xxx')
           //console.log(curCab.domain.name)
+          // Акттивация и подтягивание пикселя с кабинета
+          
+          if (curCab['pixel'] != null){
+            pixelInput.attr('disabled','disabled')
+            pixelInput.val(curCab['pixel'])
+          } 
+          else {
+            pixelInput.removeAttr('disabled')
+            pixelInput.val('')
+          }
           // включение кнопок фильтров доменов
           $('.for-ch-domains button').removeClass('disabled')
           $('#linked-doms').trigger('click')
+          
         })
     
     // фильтр доменов выделение кнопок
@@ -525,14 +536,9 @@ function updateApiStatus(campId, newStatusId){
           $(this).addClass('btn-outline-primary')
           // disable кнопок выбора домена
           $('.for-ch-domains button').addClass('disabled')
-          // campRows.hide()
-          // var buttonClass = $(this).attr('id')
-          // var toSHow = campRows.filter(function(){
-          //     var res = $(this).find('td.' + buttonClass)
-          //     if (res.length == 0){return false}
-          //     if (res.length != 0){return true}
-          // })
-          // toSHow.show()
+          // сброс инпута пикселя
+          pixelInput.removeAttr('disabled')
+          pixelInput.val('')
           })
   
       $('#sn-all').click(function(){
@@ -581,7 +587,7 @@ function updateApiStatus(campId, newStatusId){
   
 
   // блокировка.включение кпопки сохранения запуска
-  $('#exampleModal').click(function(){
+  $('#exampleModal .modal-body').click(function(){
     //   console.log($('.list-group.domains').children().length == 0, 'длинна выбранных доменов')
     //   console.log($('.list-group.geos').children().length == 0, 'длинна выбранных geo')
       if(curCab == null || $('.list-group.domains').children().length == 0 || $('.list-group.geos').children().length == 0)
@@ -592,11 +598,14 @@ function updateApiStatus(campId, newStatusId){
   })
   // получения данных запуска
   $('#save-comp').click(function(){
+      $('#save-comp').addClass('disabled')
+      $('#comp-spinner').show()
       var domainsIds = []
       var geosIds = []
       var textCamp = $('#camp-text').val()
       var campDaily = $('#camp-daily').val()
       var cabId = curCab.id
+      var compPixel = $('#pixel').val()
       csrfmiddlewaretoken = '{{ csrf_token }}'
       $('.list-group.domains button').each(function(){
         if ($(this).attr('dom-id') != undefined)
@@ -612,7 +621,7 @@ function updateApiStatus(campId, newStatusId){
           'text': textCamp,
           'cab_id': cabId,
           'daily': campDaily,
-          
+          'pixel': compPixel,
       }
       var newCampData = JSON.stringify(newCampData);
     //   newCampData = {
@@ -620,7 +629,7 @@ function updateApiStatus(campId, newStatusId){
     //       'phone': "['123', '123']",
     //       'csrfmiddlewaretoken': csrfmiddlewaretoken,
     //   }
-
+      
       console.log(geosIds, domainsIds, 'geo-doms')
       console.log(newCampData, 'это запрос')
       var host = window.location.protocol + "//" + window.location.host;
@@ -628,6 +637,7 @@ function updateApiStatus(campId, newStatusId){
       URL = host + '/api/create_capmaning/'
       $.post(URL,{'data': newCampData, 'csrfmiddlewaretoken': csrfmiddlewaretoken,}, function(data){
       $('.table-camps thead').after(data) // вставка строки в таблицу
+      $('#comp-spinner').hide()
       console.log('ответ от сервера',data)
       $('#close-modal').trigger('click')
       $(".toast").toast("show");
@@ -637,6 +647,9 @@ function updateApiStatus(campId, newStatusId){
       $('.list-group.acc').empty()
       $('#camp-text').val('')
       $('#camp-daily').val('')
+      // сброс инпута пикселя
+      pixelInput.removeAttr('disabled')
+      pixelInput.val('')
       curCab = null;
       updateAllButtons()
       })

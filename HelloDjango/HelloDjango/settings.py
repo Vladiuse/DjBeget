@@ -11,18 +11,17 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import json
 import os
-from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
 
-
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # get secret keys
 with open(os.path.join(BASE_DIR, 'secrets.json')) as secrets_file:
     secrets = json.load(secrets_file)
+
 
 def get_secret(setting, secrets=secrets):
     """Get secret setting or fail with ImproperlyConfigured"""
@@ -30,6 +29,7 @@ def get_secret(setting, secrets=secrets):
         return secrets[setting]
     except KeyError:
         raise ImproperlyConfigured("Set the {} setting".format(setting))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -42,9 +42,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['handy-fun.com', 'main-prosale.store', '127.0.0.1']
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL= '/login'
+LOGOUT_REDIRECT_URL = '/login'
 STATIC_ROOT = '/home/v/vladiuse/django/public_html/static'
-
 
 # Application definition
 
@@ -87,11 +86,14 @@ TEMPLATES = [
     },
 ]
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PARSER_CLASSES': [
-#         'rest_framework.parsers.JSONParser',
-#     ]
-# }
+REST_FRAMEWORK = {
+    # 'DEFAULT_PARSER_CLASSES': [
+    #     'rest_framework.parsers.JSONParser',
+    # ]
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 # WSGI_APPLICATION = 'HelloDjango.wsgi.application'
 
@@ -162,7 +164,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -175,7 +176,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

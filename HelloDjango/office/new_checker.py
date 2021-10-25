@@ -135,6 +135,7 @@ class PageFile:
         self.text = None
         self.soup = None
         self.file_data = None
+        self.file_lines = []
 
     # def connect(self):
     #     file = self.connector.`cat_comm`(self.file_name)
@@ -152,6 +153,8 @@ class PageFile:
     #     return self.text.decode('utf-8')
 
     def get_file_lines(self, count=0):
+        if self.file_lines:
+            return self.file_lines
         lines = []
         if count:
             for _ in range(count):
@@ -159,6 +162,7 @@ class PageFile:
                 lines.append(line)
         else:
             lines = self.file_data.readlines()
+        self.file_lines = lines
         return lines
 
     @staticmethod
@@ -184,7 +188,7 @@ class PageFile:
 class SiteMap:
     # pages
     # TODO - определить лишь файлы и способы подступа к ним?
-    SUCCESS_PAGE = '/success/success.html'
+    SUCCESS_PAGE = '/success/success.php'
     POLICY = '/policy.html'
     SPAS = '/spas.html'
     TERM = '/terms.html'
@@ -276,6 +280,7 @@ class LinkChecker:
                 'result_value': self.result_value,
                 'status_html': StatusHTML.get_checker_status_html(self.result_code),
                 'status_text': StatusHTML.get_checker_status_text(self.result_code),
+                'key_name': self.KEY_NAME,
             }
             return result
 
@@ -490,7 +495,7 @@ class LinkChecker:
         FBP_2 = {'start': "https://www.facebook.com/tr?id=",
                  'end': "&ev"}
 
-        PIXEL_NOT_FOUND = 'Пиксель не найден'
+        PIXEL_NOT_FOUND = 'Блок с пикселем не найден'
         ONE_NOT_CORRECT = 'Один из пикселей некоректен'
 
         STATUS_SET = {
@@ -537,9 +542,9 @@ class LinkChecker:
                 self.result_value.update({'pixel': tt_pixel})
 
     class GoogleTag(Check):
+        # TODO - сделать
         pass
 
-    # TODO - сделать
 
     class PageLink(Check):
         """Поиск некоректных внутрених ссылок"""
@@ -690,6 +695,9 @@ class LinkChecker:
         DESCRIPTION = 'Trirazat API'
         KEY_NAME = 'trirazat_api'
 
+        REDIRECT_PAGE = '"Location: /success'
+        OLD_VERSION = '"Location: /success/success.html?"'
+        CORRECT_VERSION = '"Location: /success/success.php?name=$name&phone=$phone&"'
         FILE_NOT_FOUND = 'Файл не найден в папке сайта'
 
         NO_OFFER = 'Оффер не найден'
@@ -697,6 +705,9 @@ class LinkChecker:
         NO_COUNTRY = 'Страна не найдена'
         NO_PRICE = 'Цена не найдена'
         NO_COMM = 'Комментарий не найден'
+        REDIRECT_LINE_NOT_FOUND = 'Строка редиректа не найдена'
+        REDIRECT_LINE_OLD = 'Старая версия редиректа'
+        INCORRECT_REDIRECT_LINE = 'Ошибка в строке редиректа'
         # TODO - add currency
         VARIABLES = {
             'flow': {
@@ -728,6 +739,9 @@ class LinkChecker:
             NO_COUNTRY: 'disabled',
             NO_PRICE: 'disabled',
             NO_COMM: 'disabled',
+            REDIRECT_LINE_NOT_FOUND: 'error',
+            REDIRECT_LINE_OLD: 'error',
+            INCORRECT_REDIRECT_LINE: 'error',
         }
 
         def __init__(self, *args, **kwargs):
@@ -744,12 +758,12 @@ class LinkChecker:
             else:
                 self.find_variables_value()
                 self.add_errors()
+                self.find_redirect_page()
 
         def find_variables_value(self):
-            # file_text = self.site.api_php.get_text()
-            # file_lines = file_text.split('\n')
             file_lines = self.site.api_php.get_file_lines()
             for line in file_lines:
+                print(line, 'xxxxxx')
                 for param, data in self.VARIABLES.items():
                     variable = data['variable']
                     if variable in line:
@@ -757,11 +771,6 @@ class LinkChecker:
                         self.result_value.update({param: value})
                         break
 
-        # def add_errors(self):
-        #     for param in self.VARIABLES.keys():
-        #         if param not in self.result_value:
-        #             error = self.VARIABLES[param]['not_found']
-        #             self.info.add(error)
         def add_errors(self):
             # TODO - переделать. + функция дублируеться
             for param in self.VARIABLES.keys():
@@ -772,6 +781,26 @@ class LinkChecker:
                 except KeyError:
                     error = self.VARIABLES[param]['not_found']
                     self.info.add(error)
+
+        def find_redirect_page(self):
+            file_lines = self.site.api_php.get_file_lines()
+            redirect_line = None
+            print(len(file_lines), 'file_lines')
+            for line in file_lines:
+                print(line)
+                if self.REDIRECT_PAGE in line:
+                    redirect_line = line
+                    break
+            if not redirect_line:
+                self.info.add(self.REDIRECT_LINE_NOT_FOUND)
+                return
+            if self.OLD_VERSION in redirect_line:
+                self.info.add(self.REDIRECT_LINE_OLD)
+                return
+            if self.CORRECT_VERSION not in redirect_line:
+                self.info.add(self.INCORRECT_REDIRECT_LINE)
+
+
 
     class HideClick(Check):
 

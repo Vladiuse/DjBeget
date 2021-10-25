@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Domain, Company, Country, TrafficSource, Account, Cabinet, CampaignStatus
+from .models import Domain, Company, Country, TrafficSource, Account, Cabinet, CampaignStatus, Lead
 
 
 class DomainSerializer(ModelSerializer):
@@ -73,5 +73,11 @@ class CompanySerializer(ModelSerializer):
 class TestSerializer(ModelSerializer):
     class Meta:
         model = Company
+
+
+class LeadSerializer(ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = '__all__'
 
 
