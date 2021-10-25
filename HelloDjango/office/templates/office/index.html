@@ -89,6 +89,19 @@
         <i class="fas fa-times" style="display: none;"></i>
      </button>
     </div>
+    <div>
+        <div class="dropdown">
+            <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+              Обновить
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="{% url 'office:update_sites' %}">Список сайтов</a></li>
+                <li><a class="dropdown-item" href="{% url 'office:get_site_title' 0 %}">Заголовки сайтов</a></li>
+                <li><a class="dropdown-item" href="{% url 'office:get_site_title' 1 %}">Заголовки сайтов(все)</a></li>
+            </ul>
+          </div>
+    </div>
+    
      <!-- <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5> -->
      <div>
         <a href="{% url 'office:old_lands' %}"  type="button" class="btn btn-light" >Архив <i class="fas fa-archive"></i></a>

@@ -343,7 +343,10 @@ def zapusk_data(request):
 
 def all_leads(request):
     leads = Lead.objects.all().order_by('-pk')
-    content = {'leads': leads}
+    content = {
+        'leads': leads,
+        'page_title': 'Лиды',
+    }
     return render(request, 'office/leads.html', content)
 
 @api_view(['GET', 'POST'])
