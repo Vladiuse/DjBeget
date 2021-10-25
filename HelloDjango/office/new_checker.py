@@ -414,7 +414,7 @@ class LinkChecker:
                 self.info.add(self.NO_LINK)
 
         def check_page(self):
-            if not self.site.main.is_work():
+            if not self.site.policy.is_work():
                 self.info.add(self.PAGE_NOT_WORK)
 
     class TermsPage(PolicyPage):
@@ -422,6 +422,10 @@ class LinkChecker:
         KEY_NAME = 'terms'
         POLICY_LINK = 'terms.html'
         LINK_TEXT = 'Пользовательское соглашение'
+
+        def check_page(self):
+            if not self.site.terms.is_work():
+                self.info.add(self.PAGE_NOT_WORK)
 
     class SpasPage(Check):
         """
