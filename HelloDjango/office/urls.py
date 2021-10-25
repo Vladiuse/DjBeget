@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/create_capmaning/', views.create_capmaning),
     path('api/add_lead/', views.add_lead),
     path('leads/', views.all_leads, name='leads'),
+    path('main/', views.main, name='main'),
     ]
