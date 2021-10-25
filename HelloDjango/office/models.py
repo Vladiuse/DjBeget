@@ -427,6 +427,9 @@ class Lead(models.Model):
     flow_id = models.CharField(max_length=10, verbose_name='id потока', blank=True, null=True)
     domain = models.CharField(max_length=60, verbose_name='домен лида', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления лида')
+    ip = models.CharField(max_length=30, verbose_name='ip address', blank=True, null=True,)
+    pp_name = models.CharField(max_length=2, verbose_name='Код ПП', blank=True, null=True)
+    pp_answer = models.JSONField(default=dict, blank=True)
 
 
 class Test(models.Model):
