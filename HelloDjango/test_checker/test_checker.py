@@ -385,7 +385,7 @@ class OrderFormsTest(unittest.TestCase):
     def test_all_good(self):
         text = '<form action="api.php">' \
                '<input type="text" name="name">' \
-               '<input type="text" name="phone" minlength="9">' \
+               '<input type="text" name="phone" minlength="9" required>' \
                '</form>'
         soup = BeautifulSoup(text, 'lxml')
         with patch.object(Page, 'get_soup', return_value=soup):
