@@ -116,6 +116,7 @@
                 <th>Tools</th>
 <!--                <th>Кло</th>-->
                 <th>Запуск</th>
+                <th>Баер</th>
                 <th>Прокла</th>
                 <th>Статус</th>
                 <th>Прочее</th>
@@ -155,6 +156,7 @@
            
                     {% endif %}
                 </td>
+                <td>{{ site.employee|default_if_none:"" }}</td>
                 <td class="site-title">{{ site.title|slice:":30" }}</td>
                 <td>
                     <div class="btn-group dropend">
@@ -197,7 +199,7 @@
                         <i class="fas fa-cogs "></i>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#">Отправить лид</a></li>
+                        <li><a class="dropdown-item" href="/admin/office/site/{{site.id}}/change/" targen="_blank">Редактировать</a></li>
                         <li><a class="dropdown-item" href="#">Архивировать</a></li>
                         <li><a class="dropdown-item" href="{{ site.get_log_url }}" target="_blank">Лог сайта</a></li>
                         <li><hr class="dropdown-divider"></li>

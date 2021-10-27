@@ -39,10 +39,11 @@ class Site(models.Model):
     # domain = models.URLField(max_length=200, verbose_name='Ссылка сайта')
     title = models.CharField(max_length=200, verbose_name='Заголовок сайта', default='None')
     check_status = models.CharField(max_length=200, choices=CHOICE, default=GREY, verbose_name='Статус проверки сайта')
-    check_data = models.JSONField(default=dict)
+    check_data = models.JSONField(default=dict, blank=True, null=True)
     datetime = models.DateTimeField(auto_now_add=True)
     is_camp_run = models.BooleanField(default=False)
     is_cloac = models.BooleanField(default=False)
+    employee = models.ForeignKey('Employee', on_delete=models.SET_NULL, default=None, null=True, blank=True)
 
     def save(self):
         # TODO перенести в другую функцию?
@@ -438,3 +439,16 @@ class Test(models.Model):
     DIC_2 = {"result": [{'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'},
                         {'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'}]}
     json = models.JSONField()
+
+
+class Employee(models.Model):
+    name = models.CharField(max_length=30, verbose_name='Имя баера')
+    position = models.CharField(max_length=20, blank=True, null=True)
+    code = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Сотрудник'
+        verbose_name_plural = 'Сотрудники'
+
+    def __str__(self):
+        return self.name

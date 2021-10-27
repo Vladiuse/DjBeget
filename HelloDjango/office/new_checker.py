@@ -601,6 +601,7 @@ class LinkChecker:
             self.name = None
             self.phone = None
             self.phone_minlength = None
+            self.phone_required = None
             self.i_agree = None
 
         def process(self):
@@ -628,6 +629,7 @@ class LinkChecker:
         def get_phone_minlength(self):
             if self.phone:
                 phone = self.form.find('input', {'name': 'phone'})
+                self.phone_required = phone.get('required')
                 try:
                     self.phone_minlength = phone['minlength']
                 except KeyError:
@@ -635,6 +637,8 @@ class LinkChecker:
 
         def check_i_agree_input(self):
             pass
+
+
 
     class OrderForm(HTMLForm):
 
@@ -653,6 +657,7 @@ class LinkChecker:
         NAME_ERROR = 'Нет инпута(ошибка) для имени'
         PHONE_ERROR = 'Нет инпута(ошибка) для телефона'
         NO_MIN_LEN = 'Минимальная длина номера не установлена'
+        PHONE_NOT_REQUIRED = 'Номер не установлен как обязательный'
 
         STATUS_SET = {
             NO_FORMS: 'error',
@@ -660,6 +665,7 @@ class LinkChecker:
             NAME_ERROR: 'error',
             PHONE_ERROR: 'error',
             NO_MIN_LEN: 'reprimand',
+            PHONE_NOT_REQUIRED : 'error',
         }
 
         def __init__(self, site):
@@ -692,6 +698,8 @@ class LinkChecker:
                     self.info.add(self.PHONE_ERROR)
                 if not form.phone_minlength:
                     self.info.add(self.NO_MIN_LEN)
+                if form.phone_required is None:
+                    self.info.add(self.PHONE_NOT_REQUIRED)
 
     class ApiOrderTT(Check):
         # TODo - success.php!

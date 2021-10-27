@@ -8,7 +8,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from pprint import pprint
 from .api import Beget
@@ -364,4 +363,4 @@ def add_lead(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse({"error": "not valid"})
     else:
-        return JsonResponse({"error": "error"})
+        return JsonResponse({"error": "error not POST"})
