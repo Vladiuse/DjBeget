@@ -155,23 +155,54 @@ class Beget(ApiManager):
 
     def update_domains(self):
         """Обновить список доменов"""
-        # TODO - перенести в Domain?
-        all_domains_list = self.get_all_domains()
-        beget_doms_id = [dom['id'] for dom in all_domains_list]
-        db_doms_id = [dom.beget_id for dom in models.Domain.objects.all()]
+        # # TODO - перенести в Domain?
+        # all_domains_list = self.get_all_domains()
+        # beget_doms_id = [dom['id'] for dom in all_domains_list]
+        # db_doms_id = [dom.beget_id for dom in models.Domain.objects.all()]
+        # to_del = set(db_doms_id) - set(beget_doms_id)
+        # to_add = set(beget_doms_id) - set(db_doms_id)
+        # for dom_id in to_del:
+        #     dom = models.Domain.objects.get(beget_id=dom_id)
+        #     dom.delete()
+        # for domain in all_domains_list:
+        #     dom_id = domain['id']
+        #     if dom_id in to_add:
+        #         name = domain['fqdn']
+        #         dom = models.Domain(name=name, beget_id=dom_id)
+        #         dom.save()
+        all_root_domains_list = self.get_domains()
+        beget_doms_id = [dom['id'] for dom in all_root_domains_list]
+        db_doms_id = [dom.beget_id for dom in models.RootDomain.objects.all()]
         to_del = set(db_doms_id) - set(beget_doms_id)
         to_add = set(beget_doms_id) - set(db_doms_id)
         for dom_id in to_del:
-            dom = models.Domain.objects.get(beget_id=dom_id)
+            dom = models.RootDomain.objects.get(beget_id=dom_id)
             dom.delete()
-        for domain in all_domains_list:
+        for domain in all_root_domains_list:
             dom_id = domain['id']
             if dom_id in to_add:
                 name = domain['fqdn']
-                dom = models.Domain(name=name, beget_id=dom_id)
+                dom = models.RootDomain(name=name, beget_id=dom_id)
+                dom.save()
+
+        all_sub_domains_list = self.get_sub_domains()
+        beget_doms_id = [dom['id'] for dom in all_sub_domains_list]
+        db_doms_id = [dom.beget_id for dom in models.SubDomain.objects.all()]
+        to_del = set(db_doms_id) - set(beget_doms_id)
+        to_add = set(beget_doms_id) - set(db_doms_id)
+        for dom_id in to_del:
+            dom = models.SubDomain.objects.get(beget_id=dom_id)
+            dom.delete()
+        for domain in all_sub_domains_list:
+            dom_id = domain['id']
+            if dom_id in to_add:
+                name = domain['fqdn']
+                root_dom = models.RootDomain.objects.get(beget_id=domain['domain_id'])
+                dom = models.SubDomain(name=name, beget_id=dom_id, root_domain=root_dom)
                 dom.save()
 
     def del_site(self,beget_id):
+        """Удаление сайта с бегета"""
         url = self.delite_site + json.dumps({'id': beget_id})
         res = self.api(url, 'get')
         if res['status'] == 'success':
@@ -186,6 +217,4 @@ class Beget(ApiManager):
 
 if __name__ == '__main__':
     bm = Beget()
-    list = []
-    for i in bm.get_sites():
-        pprint(i)
+    pprint(bm.get_sub_domains())

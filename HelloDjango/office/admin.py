@@ -2,10 +2,22 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from .models import Site, OldLand, Domain, CodeExample, \
-    TrafficSource, Country, CampaignStatus, Account, Cabinet, Company, Test, Lead, Employee
+    TrafficSource, Country, CampaignStatus, Account, Cabinet, \
+    Company, Test, Lead, Employee, RootDomain, SubDomain
 
 
 class DomainAdmin(admin.ModelAdmin):
+    list_display = ['id', 'beget_id', 'name', 'site',]
+    list_display_links = ['name']
+    search_fields = ['name']
+
+
+class RootDomainAdmin(admin.ModelAdmin):
+    list_display = ['id', 'beget_id', 'name', 'site']
+    list_display_links = ['name']
+    search_fields = ['name']
+
+class SubDomainAdmin(admin.ModelAdmin):
     list_display = ['id', 'beget_id', 'name', 'site']
     list_display_links = ['name']
     search_fields = ['name']
@@ -90,6 +102,8 @@ admin.site.register(Cabinet, CabinetAdmin)
 admin.site.register(Site, SiteAdmin)
 admin.site.register(OldLand)
 admin.site.register(Domain, DomainAdmin)
+admin.site.register(RootDomain, RootDomainAdmin)
+admin.site.register(SubDomain, SubDomainAdmin)
 admin.site.register(CodeExample)
 admin.site.register(TrafficSource)
 admin.site.register(CampaignStatus)

@@ -232,9 +232,9 @@ class Domain(models.Model):
     )
 
     HTML_CLASS = {
-        NEW: 'btn btn-success',
-        USE: 'btn btn-warning',
-        BAN: 'btn btn-danger',
+        NEW: 'success',
+        USE: 'warning',
+        BAN: 'danger',
     }
     site = models.ForeignKey(Site, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=99, verbose_name='название домена', unique=True)
@@ -254,6 +254,7 @@ class Domain(models.Model):
 
     def get_http(self):
         return f'http://{self.name}/'
+
 
     def get_html_facebook(self):
         return Domain.HTML_CLASS[self.facebook]
@@ -277,6 +278,19 @@ class Domain(models.Model):
     def is_root(self):
         if self.name.count('.') == 1:
             return True
+
+    def __str__(self):
+        return self.name
+
+
+class RootDomain(Domain):
+
+    def __str__(self):
+        return self.name
+
+
+class SubDomain(Domain):
+    root_domain = models.ForeignKey(RootDomain, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -428,7 +442,7 @@ class Lead(models.Model):
     flow_id = models.CharField(max_length=10, verbose_name='id потока', blank=True, null=True)
     domain = models.CharField(max_length=60, verbose_name='домен лида', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления лида')
-    ip = models.CharField(max_length=30, verbose_name='ip address', blank=True, null=True,)
+    ip = models.CharField(max_length=30, verbose_name='ip address', blank=True, null=True, )
     pp_name = models.CharField(max_length=2, verbose_name='Код ПП', blank=True, null=True)
     pp_answer = models.JSONField(default=dict, blank=True)
     lead_id = models.CharField(max_length=10, verbose_name='id лида', blank=True, null=True)
