@@ -1,163 +1,149 @@
 {% extends 'office/base.html' %}
 {% load static %}
 {% block content %}
-<title>{{ page_title }}</title>
+
 <div class="main-wrapper">
-<!--<h1>Домены</h1>-->
-<br>
-<div style="width:30%;display: inline-block;">
-<p>Всего доменов: {{ domains|length }}</p>
-<h5>Свободных: {{ free_doms|length }}</h5>
-    <div class="for-btn">
-        <button id="my-btn" onclick="showOld(1);" class="status status-none">Show</button>
-    </div>
-
-    <div class="free-doms">
-{% for dom in free_doms %}
-<p>{{ dom }}</p>
-{% empty %}
-<p>Нет свободных доменов</p>
-{% endfor %}
-        </div>
-</div>
-<br>
-<div class="table-responsive table-camps">
-
-    <table class="table" id="domain-table">
-        <thead class="table-light">
+    <table class="table">
+        <thead class="table-dark">
             <tr>
-
-                <th>Beget ID</th>
-                <th>Ссылка</th>
+                <th></th>
+                <th>Beget Id</th>
+                <th>Name</th>
                 <th>Сайт</th>
                 <th>Описание</th>
                 <th>FaceBook</th>
-                 <th>Google</th>
-                 <th>TikTok</th>
-
-
-
+                <th>Google</th>
+                <th>TikTok</th>
+                <th>Edit</th>
             </tr>
         </thead>
-            <tbody>
-                <!-- <tr>
-                    <td class="beget_id"> bbbb</td>
-                    <td class="url"><a href="" target="_blank"></a></td>
-                    <td class="description">xxxxxxxxx</td>
-                    <td class="facebook">
-                        xxx
-                    </td>
-                    <td class="google">
-                        xxxx
-                    </td>
-                    <td class="tiktok">
-                            xxxxxxx
-                    </td>
-                </tr> -->
-            </tbody>
+        <tbody>
+            {% for domain in domains %}
+            <tr id="{{domain.id}}" data-domain-id="{{domain.id}}" class="table-light">
+                <td class="oc-subs">
+                    {% if domain.subdomain_set.all %}
+                    <i class="fas fa-arrow-circle-right"></i>
+                    {% endif %}
+                </td>
+                <td>{{ domain.beget_id }}</td>
+                <td>{{ domain.name }}</td>
+                <td>{{ domain.site|default_if_none:"" }}</td>
+                <td class="description">{{ domain.description }}</td>
+                <td>
+                    <button type="button" class="btn btn-{{ domain.get_html_facebook }}">{{ domain.facebook }}</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-{{ domain.get_html_google }}">{{ domain.google }}</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-{{ domain.get_html_tiktok }}">{{ domain.tiktok }}</button>
+                </td>
+                <th>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light dropdown-toggle icon-block"  data-bs-toggle="dropdown" data-bs-target="#exampleModal">
+                            <i class="fas fa-cogs "></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="/admin/office/domain/{{domain.id}}/change/" target="_blank">Редактировать</a></li>                   
+                          </ul>
+                        </div>
+                </th>
+            </tr>
+            {% for sub_dom in domain.subdomain_set.all %}
+            <tr id="{{sub_dom.id}}" style="display:none;" data-subdom-id="{{sub_dom.id}}" data-root-id="{{domain.id}}">
+                <td class="oc-subs"></td>
+                <td>{{ sub_dom.beget_id }}</td>
+                <td>{{ sub_dom.name }}</td>
+                <td>{{ sub_dom.site|default_if_none:"" }}</td>
+                <td class="description">{{ sub_dom.description }}</td>
+                <td>
+                    <button type="button" class="btn btn-{{ sub_dom.get_html_facebook }}">{{ sub_dom.facebook}}</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-{{ sub_dom.get_html_google }}">{{ sub_dom.google }}</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-{{ sub_dom.get_html_tiktok }}">{{ sub_dom.tiktok }}</button>
+                </td>
+                <th>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light dropdown-toggle icon-block"  data-bs-toggle="dropdown" data-bs-target="#exampleModal">
+                            <i class="fas fa-cogs "></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="/admin/office/domain/{{sub_dom.id}}/change/" target="_blank">Редактировать</a></li>                   
+                          </ul>
+                        </div>
+                </th>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
     </table>
 </div>
-</div>
 <script>
-    // кнопка показать скрыть старые домены
-    var oldDoms = $('.free-doms');
-    oldDoms.hide();
-    var my_btn = $('#my-btn');
-    var btn_div = $('.for-btn');
-    function showOld(what_do){
-    if (what_do == 0){
-    oldDoms.hide();
-    my_btn.text('Show');
-    my_btn.attr('onclick','showOld(1)');
-    }
-     if (what_do == 1){
-     oldDoms.show();
-    my_btn.text('Hide');
-    my_btn.attr('onclick','showOld(0);');     }
-
-    };
-    /// 
-    
     csrfmiddlewaretoken = '{{ csrf_token }}'
-    var STATUSHTML = {
-        'none':'btn btn-secondary',
-        'NEW': 'btn btn-success',
-        'BAN': 'btn btn-danger',
-        'USE': 'btn btn-warning',
-    } 
+    $('.oc-subs').click(function () {
+        domId = $(this).parent().attr('data-domain-id')
+        subs = $("tr[data-root-id='" + domId + "']")
+        console.log(domId)
+        console.log(subs.length)
+        subs.slideToggle(50)
+    })
+
     URL = 'api/'
     URL_DOM_DESC = 'api/change_domain_desc/'
     // замена текста на input
-    $('body').on('click', 'td[class=description]', function(){
-//    var input = $('<input id="now" type="text">')
-    var input = $('<textarea id="now" type="text"></textarea>')   
-   var text = $(this).text()
-   input.val(text)
-   $(this).wrap('<div>')
-   $(this).after(input)
-   
-   var current_p = $(this)
-   current_p.hide()
-   input.focus()
-   // при изменение интута
+    $('body').on('click', 'td[class=description]', function () {
+        //    var input = $('<input id="now" type="text">')
+        var input = $('<textarea id="now" type="text"></textarea>')
+        var text = $(this).text()
+        input.val(text)
+        $(this).wrap('<div>')
+        $(this).after(input)
 
-   var parrent = $(this).parent()
-   $(parrent).on('change', '#now', function(){
+        var current_p = $(this)
+        current_p.hide()
+        input.focus()
+        // при изменение интута
 
-  
-       var result = $(this).val()
-       current_p.text(result)
-       current_p.show()
-       $(this).remove()
-       var id_of = current_p.closest('tr').attr('id')
-       console.log(current_p.closest('tr').attr('id'))
-       console.log(result)
-    //    console.log(current_p.parentsUntil('table'))
-    //    changeDomainText(current_p.attr('id'), result)
-    changeDomainText(id_of, result)
+        var parrent = $(this).parent()
+        $(parrent).on('change', '#now', function () {
 
-   }
-   )
-   // когда нет изменений
-   $(parrent).on('blur', '#now', function(){
-       console.log('unfocus')
-       current_p.show()
-       $(this).remove()
 
-   })
+            var result = $(this).val()
+            current_p.text(result)
+            current_p.show()
+            $(this).remove()
+            var id_of = current_p.closest('tr').attr('id')
+            console.log(current_p.closest('tr').attr('id'))
+            console.log(result)
+            //    console.log(current_p.parentsUntil('table'))
+            //    changeDomainText(current_p.attr('id'), result)
+            changeDomainText(id_of, result)
 
-})
-    function changeDomainText(id, result){
-            csrfmiddlewaretoken = '{{ csrf_token }}'
-    $.post(URL_DOM_DESC + id + '/',
-    {'description':result,'csrfmiddlewaretoken': csrfmiddlewaretoken,},
-    //  {'description':result,'csrfmiddlewaretoken': csrfmiddlewaretoken, },
-        function(data) {
-        // $('#news').html(data);
-        console.log('Good send to DB')
-        });
-    }
-
-    loadDomains()
-    // генерация строк таблицы
-    function loadDomains(){
-        $.getJSON(URL, function(data){
-        var table = $('#domain-table tbody')
-        //table.children().slice(1).remove() // удаляем все строки кроме заглавной(шапки)
-        $.each(data, function(key, value){
-            var row = $('<tr id="'+ value.id + '"></tr>')
-                row.append($('<td class=beget-id>'+ value.beget_id + '</td>'))
-                row.append($('<td class=name><a href="'+ value.get_http + '" blank="_tagret">' +value.name + '<a></td>'))
-                row.append($('<td class=site>'+ value.site + '</td>'))
-                row.append($('<td class=description>'+ value.description + '</td>'))
-                row.append($('<td class=facebook><button class="'+ STATUSHTML[value.facebook] + '">'+ value.facebook + '</button></td>'))
-                row.append($('<td class=google><button class="'+ STATUSHTML[value.google] + '">'+ value.google + '</button></td>'))
-                row.append($('<td class=tiktok><button class="'+ STATUSHTML[value.tiktok] + '">'+ value.tiktok + '</button></td>'))
-            table.append(row)
+        }
+        )
+        // когда нет изменений
+        $(parrent).on('blur', '#now', function () {
+            console.log('unfocus')
+            current_p.show()
+            $(this).remove()
 
         })
+
     })
+    function changeDomainText(id, result) {
+        csrfmiddlewaretoken = '{{ csrf_token }}'
+        $.post(URL_DOM_DESC + id + '/',
+            { 'description': result, 'csrfmiddlewaretoken': csrfmiddlewaretoken, },
+            //  {'description':result,'csrfmiddlewaretoken': csrfmiddlewaretoken, },
+            function (data) {
+                // $('#news').html(data);
+                console.log('Good send to DB')
+            });
     }
+
 </script>
 
 {% endblock %}

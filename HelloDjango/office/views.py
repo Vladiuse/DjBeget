@@ -14,7 +14,7 @@ from .api import Beget
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet,\
-    Country, Lead
+    Country, Lead, RootDomain, SubDomain
 from .serializers import DomainSerializer, CompanySerializer, AccountSerializer, TrafficSourceSerializer,\
     CabinetSerializer, CountrySerializer, LeadSerializer
 from .new_checker import SiteMap as SiteMap, LinkChecker as NewLinkChecker
@@ -165,14 +165,14 @@ def checker(request, site_id, mode):
 @login_required
 def domains(request):
     """Список доменов"""
-    Beget().update_domains()
-    domains_bd = Domain.objects.all().order_by('name')
-    domains_bd = [domain for domain in domains_bd if domain.is_root() is True]
+    # Beget().update_domains()
+    domains_bd = RootDomain.objects.all().order_by('name')
+    # domains_bd = [domain for domain in domains_bd if domain.is_root() is True]
     # for dom in domains_bd:
     #     print(dom.name, dom.is_root())
-    free_doms = Domain.objects.filter(site__isnull=True)
+    # free_doms = Domain.objects.filter(site__isnull=True)
     content = {'domains': domains_bd,
-               'free_doms': free_doms,
+               # 'free_doms': free_doms,
                'page_title': 'Домены',
                }
     return render(request, 'office/domains.html', content)
