@@ -1,9 +1,9 @@
 {% extends 'office/base.html' %}
 {% load static %}
 {% block content %}
-
+<title>{{ page_title }}</title>
 <div class="main-wrapper">
-    <table class="table">
+    <table class="table" id="domains-table">
         <thead class="table-dark">
             <tr>
                 <th></th>
@@ -29,13 +29,13 @@
                 <td>{{ domain.name }}</td>
                 <td>{{ domain.site|default_if_none:"" }}</td>
                 <td class="description">{{ domain.description }}</td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ domain.get_html_facebook }}">{{ domain.facebook }}</button>
                 </td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ domain.get_html_google }}">{{ domain.google }}</button>
                 </td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ domain.get_html_tiktok }}">{{ domain.tiktok }}</button>
                 </td>
                 <th>
@@ -56,13 +56,13 @@
                 <td>{{ sub_dom.name }}</td>
                 <td>{{ sub_dom.site|default_if_none:"" }}</td>
                 <td class="description">{{ sub_dom.description }}</td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ sub_dom.get_html_facebook }}">{{ sub_dom.facebook}}</button>
                 </td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ sub_dom.get_html_google }}">{{ sub_dom.google }}</button>
                 </td>
-                <td>
+                <td class="domain-status">
                     <button type="button" class="btn btn-{{ sub_dom.get_html_tiktok }}">{{ sub_dom.tiktok }}</button>
                 </td>
                 <th>
