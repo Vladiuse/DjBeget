@@ -78,6 +78,12 @@
 #main-table .camp-status button{
   font-size: 0.8rem;
 }
+#sites-table .site-status a{
+  font-size: 0.8rem;
+}
+#domains-table .domain-status button{
+  font-size: 0.8rem;
+}
 /* ICONS */
 .fa-check-circle{
   font-size: 13px;

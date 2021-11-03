@@ -109,7 +109,7 @@
 </div>
 <br>
  <div class="">
-    <table class="table">
+    <table class="table" id="sites-table">
         <thead class="table-light">
             <tr>
                 <th>Сылка</th>
@@ -158,7 +158,8 @@
                 </td>
                 <td>{{ site.employee|default_if_none:"" }}</td>
                 <td class="site-title">{{ site.title|slice:":30" }}</td>
-                <td>
+                <td class="site-status">
+                    <!-- Кнопка Статуса сайта -->
                     <div class="btn-group dropend">
                         <a class="btn btn-primary {{ site.get_status_html }}" 
                     href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a>
