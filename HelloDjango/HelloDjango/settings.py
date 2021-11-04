@@ -45,6 +45,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login'
 STATIC_ROOT = '/home/v/vladiuse/django/public_html/static'
 
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -169,7 +171,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Minsk'
 
 USE_I18N = True
 
