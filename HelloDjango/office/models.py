@@ -255,6 +255,12 @@ class Domain(models.Model):
     def get_http(self):
         return f'http://{self.name}/'
 
+    def get_https(self):
+        return f'https://{self.name}/'
+
+    def black_page(self):
+        """Получить ссылку на скрытую страницу"""
+        return self.get_http_site() + 'black.html'
 
     def get_html_facebook(self):
         return Domain.HTML_CLASS[self.facebook]
