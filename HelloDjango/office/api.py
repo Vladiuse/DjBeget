@@ -218,8 +218,9 @@ class TrirazatApi:
     @staticmethod
     def get_lead_feedback(leads:list):
         """Получить данные от пп по лидам"""
-        url = 'https://my.trirazat.com/api/wm/lead.json?' + TrirazatApi.apikey
+        url = 'https://my.trirazat.com/api/wm/lead.json?id=' + TrirazatApi.apikey
         leads_url = '&ids=' + ','.join(leads)
+        print(url + leads_url)
         res = req.get(url + leads_url)
         return res.json()
 

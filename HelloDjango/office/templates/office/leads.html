@@ -6,9 +6,10 @@
         font-size: 14px;
     }
 </style>
-<h6>{{update_count}}</h6>
-<a href="{% url 'office:update_leads' %}">Update</a>
+
 <div class="main-wrapper">
+    <h6>{{update_count}}</h6>
+<a href="{% url 'office:update_leads' %}">Update</a>
     <table class="table leads-table">
         <thead class="table-light">
             <tr>
@@ -24,6 +25,8 @@
                 <th>Id Лида</th>
                 <th>Домен</th>
                 <th>Ответ</th>
+<!--                <th>Data</th>-->
+                                <th>Status</th>
                 <th>Дата</th>
             </tr>
         </thead>
@@ -42,6 +45,8 @@
             <td>{{ lead.lead_id|default_if_none:"" }}</td>
             <td>{{ lead.domain|default_if_none:"" }}</td>
             <td>{{ lead.pp_answer|default_if_none:"" }}</td>
+<!--            <td>{{lead.pp_lead_status}}</td>-->
+                        <td style="color: {{lead.get_status_color}};">{{lead.get_status_icon|safe}} {{ lead.get_lead_status_word_ru }}</td>
             <td>{{ lead.created|date:'m.d H:i' }}</td>
         </tr>
          {% endfor %}

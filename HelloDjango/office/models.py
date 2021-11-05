@@ -255,7 +255,6 @@ class Domain(models.Model):
     def get_http(self):
         return f'http://{self.name}/'
 
-
     def get_html_facebook(self):
         return Domain.HTML_CLASS[self.facebook]
 
@@ -433,13 +432,26 @@ class CodeExample(models.Model):
 
 
 class Lead(models.Model):
-
     LEAD_STATUSYS = {
         1: 'заказ в обработке',
         2: 'холд',
         3: 'заказ принят',
         4: 'заказ отменён',
         5: 'треш',
+    }
+    icon_wait = {'color': '#479', 'icon': '<i class="fas fa-sync-alt"></i>'}
+    icon_wait_2 = {'color': '#479', 'icon': '<i class="fas fa-sync-alt"></i>'}
+    icon_good = {'color': 'green', 'icon': '<i class="fas fa-check-circle"></i>'}
+    icon_denie = {'color': 'red', 'icon': '<i class="fas fa-times-circle"></i>'}
+    icon_thrash = {'color': 'grey', 'icon': '<i class="fas fa-trash-alt"></i>'}
+
+    LEAD_STATUSYS_HTML = {
+        1: icon_wait,
+        2: icon_wait_2,
+        3: icon_good,
+        4: icon_denie,
+        5: icon_thrash,
+
     }
     name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
     phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
@@ -457,18 +469,35 @@ class Lead(models.Model):
     pp_lead_status = models.JSONField(default=dict, blank=True)
 
     def get_lead_status(self):
+        """Числовой статус"""
         try:
             return self.pp_lead_status['phase']
         except KeyError:
-            pass
+            return 1
+
     def get_lead_status_word(self):
+        """Буквенный статус"""
         try:
             return self.pp_lead_status['stage']
         except KeyError:
             return ''
 
+    def get_lead_status_word_ru(self):
+        try:
+            return Lead.LEAD_STATUSYS[self.pp_lead_status['phase']]
+        except KeyError:
+            return ''
+    def get_status_color(self):
+        try:
+            return Lead.LEAD_STATUSYS_HTML[self.pp_lead_status['phase']]['color']
+        except KeyError:
+            return ''
 
-
+    def get_status_icon(self):
+        try:
+            return Lead.LEAD_STATUSYS_HTML[self.pp_lead_status['phase']]['icon']
+        except KeyError:
+            return ''
 class Test(models.Model):
     DIC_1 = {'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'}
     DIC_2 = {"result": [{'result_code': 'error', 'result_html': 'danger', 'result_text': 'Ошибка'},

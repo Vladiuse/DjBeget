@@ -360,15 +360,16 @@ def update_leads(request):
         if lead.get_lead_status() in [1,2]:
             lead_to_update_ids.append(lead.lead_id)
     lead_pp_data = TrirazatApi().get_lead_feedback(lead_to_update_ids)
-    update_count = len(lead_pp_data)
+    print(len(lead_pp_data), '*' * 30)
     for lead in lead_pp_data:
         try:
             lead_db = Lead.objects.get(lead_id=lead['id'])
-            lead_pp_data = lead
+            lead_db.pp_lead_status = lead
             lead_db.save()
+
         except Lead.DoesNotExist as error:
             print(error)
-    return HttpResponseRedirect(reverse('office:domains'), {'update_count': update_count})
+    return HttpResponseRedirect(reverse('office:leads'))
 
 
 @api_view(['GET', 'POST'])

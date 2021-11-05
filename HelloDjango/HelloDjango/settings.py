@@ -147,6 +147,18 @@ DATABASES = {
 #
 #     }
 # }
+# For main DB remote connection
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'vladiuse_beget_t',
+#         'USER': 'vladiuse_beget_t',
+#         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
+#         'HOST': 'vladiuse.beget.tech',
+#         'PORT': '3306',
+#
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
