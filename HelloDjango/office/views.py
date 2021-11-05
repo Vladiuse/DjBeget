@@ -381,6 +381,6 @@ def add_lead(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse({"error": "not valid"})
+        return Response(serializer.errors, status=404)
     else:
         return JsonResponse({"error": "error not POST"})

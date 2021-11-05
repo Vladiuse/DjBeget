@@ -455,7 +455,7 @@ class Lead(models.Model):
     }
     name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
     phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
-    country = models.CharField(max_length=2, verbose_name='Страна', blank=True, null=True)
+    country = models.CharField(max_length=10, verbose_name='Страна', blank=True, null=True)
     comm = models.CharField(max_length=50, verbose_name='коментарий', blank=True, null=True)
     price = models.CharField(max_length=50, verbose_name='цена', blank=True, null=True)
     offer_id = models.CharField(max_length=10, verbose_name='id оффера', blank=True, null=True)
@@ -463,7 +463,7 @@ class Lead(models.Model):
     domain = models.CharField(max_length=60, verbose_name='домен лида', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления лида')
     ip = models.CharField(max_length=30, verbose_name='ip address', blank=True, null=True, )
-    pp_name = models.CharField(max_length=2, verbose_name='Код ПП', blank=True, null=True)
+    pp_name = models.CharField(max_length=10, verbose_name='Код ПП', blank=True, null=True)
     pp_answer = models.JSONField(default=dict, blank=True)
     lead_id = models.CharField(max_length=10, verbose_name='id лида', blank=True, null=True)
     pp_lead_status = models.JSONField(default=dict, blank=True)
