@@ -433,6 +433,14 @@ class CodeExample(models.Model):
 
 
 class Lead(models.Model):
+
+    LEAD_STATUSYS = {
+        1: 'заказ в обработке',
+        2: 'холд',
+        3: 'заказ принят',
+        4: 'заказ отменён',
+        5: 'треш',
+    }
     name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
     phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
     country = models.CharField(max_length=2, verbose_name='Страна', blank=True, null=True)
@@ -446,6 +454,19 @@ class Lead(models.Model):
     pp_name = models.CharField(max_length=2, verbose_name='Код ПП', blank=True, null=True)
     pp_answer = models.JSONField(default=dict, blank=True)
     lead_id = models.CharField(max_length=10, verbose_name='id лида', blank=True, null=True)
+    pp_lead_status = models.JSONField(default=dict, blank=True)
+
+    def get_lead_status(self):
+        try:
+            return self.pp_lead_status['phase']
+        except KeyError:
+            pass
+    def get_lead_status_word(self):
+        try:
+            return self.pp_lead_status['stage']
+        except KeyError:
+            return ''
+
 
 
 class Test(models.Model):

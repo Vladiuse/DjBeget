@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/add_lead/', views.add_lead),
     path('leads/', views.all_leads, name='leads'),
     path('main/', views.main, name='main'),
+    path('update_leads/', views.update_leads, name='update_leads'),
     ]

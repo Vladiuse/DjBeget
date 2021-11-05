@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from pprint import pprint
-from .api import Beget
+from .api import Beget, TrirazatApi
 from .help import ImagePrev
 from .link_checker import LinkCheckerManager
 from .models import Site, OldLand, Domain, CodeExample, Company, Account, CampaignStatus, TrafficSource, Cabinet,\
@@ -351,6 +351,25 @@ def all_leads(request):
         'page_title': 'Лиды',
     }
     return render(request, 'office/leads.html', content)
+
+
+def update_leads(request):
+    leads = Lead.objects.filter(lead_id__isnull=False)
+    lead_to_update_ids = []
+    for lead in leads:
+        if lead.get_lead_status() in [1,2]:
+            lead_to_update_ids.append(lead.lead_id)
+    lead_pp_data = TrirazatApi().get_lead_feedback(lead_to_update_ids)
+    update_count = len(lead_pp_data)
+    for lead in lead_pp_data:
+        try:
+            lead_db = Lead.objects.get(lead_id=lead['id'])
+            lead_pp_data = lead
+            lead_db.save()
+        except Lead.DoesNotExist as error:
+            print(error)
+    return HttpResponseRedirect(reverse('office:domains'), {'update_count': update_count})
+
 
 @api_view(['GET', 'POST'])
 @renderer_classes([JSONRenderer])

@@ -3,7 +3,7 @@ from pprint import pprint
 import json
 if __name__ != '__main__':
     from . import models
-    from office.beget_api_keys import begget_login, begget_pass
+    from office.beget_api_keys import begget_login, begget_pass, trirazat_api
 else:
     import beget_api_keys
     begget_login = beget_api_keys.begget_login
@@ -211,6 +211,17 @@ class Beget(ApiManager):
 
 
 
+class TrirazatApi:
+    apikey = trirazat_api
+
+
+    @staticmethod
+    def get_lead_feedback(leads:list):
+        """Получить данные от пп по лидам"""
+        url = 'https://my.trirazat.com/api/wm/lead.json?' + TrirazatApi.apikey
+        leads_url = '&ids=' + ','.join(leads)
+        res = req.get(url + leads_url)
+        return res.json()
 
 
 
