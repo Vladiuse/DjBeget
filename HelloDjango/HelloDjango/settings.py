@@ -125,26 +125,38 @@ REST_FRAMEWORK = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'vladiuse_beget_t',
-#         'USER': 'vladiuse_beget_t',
+#         'NAME': 'vladiuse_beget',
+#         'USER': 'vladiuse_beget',
 #         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
 #         'HOST': 'localhost',
 #
 #     }
 # }
-
-# for MySql TEST database remote
+# For main DB remote connection
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'vladiuse_beget',
-        'USER': 'vladiuse_beget',
+        'NAME': 'vladiuse_beget_t',
+        'USER': 'vladiuse_beget_t',
         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
         'HOST': 'vladiuse.beget.tech',
         'PORT': '3306',
 
     }
 }
+
+# for MySql TEST database remote
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'vladiuse_beget',
+#         'USER': 'vladiuse_beget',
+#         'PASSWORD': get_secret('DB_PASSWORD_TEST'),
+#         'HOST': 'vladiuse.beget.tech',
+#         'PORT': '3306',
+#
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

@@ -166,7 +166,7 @@ def checker(request, site_id, mode):
 def domains(request):
     """Список доменов"""
     Beget().update_domains()
-    domains_bd = RootDomain.objects.all().order_by('name')
+    domains_bd = RootDomain.objects.exclude(is_full=True).order_by('name')
     # domains_bd = [domain for domain in domains_bd if domain.is_root() is True]
     # for dom in domains_bd:
     #     print(dom.name, dom.is_root())

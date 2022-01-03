@@ -13,7 +13,7 @@ class DomainAdmin(admin.ModelAdmin):
 
 
 class RootDomainAdmin(admin.ModelAdmin):
-    list_display = ['id', 'beget_id', 'name', 'site']
+    list_display = ['id', 'beget_id', 'name', 'site', 'is_full']
     list_display_links = ['name']
     search_fields = ['name']
 

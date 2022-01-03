@@ -290,7 +290,7 @@ class Domain(models.Model):
 
 
 class RootDomain(Domain):
-
+    is_full = models.BooleanField(default=False, verbose_name='Привышен ли лимит поддоменов')
     def __str__(self):
         return self.name
 
