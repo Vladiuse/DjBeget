@@ -255,6 +255,13 @@ class Domain(models.Model):
     def get_http(self):
         return f'http://{self.name}/'
 
+    def get_https(self):
+        return f'https://{self.name}/'
+
+    def black_page(self):
+        """Получить ссылку на скрытую страницу"""
+        return self.get_http_site() + 'black.html'
+
     def get_html_facebook(self):
         return Domain.HTML_CLASS[self.facebook]
 
@@ -283,7 +290,7 @@ class Domain(models.Model):
 
 
 class RootDomain(Domain):
-
+    is_full = models.BooleanField(default=False, verbose_name='Привышен ли лимит поддоменов')
     def __str__(self):
         return self.name
 
@@ -455,7 +462,7 @@ class Lead(models.Model):
     }
     name = models.CharField(max_length=30, verbose_name='Имя', blank=True, null=True)
     phone = models.CharField(max_length=30, verbose_name='Телефон', blank=True, null=True)
-    country = models.CharField(max_length=10, verbose_name='Страна', blank=True, null=True)
+    country = models.CharField(max_length=2, verbose_name='Страна', blank=True, null=True)
     comm = models.CharField(max_length=50, verbose_name='коментарий', blank=True, null=True)
     price = models.CharField(max_length=50, verbose_name='цена', blank=True, null=True)
     offer_id = models.CharField(max_length=10, verbose_name='id оффера', blank=True, null=True)

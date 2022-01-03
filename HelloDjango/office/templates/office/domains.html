@@ -7,7 +7,7 @@
         <thead class="table-dark">
             <tr>
                 <th></th>
-                <th>Beget Id</th>
+                <th>Кол-во</th>
                 <th>Name</th>
                 <th>Сайт</th>
                 <th>Описание</th>
@@ -25,7 +25,7 @@
                     <i class="fas fa-arrow-circle-right"></i>
                     {% endif %}
                 </td>
-                <td>{{ domain.beget_id }}</td>
+                <td>{{domain.subdomain_set.count}}</td>
                 <td>{{ domain.name }}</td>
                 <td>{{ domain.site|default_if_none:"" }}</td>
                 <td class="description">{{ domain.description }}</td>
@@ -52,7 +52,7 @@
             {% for sub_dom in domain.subdomain_set.all %}
             <tr id="{{sub_dom.id}}" style="display:none;" data-subdom-id="{{sub_dom.id}}" data-root-id="{{domain.id}}">
                 <td class="oc-subs"></td>
-                <td>{{ sub_dom.beget_id }}</td>
+                <td>---</td>
                 <td>{{ sub_dom.name }}</td>
                 <td>{{ sub_dom.site|default_if_none:"" }}</td>
                 <td class="description">{{ sub_dom.description }}</td>

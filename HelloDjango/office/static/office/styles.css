@@ -99,11 +99,11 @@
 }
 
 
-.icon-block{
+/* .icon-block{
   display: inline-block;
-  }
+  } */
   
-  .icon-block i{
+  .fas{
   color: #74c0fc;
   position: right;
   margin-right: 10px;
@@ -114,17 +114,17 @@
 
   }
 
-  .fa-user-secret{
+  .tools-col .fa-user-secret{
   font-size: 25px;
   }
 
   .icon-block .fa-lock {
   font-size: 18px;
-  margin-right: 20px;
+  /* margin-left: 20px; */
   }
   
   .icon-block .fa-user-edit{
-  font-size: 18px;
+  font-size: 22px;
   }
   div .sn-block .fab{
     font-size: 18px;
@@ -148,4 +148,11 @@
 #save-comp .spinner-border{
   width: 1rem;
   height: 1rem;
+}
+
+#old-lands i{
+  color: black;
+}
+.fa-play-circle{
+  color: green;
 }

@@ -103,7 +103,7 @@
     </div>
     
      <!-- <h5 style="padding-left: 20px;">Всего: {{ sites|length|add:"2"}} </h5> -->
-     <div>
+     <div id="old-lands">
         <a href="{% url 'office:old_lands' %}"  type="button" class="btn btn-light" >Архив <i class="fas fa-archive"></i></a>
      </div>
 </div>
@@ -112,12 +112,15 @@
     <table class="table" id="sites-table">
         <thead class="table-light">
             <tr>
-                <th>Сылка</th>
+                <th>Название</th>
                 <th>Tools</th>
-<!--                <th>Кло</th>-->
                 <th>Запуск</th>
+                <th>Сылки</th>
+           
+<!--                <th>Кло</th>-->
+                
                 <th>Баер</th>
-                <th>Прокла</th>
+                <!-- <th>Заголовок</th> -->
                 <th>Статус</th>
                 <th>Прочее</th>
             </tr>
@@ -125,24 +128,44 @@
         <tbody class="table-sites">
      {% for site in sites %}
             <tr site-id="{{ site.id}}">
-<!--            <td>{{ site.site_name }}</td>-->
-                <td class="first {{ site.status_sub }}">
+           <td>{{ site.site_name }}</td>
+           <td class="tools-col">
+            <!-- Tools -->
+            <div class="icon-block">
+                <!-- <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a> -->
+            <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
+            <!-- <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a> -->
+                {% if site.is_cloac %}
+            <i class="fas fa-user-secret"></i>
+            {% endif %}
+                </div>
+        </td>
+        <td>
+            {% if site.is_camp_run %}
+            <i class="fas fa-play-circle"></i>
+            {% endif %}
+        </td>
+        <td>
+            <!-- сслылки -->
+            {% for domain in site.domain_set.all %}
+            <a href="{{domain.get_http}}" target="_blank">{{domain.name}}</a>
+            <a href="{{domain.get_https}}" target="_blank"><i class="fas fa-lock"></i></a>
+            {% if site.is_cloac %}
+            <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
+            {% endif %}
+            <br>
+            {% empty %}
+            No domains ...
+            {% endfor %}               
+        </td>
+           
+                <!-- <td class="first {{ site.status_sub }}">
                     <a href="{{ site.get_http_site }}" target="_blank">{{ site.site_name }}</a>
                     {% if site.is_new %}
                     <span class="badge bg-success new-site">Новый</span>
-                    <!-- <a class="status status-paid new-site">Новый</a> -->
                     {% endif %}
-                </td>
-                <td>
-                    <div class="icon-block">
-                        <a href="{{ site.get_https_site }}" target="_blank"><i class="fas fa-lock"></i></a>
-                    <a href="{{ site.get_beget_editor }}" target="_blank"><i class="fas fa-user-edit"></i></a>
-                   <!-- <a href="{{ site.get_log_url }}" target="_blank"> <i class="far fa-address-book"></i></a> -->
-                        {% if site.is_cloac %}
-                    <a href="{{ site.black_page }}" target="_blank"><i class="fas fa-user-secret"></i></a>
-                    {% endif %}
-                        </div>
-                </td>
+                </td> -->
+         
 <!--                <td>-->
 <!--                    <div class="icon-block">-->
 <!--                            заклоачена ли ссылка-->
@@ -150,16 +173,12 @@
 <!--                </td>-->
 <!--                <td><a href="{{ site.get_beget_editor }}" target="_blank">edit</a></td>-->
 <!--                <td><a href="{{ site.get_log_url }}" target="_blank">log.txt</a></td>-->
-                <td>
-                    {% if site.is_camp_run %}
-                    <i class="fas fa-play-circle"></i>
-           
-                    {% endif %}
-                </td>
+               
                 <td>{{ site.employee|default_if_none:"" }}</td>
-                <td class="site-title">{{ site.title|slice:":30" }}</td>
+                <!-- <td class="site-title">{{ site.title|slice:":30" }}</td> -->
                 <td class="site-status">
                     <!-- Кнопка Статуса сайта -->
+                    {% if site.domain_set.all %}
                     <div class="btn-group dropend">
                         <a class="btn btn-primary {{ site.get_status_html }}" 
                     href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a>
@@ -191,6 +210,7 @@
                         </ul> -->
                         {% endif %}
                       </div>
+                    {% endif %}
                     <!-- <a class="btn btn-primary {{ site.get_status_html }}" 
                     href="{% url 'office:checker' site.id 0 %}" role="button">{{ site.check_status }}</a> -->
                 </td>
